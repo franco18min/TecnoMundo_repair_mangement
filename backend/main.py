@@ -1,28 +1,23 @@
-# main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
+from app.api.v1.api import api_router
+from app.db.base import init_db
 
-# Crea la aplicación FastAPI
-app = FastAPI()
+init_db()
 
-# Configuración de CORS (Cross-Origin Resource Sharing)
-# Esto es MUY importante para permitir que tu frontend (en Vercel)
-# se comunique con tu backend (en Render).
-origins = [
-    "http://localhost:5173",  # La URL de tu frontend en desarrollo
-    # Aquí deberás añadir la URL de tu frontend cuando lo despliegues en Vercel
-]
+app = FastAPI(title="Servicio Técnico Pro API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# Una ruta de ejemplo para probar que todo funciona
 @app.get("/")
 def read_root():
-    return {"message": "¡Hola desde el backend de FastAPI!"}
+    return {"message": "API de Servicio Técnico Pro funcionando."}
+
+app.include_router(api_router, prefix="/api/v1")
