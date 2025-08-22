@@ -4,7 +4,8 @@ import './App.css';
 
 function App() {
   const [message, setMessage] = useState('');
-  const apiUrl = 'http://127.0.0.1:8000'; // URL de tu backend local
+  // CAMBIO AQUÍ: Usamos la variable de entorno
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
   useEffect(() => {
     fetch(apiUrl)

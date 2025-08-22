@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 
 # --- CORRECCIÓN AQUÍ ---
 # Importamos los módulos específicos en lugar de los paquetes completos
-from app.schemas import repair_order as schemas_repair_order
-from app.crud import crud_repair_order
+from backend.app.schemas import repair_order as schemas_repair_order
+from backend.app.crud import crud_repair_order
 # --- FIN DE LA CORRECCIÓN ---
 
-from app.db.session import SessionLocal
+from backend.app.db.session import SessionLocal
 
 router = APIRouter()
 
