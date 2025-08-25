@@ -2,16 +2,14 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-# --- CORRECCIÓN AQUÍ ---
-# Importamos los módulos específicos en lugar de los paquetes completos
-from backend.app.schemas import repair_order as schemas_repair_order
-from backend.app.crud import crud_repair_order
-# --- FIN DE LA CORRECCIÓN ---
-
-from backend.app.db.session import SessionLocal
+# CORRECCIÓN: Se cambió 'backend.app' por 'app'
+from app.schemas import repair_order as schemas_repair_order
+from app.crud import crud_repair_order
+from app.db.session import SessionLocal
 
 router = APIRouter()
 
+# --- Dependencia para obtener la sesión de la base de datos ---
 def get_db():
     db = SessionLocal()
     try:
@@ -19,13 +17,10 @@ def get_db():
     finally:
         db.close()
 
-# --- CORRECCIÓN AQUÍ ---
-# Usamos el alias para referirnos al esquema de forma no ambigua
 @router.get("/", response_model=List[schemas_repair_order.RepairOrder])
 def read_repair_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
-    Recupera una lista de órdenes de reparación.
+    Recupera una lista de órdenes de reparación desde la base de datos.
     """
-    # Usamos la importación directa del crud
     orders = crud_repair_order.get_repair_orders(db, skip=skip, limit=limit)
     return orders

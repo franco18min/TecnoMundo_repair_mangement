@@ -1,24 +1,35 @@
-// src/App.jsx
-import { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
 
+// Este es el componente principal que decide qué página mostrar.
 function App() {
-  const [message, setMessage] = useState('');
-  // CAMBIO AQUÍ: Usamos la variable de entorno
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+  // Estado para simular si el usuario ha iniciado sesión.
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    fetch(apiUrl)
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => console.error("Error al conectar con el backend:", err));
-  }, []);
+  // Función para simular el inicio de sesión.
+  // En un futuro, aquí llamarías a tu API de autenticación.
+  const handleLogin = () => {
+    console.log("Simulando inicio de sesión...");
+    setIsLoggedIn(true);
+  };
+
+  // Función para simular el cierre de sesión.
+  const handleLogout = () => {
+    console.log("Simulando cierre de sesión...");
+    setIsLoggedIn(false);
+  };
 
   return (
-    <div className="App">
-      <h1>Gestor de Reparaciones</h1>
-      <p>Mensaje del servidor: <strong>{message}</strong></p>
-    </div>
+    // AnimatePresence hace que la transición entre páginas sea suave.
+    <AnimatePresence mode="wait">
+      {isLoggedIn ? (
+        <DashboardPage key="dashboard" onLogout={handleLogout} />
+      ) : (
+        <LoginPage key="login" onLogin={handleLogin} />
+      )}
+    </AnimatePresence>
   );
 }
 
