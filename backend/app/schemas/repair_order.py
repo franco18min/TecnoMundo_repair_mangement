@@ -1,23 +1,19 @@
 from pydantic import BaseModel
-from datetime import date
-from typing import Optional
+from datetime import datetime
+from .customer import Customer  # Importa el esquema de Cliente
+from .user import User  # Importa el esquema de Usuario
 
-class RepairOrderBase(BaseModel):
-    order_id_str: str
-    customer_name: str
-    device_type: Optional[str] = None
-    device_model: Optional[str] = None
-    issue_description: Optional[str] = None
-    status: Optional[str] = "Pendiente"
-    technician_name: Optional[str] = None
-    technician_avatar_url: Optional[str] = None
-    date_received: Optional[date] = None
 
-class RepairOrderCreate(RepairOrderBase):
-    pass
-
-class RepairOrder(RepairOrderBase):
+class RepairOrder(BaseModel):
     id: int
+    device_type: str | None
+    device_model: str | None
+    status: str | None
+    created_at: datetime
+
+    # Datos anidados del cliente y el técnico
+    customer: Customer
+    technician: User | None  # Puede que una orden aún no tenga técnico
 
     class Config:
         from_attributes = True

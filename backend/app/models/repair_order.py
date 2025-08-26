@@ -1,18 +1,22 @@
-from sqlalchemy import Column, Integer, String, Date
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Float
+from sqlalchemy.orm import relationship
+from .base_class import Base
 
 class RepairOrder(Base):
-    __tablename__ = "repair_orders"
+    __tablename__ = "repair_order"
+    __table_args__ = {'schema': 'customer_users'}
 
     id = Column(Integer, primary_key=True, index=True)
-    order_id_str = Column(String, unique=True, index=True, nullable=False)
-    customer_name = Column(String, nullable=False)
     device_type = Column(String)
     device_model = Column(String)
-    issue_description = Column(String)
+    problem_description = Column(String)
     status = Column(String, default="Pendiente")
-    technician_name = Column(String)
-    technician_avatar_url = Column(String)
-    date_received = Column(Date)
+    total_cost = Column(Float, default=0.0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Claves Foráneas y Relaciones
+    customer_id = Column(Integer, ForeignKey("customer_users.customer.id"))
+    technician_id = Column(Integer, ForeignKey("system_users.user.id"))
+
+    customer = relationship("Customer", back_populates="repair_orders")
+    technician = relationship("User", back_populates="repair_orders")

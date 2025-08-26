@@ -1,7 +1,9 @@
-# CORRECCIÓN: Se cambió 'backend.app' por 'app'
 from app.db.session import engine
-from app.models.repair_order import Base # Importa Base desde el archivo de modelos.
+# --- IMPORTA EL NUEVO MODELO DE USUARIO ---
+from app.models.user import Base as UserBase
+from app.models.repair_order import Base as RepairOrderBase
 
 def init_db():
-    # Crea las tablas en la base de datos si no existen
-    Base.metadata.create_all(bind=engine)
+    # Crea todas las tablas si no existen
+    UserBase.metadata.create_all(bind=engine)
+    RepairOrderBase.metadata.create_all(bind=engine)
