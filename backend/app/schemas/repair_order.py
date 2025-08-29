@@ -1,19 +1,19 @@
 from pydantic import BaseModel
 from datetime import datetime
-from .customer import Customer  # Importa el esquema de Cliente
-from .user import User  # Importa el esquema de Usuario
-
+from .customer import Customer
+from .user import User
+from .status_order import StatusOrder  # ¡Importa el nuevo esquema!
 
 class RepairOrder(BaseModel):
     id: int
     device_type: str | None
     device_model: str | None
-    status: str | None
     created_at: datetime
 
-    # Datos anidados del cliente y el técnico
+    # Datos anidados
     customer: Customer
-    technician: User | None  # Puede que una orden aún no tenga técnico
+    technician: User | None
+    status: StatusOrder | None  # ¡Usa el nuevo esquema!
 
     class Config:
         from_attributes = True

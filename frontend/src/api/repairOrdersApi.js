@@ -1,5 +1,4 @@
-const API_BASE_URL = '';
-
+const API_BASE_URL = 'http://127.0.0.1:8001';
 /**
  * Obtiene todas las órdenes de reparación del backend y las transforma
  * para que coincidan con la estructura que esperan los componentes del frontend.
@@ -17,7 +16,10 @@ export const fetchRepairOrders = async () => {
       id: order.id,
       customer: { name: `${order.customer.first_name} ${order.customer.last_name}` },
       device: { type: order.device_type, model: order.device_model },
-      status: order.status,
+      // --- AJUSTE CLAVE ---
+      // Leemos el nombre del estado desde el objeto anidado 'status'.
+      // Añadimos un control para evitar errores si el estado es nulo.
+      status: order.status ? order.status.status_name : 'Desconocido',
       assignedTechnician: { name: order.technician?.username || 'No asignado' },
       dateReceived: order.created_at,
     }));

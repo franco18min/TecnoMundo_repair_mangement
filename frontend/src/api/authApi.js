@@ -1,13 +1,14 @@
-// La URL base está vacía para usar el proxy de Vite.
-const API_BASE_URL = '';
+// frontend/src/api/authApi.js
+
+const API_BASE_URL = 'http://127.0.0.1:8001';
 
 export const loginUser = async (username, password) => {
   const formData = new URLSearchParams();
   formData.append('username', username);
   formData.append('password', password);
 
-  // La URL ahora es relativa, lo que activa el proxy.
   const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    // --- VERSIÓN CORRECTA ---
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -15,10 +16,9 @@ export const loginUser = async (username, password) => {
     body: formData,
   });
 
-  // Este es el código estándar para manejar respuestas.
   if (!response.ok) {
     // Intentamos leer el cuerpo del error como JSON.
-    const errorData = await response.json();
+    const errorData = await response.json().catch(() => ({ detail: 'El servidor respondió con un error no válido.' }));
     // Lanzamos un error con el mensaje específico del backend.
     throw new Error(errorData.detail || `El servidor respondió con un error: ${response.status}`);
   }
@@ -28,7 +28,7 @@ export const loginUser = async (username, password) => {
   return data;
 };
 
-// El resto de las funciones también usarán el proxy.
+// El resto de las funciones también usarán la URL completa.
 export const registerUser = async (username, email, password) => {
   const userData = { username, email, password };
   const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {

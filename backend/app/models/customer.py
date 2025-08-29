@@ -4,7 +4,8 @@ from .base_class import Base
 
 class Customer(Base):
     __tablename__ = "customer"
-    __table_args__ = {'schema': 'customer_users'}
+    # --- CAMBIO DE SCHEMA ---
+    __table_args__ = {'schema': 'customer'}
 
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String, nullable=False)

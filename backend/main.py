@@ -1,3 +1,5 @@
+# backend/main.py
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -6,31 +8,36 @@ from app.db.base import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("--- Evento de arranque: Inicializando la base de datos... ---")
-    init_db()
-    print("--- Base de datos inicializada correctamente. ---")
+    print("--- Evento de arranque: Conectando a la base de datos... ---")
+    # init_db() # Mantenemos esto comentado ya que tus tablas ya existen
+    print("--- Conexión establecida. El servidor está listo. ---")
     yield
     print("--- Evento de cierre: Servidor apagándose. ---")
 
 app = FastAPI(title="Servicio Técnico Pro API", lifespan=lifespan)
 
+# --- CONFIGURACIÓN DE CORS DEFINITIVA ---
+# Lista explícita de orígenes permitidos
+origins = [
+    "http://localhost:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins, # Usa la lista específica
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"], # Permite todos los métodos
+    allow_headers=["*"], # Permite todas las cabeceras
 )
-
-# --- NUEVO ENDPOINT DE PRUEBA "HOLA MUNDO" ---
-@app.get("/hello")
-def hello_world():
-    print("--- ¡La petición a /hello llegó y fue procesada! ---")
-    return {"message": "El backend responde correctamente"}
-# ---------------------------------------------
 
 @app.get("/")
 def read_root():
     return {"message": "API de Servicio Técnico Pro funcionando."}
+
+# Este endpoint de prueba es útil para verificar la conexión básica
+@app.get("/hello")
+def hello_world():
+    print("--- ¡La petición a /hello llegó y fue procesada! ---")
+    return {"message": "El backend responde correctamente"}
 
 app.include_router(api_router, prefix="/api/v1")
