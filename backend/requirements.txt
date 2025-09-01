@@ -17,4 +17,4 @@ SQLAlchemy
 python-dotenv
 psycopg2-binary
 python-multipart
-UserInDB
+passlib
