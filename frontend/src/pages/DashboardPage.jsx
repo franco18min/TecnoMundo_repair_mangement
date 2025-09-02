@@ -1,68 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Sidebar } from '../components/layout/Sidebar';
-import { OrderCard } from '../components/OrderCard'; // Importamos la nueva tarjeta
-import { fetchRepairOrders } from '../api/repairOrdersApi';
+// frontend/src/pages/DashboardPage.jsx
+
+import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
+
+import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
+import { DashboardHome } from '../components/DashboardHome';
+import { OrdersPage } from '../components/OrdersPage';
+import { NewOrderModal } from '../components/NewOrderModal';
 
 export function DashboardPage({ onLogout }) {
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activePage, setActivePage] = useState('dashboard');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedOrders = await fetchRepairOrders();
-        setOrders(fetchedOrders);
-      } catch (error) {
-        console.error("Error al cargar las órdenes:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadOrders();
-  }, []);
+  // Función para renderizar la página activa
+  const renderPage = () => {
+    switch (activePage) {
+      case 'orders':
+        return <OrdersPage onNewOrderClick={() => setIsModalOpen(true)} />;
+      case 'clients':
+        // Aquí iría el componente de Clientes cuando lo creemos
+        return <h1 className="text-3xl font-bold">Página de Clientes (en construcción)</h1>;
+      case 'history':
+         // Aquí iría el componente de Historial
+        return <h1 className="text-3xl font-bold">Página de Historial (en construcción)</h1>;
+      case 'settings':
+         // Aquí iría el componente de Configuración
+        return <h1 className="text-3xl font-bold">Página de Configuración (en construcción)</h1>;
+      case 'dashboard':
+      default:
+        return <DashboardHome onNewOrderClick={() => setIsModalOpen(true)} />;
+    }
+  };
 
   return (
     <div className="flex bg-gray-50 min-h-screen font-sans">
-      <Sidebar onLogout={onLogout} />
-      <main className="flex-1 p-8 overflow-y-auto">
-        <motion.h1
-          className="text-3xl font-bold text-gray-800"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          Órdenes Recientes
-        </motion.h1>
-        <motion.p
-          className="text-gray-500 mt-1 mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          Hola Admin, bienvenido de nuevo.
-        </motion.p>
+      <Sidebar onLogout={onLogout}>
+        <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" active={activePage === 'dashboard'} onClick={() => setActivePage('dashboard')} />
+        <SidebarItem icon={<Wrench size={20} />} text="Órdenes" alert active={activePage === 'orders'} onClick={() => setActivePage('orders')} />
+        <SidebarItem icon={<Users size={20} />} text="Clientes" active={activePage === 'clients'} onClick={() => setActivePage('clients')} />
+        <SidebarItem icon={<History size={20} />} text="Historial" active={activePage === 'history'} onClick={() => setActivePage('history')} />
+        <hr className="my-3 border-gray-200" />
+        <SidebarItem icon={<Settings size={20} />} text="Configuración" active={activePage === 'settings'} onClick={() => setActivePage('settings')} />
+      </Sidebar>
 
-        {isLoading ? (
-          <p>Cargando órdenes...</p>
-        ) : (
+      <main className="flex-1 p-8 overflow-y-auto">
+        <AnimatePresence mode="wait">
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={{
-              hidden: { opacity: 0 },
-              show: {
-                opacity: 1,
-                transition: { staggerChildren: 0.1 }
-              }
-            }}
-            initial="hidden"
-            animate="show"
+            key={activePage}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
           >
-            {orders.map(order => <OrderCard key={order.id} order={order} />)}
+            {renderPage()}
           </motion.div>
-        )}
+        </AnimatePresence>
       </main>
+
+      <AnimatePresence>
+        {isModalOpen && <NewOrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
+      </AnimatePresence>
     </div>
   );
 }

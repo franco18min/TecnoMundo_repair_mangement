@@ -1,28 +1,38 @@
-import React, { useState } from 'react';
+// frontend/src/App.jsx
+
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 
-// Este es el componente principal que decide qué página mostrar.
 function App() {
-  // Estado para simular si el usuario ha iniciado sesión.
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Función para simular el inicio de sesión.
-  // En un futuro, aquí llamarías a tu API de autenticación.
+  // Verificar si hay un token en localStorage al cargar la app
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+    setIsLoading(false);
+  }, []);
+
   const handleLogin = () => {
-    console.log("Simulando inicio de sesión...");
     setIsLoggedIn(true);
   };
 
-  // Función para simular el cierre de sesión.
   const handleLogout = () => {
-    console.log("Simulando cierre de sesión...");
+    localStorage.removeItem('accessToken');
     setIsLoggedIn(false);
   };
 
+  // No renderizar nada hasta que se verifique el token
+  if (isLoading) {
+    return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><p>Cargando...</p></div>;
+  }
+
   return (
-    // AnimatePresence hace que la transición entre páginas sea suave.
     <AnimatePresence mode="wait">
       {isLoggedIn ? (
         <DashboardPage key="dashboard" onLogout={handleLogout} />

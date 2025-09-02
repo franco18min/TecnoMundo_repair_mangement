@@ -1,10 +1,50 @@
+// frontend/src/components/layout/Sidebar.jsx
+
 import React, { useState, createContext, useContext } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronsLeft, ChevronsRight, LayoutDashboard, Wrench, Users, History, Settings, LogOut } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react';
 
 const SidebarContext = createContext();
 
-function SidebarItem({ icon, text, active, alert, onClick }) {
+export function Sidebar({ onLogout, children }) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <aside className="h-screen sticky top-0">
+      <nav className="h-full flex flex-col bg-white border-r border-gray-200 shadow-sm">
+        <div className="p-4 pb-2 flex justify-between items-center">
+          <motion.h1
+            className={`overflow-hidden font-bold text-2xl ${expanded ? "w-32" : "w-0"}`}
+            initial={false}
+            animate={{ opacity: expanded ? 1 : 0, x: expanded ? 0 : -20 }}
+          >
+            TecnoMundo
+          </motion.h1>
+          <button onClick={() => setExpanded(curr => !curr)} className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">
+            {expanded ? <ChevronsLeft /> : <ChevronsRight />}
+          </button>
+        </div>
+
+        <SidebarContext.Provider value={{ expanded }}>
+          <ul className="flex-1 px-3">{children}</ul>
+        </SidebarContext.Provider>
+
+        <div className="border-t border-gray-200 flex p-3">
+          <img src="https://ui-avatars.com/api/?background=6366f1&color=fff&name=Admin" alt="Avatar" className="w-10 h-10 rounded-md" />
+          <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}`}>
+            <div className="leading-4">
+              <h4 className="font-semibold text-gray-800">Admin</h4>
+              <span className="text-xs text-gray-500">admin@tecnomundo.com</span>
+            </div>
+            <LogOut size={20} className="text-gray-500 hover:text-red-500 cursor-pointer" onClick={onLogout} />
+          </div>
+        </div>
+      </nav>
+    </aside>
+  );
+}
+
+export function SidebarItem({ icon, text, active, alert, onClick }) {
   const { expanded } = useContext(SidebarContext);
   return (
     <li
@@ -25,50 +65,5 @@ function SidebarItem({ icon, text, active, alert, onClick }) {
         </div>
       )}
     </li>
-  );
-}
-
-export function Sidebar({ onLogout }) {
-  const [expanded, setExpanded] = useState(true);
-
-  return (
-    <aside className="h-screen">
-      <nav className="h-full flex flex-col bg-white border-r border-gray-200 shadow-sm">
-        <div className="p-4 pb-2 flex justify-between items-center">
-          <motion.h1
-            className={`overflow-hidden font-bold text-2xl ${expanded ? "w-32" : "w-0"}`}
-            initial={false}
-            animate={{ opacity: expanded ? 1 : 0, x: expanded ? 0 : -20 }}
-          >
-            TecnoMundo
-          </motion.h1>
-          <button onClick={() => setExpanded(curr => !curr)} className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">
-            {expanded ? <ChevronsLeft /> : <ChevronsRight />}
-          </button>
-        </div>
-
-        <SidebarContext.Provider value={{ expanded }}>
-          <ul className="flex-1 px-3">
-            <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" active />
-            <SidebarItem icon={<Wrench size={20} />} text="Órdenes" alert />
-            <SidebarItem icon={<Users size={20} />} text="Clientes" />
-            <SidebarItem icon={<History size={20} />} text="Historial" />
-            <hr className="my-3 border-gray-200" />
-            <SidebarItem icon={<Settings size={20} />} text="Configuración" />
-          </ul>
-        </SidebarContext.Provider>
-
-        <div className="border-t border-gray-200 flex p-3">
-          <img src="https://ui-avatars.com/api/?background=6366f1&color=fff&name=Admin" alt="Avatar" className="w-10 h-10 rounded-md" />
-          <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}`}>
-            <div className="leading-4">
-              <h4 className="font-semibold text-gray-800">Admin</h4>
-              <span className="text-xs text-gray-500">admin@tecnomundo.com</span>
-            </div>
-            <LogOut size={20} className="text-gray-500 hover:text-red-500 cursor-pointer" onClick={onLogout} />
-          </div>
-        </div>
-      </nav>
-    </aside>
   );
 }

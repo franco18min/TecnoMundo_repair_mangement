@@ -9,13 +9,11 @@ from app.models.roles import Role
 from app.models.customer import Customer
 from app.models.repair_order import RepairOrder
 from app.models.status_order import StatusOrder
+from app.models.device_type import DeviceType # ¡Importa el nuevo modelo!
 
 def init_db():
     """
     Esta función está desactivada.
     No se crearán tablas automáticamente. La aplicación asumirá que ya existen.
     """
-    # print("--- Creando todas las tablas en la base de datos... ---")
-    # Base.metadata.create_all(bind=engine)
-    # print("--- Tablas creadas correctamente. ---")
     pass
