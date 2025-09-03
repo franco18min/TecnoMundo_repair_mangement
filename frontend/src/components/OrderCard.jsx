@@ -6,7 +6,6 @@ import { Wrench, CheckCircle, AlertTriangle, Clock, Archive, Truck, XCircle } fr
 
 export function OrderCard({ order }) {
   const statusStyles = useMemo(() => ({
-    // Mapeamos desde el 'status_name' de la BD al texto y estilo en español
     'Pending': {
       text: 'Pendiente',
       badge: 'bg-red-100 text-red-800 border-red-200',
@@ -50,7 +49,7 @@ export function OrderCard({ order }) {
       border: 'border-t-gray-400',
       icon: <XCircle size={16} className="text-gray-600" />
     },
-    'Default': { // Un estado por defecto por si algo falla
+    'Default': {
       text: order.status,
       badge: 'bg-gray-100 text-gray-800 border-gray-200',
       border: 'border-t-gray-400',
@@ -58,14 +57,15 @@ export function OrderCard({ order }) {
     }
   }), [order.status]);
 
-  // Usamos el status_name de la API (en inglés) para encontrar el estilo correcto
   const currentStatus = statusStyles[order.status] || statusStyles['Default'];
-
   const deviceName = `${order.device.type} ${order.device.model}`;
 
   return (
     <motion.div
-      className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-xl hover:border-gray-300 transition-all duration-300 overflow-hidden border-t-4 ${currentStatus.border}`}
+      // --- INICIO DE LA CORRECCIÓN ---
+      // Se eliminó "hover:border-gray-300" para que el borde superior de color se mantenga durante la animación.
+      className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 ${currentStatus.border}`}
+      // --- FIN DE LA CORRECCIÓN ---
       whileHover={{ y: -8, scale: 1.03 }}
       variants={{ hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -73,13 +73,12 @@ export function OrderCard({ order }) {
       <div className="p-5">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <p className="text-sm font-bold text-indigo-600">{order.id}</p>
+            <p className="text-sm font-bold text-indigo-600">#{order.id}</p>
             <h3 className="text-lg font-semibold text-gray-800">{deviceName}</h3>
             <p className="text-sm text-gray-500">{order.customer.name}</p>
           </div>
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ${currentStatus.badge}`}>
             {currentStatus.icon}
-            {/* Mostramos el texto en español */}
             <span>{currentStatus.text}</span>
           </div>
         </div>
