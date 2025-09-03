@@ -2,44 +2,53 @@
 
 from pydantic import BaseModel, Field
 from datetime import datetime
-from .customer import Customer, CustomerCreate
+from typing import List, Optional
+
+from .customer import Customer, CustomerCreate  # Asegúrate de tener CustomerCreate
 from .user import User
 from .status_order import StatusOrder
 from .device_type import DeviceType
-from .device_condition import DeviceConditionCreate, DeviceCondition
+from .device_condition import DeviceCondition, DeviceConditionCreate  # Asegúrate de tener DeviceConditionCreate
 
 
+# Esquema para la respuesta de una orden de reparación (lectura)
 class RepairOrder(BaseModel):
     id: int
-    device_model: str | None
+    device_model: Optional[str] = None
     created_at: datetime
-    parts_used: str | None
-
-    device_type: DeviceType | None
     customer: Customer
-    technician: User | None
-    status: StatusOrder | None
-    device_conditions: list[DeviceCondition] = []  # Para poder ver el checklist al obtener una orden
+    technician: Optional[User] = None
+    status: Optional[StatusOrder] = None
+    device_type: Optional[DeviceType] = None
 
     class Config:
         from_attributes = True
 
 
+# Esquema para la creación de una orden de reparación (escritura)
 class RepairOrderCreate(BaseModel):
-    customer: CustomerCreate | None = None
-    customer_id: int | None = None
-    device_type_id: int
-    device_model: str
-    serial_number: str | None = None
-    problem_description: str
-    accesories: str | None = None
-    observations: str | None = None
-    parts_used: str | None = None
-    total_cost: float = Field(default=0.0)
-    deposit: float = Field(default=0.0)
-    balance: float = Field(default=0.0)
-    password_or_pattern: str | None = None
+    # --- CAMBIO AQUÍ ---
+    # Añadimos el campo que vendrá desde el frontend
     is_spare_part_ordered: bool = False
 
-    # --- CAMPO AÑADIDO PARA EL CHECKLIST ---
-    checklist: list[DeviceConditionCreate] | None = []
+    # Datos del cliente (puede ser ID o un objeto para crear uno nuevo)
+    customer_id: Optional[int] = None
+    customer: Optional[CustomerCreate] = None
+
+    # Datos del dispositivo
+    device_type_id: int
+    device_model: str
+    serial_number: Optional[str] = None
+    accesories: Optional[str] = None
+    problem_description: str
+    password_or_pattern: Optional[str] = None
+    observations: Optional[str] = None
+
+    # Datos financieros
+    deposit: Optional[float] = 0.0
+
+    # Checklist
+    checklist: List[DeviceConditionCreate] = []
+
+    class Config:
+        from_attributes = True

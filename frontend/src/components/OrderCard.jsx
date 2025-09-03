@@ -1,15 +1,20 @@
+// frontend/src/components/OrderCard.jsx
+
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Wrench, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Wrench, CheckCircle, AlertTriangle, Clock, Archive, Truck, XCircle } from 'lucide-react';
 
 export function OrderCard({ order }) {
   const statusStyles = useMemo(() => ({
-    'Pendiente': {
+    // Mapeamos desde el 'status_name' de la BD al texto y estilo en español
+    'Pending': {
+      text: 'Pendiente',
       badge: 'bg-red-100 text-red-800 border-red-200',
       border: 'border-t-red-400',
       icon: <AlertTriangle size={16} className="text-red-600" />
     },
-    'En Progreso': {
+    'In Process': {
+      text: 'En Proceso',
       badge: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       border: 'border-t-yellow-400',
       icon: (
@@ -21,25 +26,41 @@ export function OrderCard({ order }) {
         </motion.div>
       )
     },
-    'En Espera de Pieza': {
+    'Waiting for parts': {
+      text: 'Esperando Repuesto',
       badge: 'bg-blue-100 text-blue-800 border-blue-200',
       border: 'border-t-blue-400',
       icon: <Clock size={16} className="text-blue-600" />
     },
-    'Completado': {
+    'Completed': {
+      text: 'Completado',
       badge: 'bg-green-100 text-green-800 border-green-200',
       border: 'border-t-green-400',
       icon: <CheckCircle size={16} className="text-green-600" />
     },
-  }), []);
+    'Delivered': {
+      text: 'Entregado',
+      badge: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+      border: 'border-t-indigo-400',
+      icon: <Truck size={16} className="text-indigo-600" />
+    },
+    'Cancelled': {
+      text: 'Cancelado',
+      badge: 'bg-gray-200 text-gray-800 border-gray-300',
+      border: 'border-t-gray-400',
+      icon: <XCircle size={16} className="text-gray-600" />
+    },
+    'Default': { // Un estado por defecto por si algo falla
+      text: order.status,
+      badge: 'bg-gray-100 text-gray-800 border-gray-200',
+      border: 'border-t-gray-400',
+      icon: <Archive size={16} className="text-gray-600" />
+    }
+  }), [order.status]);
 
-  const currentStatus = statusStyles[order.status] || {
-    badge: 'bg-gray-100 text-gray-800 border-gray-200',
-    border: 'border-t-gray-400',
-    icon: null
-  };
+  // Usamos el status_name de la API (en inglés) para encontrar el estilo correcto
+  const currentStatus = statusStyles[order.status] || statusStyles['Default'];
 
-  // Adaptamos los datos de la API a la tarjeta
   const deviceName = `${order.device.type} ${order.device.model}`;
 
   return (
@@ -58,7 +79,8 @@ export function OrderCard({ order }) {
           </div>
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ${currentStatus.badge}`}>
             {currentStatus.icon}
-            <span>{order.status}</span>
+            {/* Mostramos el texto en español */}
+            <span>{currentStatus.text}</span>
           </div>
         </div>
         <div className="border-t border-gray-100 pt-3 flex justify-between items-center text-sm text-gray-500">

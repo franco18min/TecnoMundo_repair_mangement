@@ -200,6 +200,9 @@ export function NewOrderModal({ isOpen, onClose }) {
         if (hasPassword && formData.password_text) unlock_info.push(`PASS:${formData.password_text}`);
         if (hasPattern && pattern.length > 0) unlock_info.push(`PATTERN:${pattern.join('-')}`);
 
+        // --- INICIO DE LA CORRECCIÓN ---
+        // La lógica ahora depende únicamente del estado del botón 'sparePartStatus'.
+        // Si es 'pedido', se enviará true. Si es 'local', se enviará false.
         const payload = {
             customer: clientType === 'nuevo' ? { first_name: formData.first_name, last_name: formData.last_name, phone_number: formData.phone_number, dni: formData.dni } : null,
             customer_id: clientType === 'registrado' ? selectedClientId : null,
@@ -214,13 +217,14 @@ export function NewOrderModal({ isOpen, onClose }) {
             deposit: parseFloat(deposit) || 0,
             balance: balance,
             password_or_pattern: unlock_info.join('; ') || null,
-            is_spare_part_ordered: formData.parts_used.trim() !== '' && sparePartStatus === 'pedido',
+            is_spare_part_ordered: sparePartStatus === 'pedido', // <-- ¡AQUÍ ESTÁ EL CAMBIO!
             checklist: checklistItems.filter(item => item.client_answer !== null),
         };
+        // --- FIN DE LA CORRECCIÓN ---
 
         try {
             await createRepairOrder(payload);
-            onClose(true);
+            onClose(true); // Pasamos true para indicar que se creó exitosamente y refrescar la lista
         } catch (err) {
             setError(err.message || 'No se pudo crear la orden.');
         }
@@ -236,6 +240,7 @@ export function NewOrderModal({ isOpen, onClose }) {
                     <button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
                 </div>
                 <form id="new-order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
+                    {/* ... El resto del JSX del formulario se mantiene igual ... */}
                     <section>
                         <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Datos del Cliente</h3>
                         <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
