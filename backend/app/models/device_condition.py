@@ -11,14 +11,12 @@ class DeviceCondition(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     check_description = Column(String, nullable=False)
+
+    # --- INICIO DE LA CORRECCIÓN ---
     client_answer = Column(Boolean)
-    technician_finding = Column(String)
+    technician_finding = Column(Boolean)  # Aseguramos que esta columna sea de tipo Boolean
+    # --- FIN DE LA CORRECCIÓN ---
+
     technician_notes = Column(String)
-
-    # Esta es la columna CORRECTA y NECESARIA.
-    # Es la clave foránea que conecta cada 'condition' a su 'order'.
     order_id = Column(Integer, ForeignKey("customer.repair_order.id"), nullable=False)
-
-    # Esta es la relación de "vuelta" que SQLAlchemy necesita para resolver el error.
-    # Se llama 'order' y se vincula con 'device_conditions' en el modelo RepairOrder.
     order = relationship("RepairOrder", back_populates="device_conditions")

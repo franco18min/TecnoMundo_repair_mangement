@@ -6,7 +6,7 @@ import { PlusCircle } from 'lucide-react';
 import { OrderCard } from './OrderCard';
 import { fetchRepairOrders } from '../api/repairOrdersApi';
 
-export function DashboardHome({ onNewOrderClick }) {
+export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,7 +61,13 @@ export function DashboardHome({ onNewOrderClick }) {
           initial="hidden"
           animate="show"
         >
-          {orders.map(order => <OrderCard key={order.id} order={order} />)}
+          {orders.map(order =>
+            <OrderCard
+              key={order.id}
+              order={order}
+              onClick={() => onViewOrderClick(order.id)}
+            />
+          )}
         </motion.div>
       )}
     </>

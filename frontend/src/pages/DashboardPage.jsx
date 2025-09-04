@@ -3,33 +3,39 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
-
 import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
 import { DashboardHome } from '../components/DashboardHome';
 import { OrdersPage } from '../components/OrdersPage';
-import { NewOrderModal } from '../components/NewOrderModal';
+import { OrderModal } from '../components/OrderModal';
+import { useAuth } from '../context/AuthContext';
 
 export function DashboardPage({ onLogout }) {
   const [activePage, setActivePage] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const { currentUser } = useAuth();
 
-  // Función para renderizar la página activa
+  const handleOpenModal = (orderId = null) => {
+    setSelectedOrderId(orderId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = (refresh = false) => {
+    setIsModalOpen(false);
+    setSelectedOrderId(null);
+    if (refresh) {
+      const currentPage = activePage;
+      setActivePage('');
+      setTimeout(() => setActivePage(currentPage), 0);
+    }
+  };
+
   const renderPage = () => {
     switch (activePage) {
       case 'orders':
-        return <OrdersPage onNewOrderClick={() => setIsModalOpen(true)} />;
-      case 'clients':
-        // Aquí iría el componente de Clientes cuando lo creemos
-        return <h1 className="text-3xl font-bold">Página de Clientes (en construcción)</h1>;
-      case 'history':
-         // Aquí iría el componente de Historial
-        return <h1 className="text-3xl font-bold">Página de Historial (en construcción)</h1>;
-      case 'settings':
-         // Aquí iría el componente de Configuración
-        return <h1 className="text-3xl font-bold">Página de Configuración (en construcción)</h1>;
-      case 'dashboard':
+        return <OrdersPage onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
       default:
-        return <DashboardHome onNewOrderClick={() => setIsModalOpen(true)} />;
+        return <DashboardHome onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
     }
   };
 
@@ -45,21 +51,18 @@ export function DashboardPage({ onLogout }) {
       </Sidebar>
 
       <main className="flex-1 p-8 overflow-y-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activePage}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderPage()}
-          </motion.div>
-        </AnimatePresence>
+        {renderPage()}
       </main>
 
       <AnimatePresence>
-        {isModalOpen && <NewOrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
+        {isModalOpen && currentUser && ( // Aseguramos que currentUser no sea nulo
+          <OrderModal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            orderId={selectedOrderId}
+            currentUser={currentUser}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

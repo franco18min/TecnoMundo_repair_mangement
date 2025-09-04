@@ -1,9 +1,12 @@
+// frontend/src/pages/LoginPage.jsx
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, KeyRound, Fingerprint } from 'lucide-react';
-import { loginUser } from '../api/authApi';
+import { User, KeyRound, Fingerprint, Loader } from 'lucide-react';
+import { useAuth } from '../context/AuthContext'; // 1. IMPORTAMOS EL HOOK DE AUTENTICACIÓN
 
-export function LoginPage({ onLogin }) {
+export function LoginPage() {
+  const { login } = useAuth(); // 2. USAMOS LA FUNCIÓN 'login' DEL CONTEXTO
   const [loginType, setLoginType] = useState('user');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +16,6 @@ export function LoginPage({ onLogin }) {
   const activeTabClasses = "bg-indigo-600 text-white";
   const inactiveTabClasses = "text-gray-600 hover:bg-gray-200 hover:text-gray-800";
 
-  // Esta función ahora es más robusta para garantizar que el estado se actualice.
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -26,15 +28,13 @@ export function LoginPage({ onLogin }) {
     setIsLoading(true);
 
     try {
-      await loginUser(username, password);
-      onLogin(); // Llama a la función de App.jsx para cambiar de página
+      // 3. LLAMAMOS A LA FUNCIÓN DE LOGIN DEL CONTEXTO
+      // Ya no necesitamos onLogin() porque el contexto manejará el cambio de estado.
+      await login(username, password);
     } catch (err) {
       console.error("Error de inicio de sesión:", err);
-      // Nos aseguramos de que el mensaje de error se muestre
       setError(err.message || 'No se pudo iniciar sesión. Verifica tus credenciales.');
     } finally {
-      // Este bloque es CRUCIAL. Se ejecuta siempre, sin importar si hubo éxito o error.
-      // Garantiza que la aplicación nunca se quede "colgada".
       setIsLoading(false);
     }
   };
@@ -50,7 +50,6 @@ export function LoginPage({ onLogin }) {
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">Bienvenido</h2>
         <p className="text-center text-gray-500 mb-6">Inicia sesión para continuar</p>
 
-        {/* Mensaje de error */}
         {error && <p className="text-red-500 text-center text-sm mb-4 animate-pulse">{error}</p>}
 
         <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
@@ -87,6 +86,7 @@ export function LoginPage({ onLogin }) {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                    required
                   />
                 </div>
                 <div className="relative mb-6">
@@ -97,6 +97,7 @@ export function LoginPage({ onLogin }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                    required
                   />
                 </div>
               </>
@@ -109,11 +110,11 @@ export function LoginPage({ onLogin }) {
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-indigo-500 disabled:bg-indigo-400"
+              className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-indigo-500 disabled:bg-indigo-400 flex items-center justify-center"
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.98 }}
             >
-              {isLoading ? 'Ingresando...' : 'Ingresar'}
+              {isLoading ? <Loader size={20} className="animate-spin" /> : 'Ingresar'}
             </motion.button>
           </motion.form>
         </AnimatePresence>

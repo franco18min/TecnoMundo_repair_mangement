@@ -1,11 +1,8 @@
 // frontend/src/components/OrdersPage.jsx
 
-// --- INICIO DE LA CORRECCIÓN ---
-// Se combinaron las dos importaciones de 'react' en una sola línea correcta.
 import React, { useState, useMemo, useEffect } from 'react';
-// --- FIN DE LA CORRECCIÓN ---
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Edit, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive } from 'lucide-react';
+import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye } from 'lucide-react';
 import { fetchRepairOrders } from '../api/repairOrdersApi';
 
 // Objeto de Estilos y Traducciones Centralizado
@@ -50,7 +47,7 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
     </div>
 );
 
-export function OrdersPage({ onNewOrderClick }) {
+export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const initialFilters = {
@@ -89,6 +86,7 @@ export function OrdersPage({ onNewOrderClick }) {
         }));
         return [{ value: 'Todos', text: 'Todos' }, ...options];
     }, [orders]);
+
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
@@ -181,8 +179,16 @@ export function OrdersPage({ onNewOrderClick }) {
                   <td className="p-4 text-sm text-gray-600">{order.assignedTechnician.name}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
-                        <button className="text-gray-500 hover:text-indigo-600"><Edit size={18} /></button>
-                        <button className="text-gray-500 hover:text-red-600"><Trash2 size={18} /></button>
+                        <button
+                            onClick={() => onViewOrderClick(order.id)}
+                            className="text-gray-500 hover:text-indigo-600"
+                            title="Ver / Editar Orden"
+                        >
+                            <Eye size={18} />
+                        </button>
+                        <button className="text-gray-500 hover:text-red-600" title="Eliminar Orden">
+                            <Trash2 size={18} />
+                        </button>
                     </div>
                   </td>
                 </motion.tr>

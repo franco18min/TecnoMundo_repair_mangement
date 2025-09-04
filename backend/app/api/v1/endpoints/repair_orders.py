@@ -1,19 +1,19 @@
 # backend/app/api/v1/endpoints/repair_orders.py
 
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 import traceback
 
 from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
 from app.db.session import SessionLocal
-
-# El modelo User ya no es necesario aquí
-# from app.models.user import User
+# --- INICIO DE LA MODIFICACIÓN ---
+from app.models.user import User
+from app.api.v1.dependencies import get_current_user # Importamos la dependencia de seguridad
+# --- FIN DE LA MODIFICACIÓN ---
 
 router = APIRouter()
-
 
 def get_db():
     db = SessionLocal()
@@ -21,7 +21,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 @router.get("/", response_model=List[schemas_repair_order.RepairOrder])
 def read_repair_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -36,27 +35,56 @@ def read_repair_orders(skip: int = 0, limit: int = 100, db: Session = Depends(ge
             detail="Ocurrió un error en el servidor al consultar las órdenes."
         )
 
+@router.get("/{order_id}", response_model=schemas_repair_order.RepairOrder)
+def read_repair_order(order_id: int, db: Session = Depends(get_db)):
+    db_order = crud_repair_order.get_repair_order(db, order_id=order_id)
+    if db_order is None:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+    return db_order
 
-# --- ENDPOINT MODIFICADO ---
 @router.post("/", response_model=schemas_repair_order.RepairOrder)
 def create_new_repair_order(
         order: schemas_repair_order.RepairOrderCreate,
         db: Session = Depends(get_db)
 ):
-    print("\n✅ [DEBUG] Petición a /repair-orders (POST) recibida. Creando orden sin técnico asignado...")
-
+    print("\n✅ [DEBUG] Petición a /repair-orders (POST) recibida.")
     try:
-        # --- LÓGICA DE ASIGNACIÓN ELIMINADA ---
-        # Ahora llamamos a la función sin pasar un technician_id.
-        # Por defecto, será None.
         new_order = crud_repair_order.create_repair_order(db=db, order=order)
-
-        print(f"✨ [DEBUG] Orden creada exitosamente con ID: {new_order.id} sin técnico.")
+        print(f"✨ [DEBUG] Orden creada exitosamente con ID: {new_order.id}")
         return new_order
-
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         print("--- 🚨 ERROR AL CREAR LA ORDEN DE REPARACIÓN 🚨 ---")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error interno al crear la orden.")
+
+
+@router.patch("/{order_id}/take", response_model=schemas_repair_order.RepairOrder)
+def take_order(
+        order_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)  # Obtenemos el usuario del token
+):
+    # El ID del técnico es el del usuario autenticado
+    technician_id = current_user.id
+
+    updated_order = crud_repair_order.assign_technician_and_start_process(
+        db=db, order_id=order_id, technician_id=technician_id
+    )
+    if updated_order is None:
+        raise HTTPException(status_code=400, detail="La orden no se puede tomar (ya asignada o no está pendiente).")
+    return updated_order
+
+@router.put("/{order_id}", response_model=schemas_repair_order.RepairOrder)
+def update_order(
+    order_id: int,
+    order_update: schemas_repair_order.RepairOrderUpdate,
+    db: Session = Depends(get_db)
+):
+    updated_order = crud_repair_order.update_repair_order(
+        db=db, order_id=order_id, order_update=order_update
+    )
+    if updated_order is None:
+        raise HTTPException(status_code=404, detail="Orden no encontrada para actualizar.")
+    return updated_order
