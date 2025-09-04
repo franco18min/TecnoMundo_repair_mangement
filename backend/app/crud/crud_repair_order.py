@@ -114,8 +114,7 @@ def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpd
                 for key, value in item_data.items():
                     setattr(condition_to_update, key, value)
 
-    # Lógica para marcar la orden como completada
-    db_order.status_id = 3  # 3 = Completed
+    db_order.status_id = 3
     db_order.completed_at = func.now()
 
     db.commit()
@@ -131,7 +130,10 @@ def assign_technician_and_start_process(db: Session, order_id: int, technician_i
     if not db_order:
         return None
 
-    if db_order.technician_id is None and db_order.status_id == 1:
+    # --- INICIO DE LA MODIFICACIÓN ---
+    # Permite tomar la orden si el estado es 1 (Pendiente) o 6 (Esperando repuesto).
+    if db_order.technician_id is None and db_order.status_id in [1, 6]:
+        # --- FIN DE LA MODIFICACIÓN ---
         db_order.technician_id = technician_id
         db_order.status_id = 2  # 2 = In Process
         db.commit()

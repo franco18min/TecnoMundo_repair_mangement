@@ -55,7 +55,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [fullOrderData, setFullOrderData] = useState(null);
     const [checklistItems, setChecklistItems] = useState([]);
 
-    const [mode, setMode] = useState('create');
+    const [mode, setMode] = useState(orderId ? 'view' : 'create');
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -69,13 +69,36 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [selectedClientId, setSelectedClientId] = useState(null);
     const [sparePartStatus, setSparePartStatus] = useState('local');
 
-    const isReadOnly = useMemo(() => mode === 'view' && currentUser.role?.role_name === 'Receptionist', [mode, currentUser]);
-    const isTechEditMode = useMemo(() => mode === 'view' && currentUser.role?.role_name === 'Technical', [mode, currentUser]);
+    // --- LÓGICA DE ROLES Y PERMISOS MEJORADA ---
+    const userRole = currentUser.role?.role_name;
+    const isReceptionist = userRole === 'Receptionist';
+    const isTechnician = userRole === 'Technical';
 
+    const isMyOrder = useMemo(() =>
+        fullOrderData?.technician?.id === currentUser.id,
+        [fullOrderData, currentUser]
+    );
+
+    const canTakeOrder = useMemo(() => {
+        if (!isTechnician || mode !== 'view' || fullOrderData?.technician) return false;
+        const takeableStatuses = ['Pending', 'Waiting for parts'];
+        return takeableStatuses.includes(fullOrderData?.status?.status_name);
+    }, [isTechnician, mode, fullOrderData]);
+
+    const canUpdateOrder = useMemo(() =>
+        isTechnician && isMyOrder && fullOrderData?.status?.status_name === 'In Process',
+        [isTechnician, isMyOrder, fullOrderData]
+    );
+
+    const isReadOnlyView = useMemo(() =>
+        mode === 'view' && (isReceptionist || (isTechnician && !canUpdateOrder)),
+        [mode, isReceptionist, isTechnician, canUpdateOrder]
+    );
+
+    // --- EFECTOS ---
     useEffect(() => {
         const loadInitialData = async () => {
             if (!isOpen) return;
-
             setIsLoading(true);
             setError('');
             setFormData(initialFormData);
@@ -84,16 +107,13 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             setClientType('nuevo');
             setClientSearch('');
             setSelectedClientId(null);
-
+            setMode(orderId ? 'view' : 'create'); // Reset mode on open
             try {
                 const types = await fetchDeviceTypes();
                 setDeviceTypes(types);
-
                 if (orderId) {
-                    setMode('view');
                     const orderData = await fetchRepairOrderById(orderId);
                     setFullOrderData(orderData);
-
                     setFormData({
                         dni: orderData.customer.dni || '',
                         first_name: orderData.customer.first_name || '',
@@ -113,8 +133,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                         deposit: orderData.deposit || '',
                     });
                     setChecklistItems(orderData.device_conditions || []);
-                } else {
-                    setMode('create');
                 }
             } catch (err) {
                 setError("No se pudieron cargar los datos necesarios.");
@@ -138,6 +156,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         return () => clearTimeout(debounce);
     }, [clientSearch]);
 
+    // --- MANEJADORES ---
     const handleClientSelect = (client) => {
         setFormData(prev => ({ ...prev, first_name: client.first_name, last_name: client.last_name, phone_number: client.phone_number, dni: client.dni }));
         setSelectedClientId(client.id);
@@ -172,7 +191,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         setIsSubmitting(true);
         setError('');
         try {
-            await takeRepairOrder(orderId, currentUser.id);
+            await takeRepairOrder(orderId);
             onClose(true);
         } catch (err) {
             setError(err.message || "No se pudo tomar la orden.");
@@ -238,7 +257,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             } finally {
                  setIsSubmitting(false);
             }
-        } else if (isTechEditMode) {
+        } else if (canUpdateOrder) {
             setIsUpdateConfirmModalOpen(true);
         }
     };
@@ -250,20 +269,19 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <motion.div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
                     <div className="p-6 border-b flex justify-between items-center">
-                        <h2 className="text-2xl font-bold text-gray-800">
-                            {mode === 'create' ? 'Crear Nueva Orden' : `Detalles de la Orden #${orderId}`}
-                        </h2>
+                         <AnimatePresence mode="wait">
+                            <motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">
+                                {mode === 'create' ? 'Crear Nueva Orden' : `Detalles de la Orden #${orderId}`}
+                            </motion.h2>
+                        </AnimatePresence>
                         <button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
                     </div>
 
                     {isLoading ? (
-                        <div className="flex-1 flex justify-center items-center p-8">
-                            <Loader className="animate-spin text-indigo-600" size={48} />
-                        </div>
+                        <div className="flex-1 flex justify-center items-center p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>
                     ) : (
                         <>
                             <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
-
                                 <section>
                                     <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Datos del Cliente</h3>
                                     {mode === 'create' ? (
@@ -314,13 +332,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                             <div className="md:col-span-2"><TextAreaField label="Descripción del Problema" name="problem_description" value={formData.problem_description} onChange={handleFormChange} required /></div>
                                             <div className="md:col-span-2"><TextAreaField label="Observaciones" name="observations" value={formData.observations} onChange={handleFormChange} /></div>
                                             <div className="md:col-span-2"><FormField label="Contraseña / Patrón" name="password_or_pattern" value={formData.password_or_pattern} onChange={handleFormChange} /></div>
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Origen del Repuesto</label>
-                                                <div className="flex bg-gray-100 rounded-lg p-1 h-[42px]">
-                                                    <button type="button" onClick={() => setSparePartStatus('local')} className={`w-1/2 text-sm rounded-md font-semibold ${sparePartStatus === 'local' ? 'bg-indigo-600 text-white' : 'text-gray-600'}`}>En Stock</button>
-                                                    <button type="button" onClick={() => setSparePartStatus('pedido')} className={`w-1/2 text-sm rounded-md font-semibold ${sparePartStatus === 'pedido' ? 'bg-indigo-600 text-white' : 'text-gray-600'}`}>Para Pedir</button>
-                                                </div>
-                                            </div>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -331,15 +342,22 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                             <DisplayField label="Descripción del Problema" value={formData.problem_description} fullWidth={true} />
                                             <DisplayField label="Observaciones" value={formData.observations} fullWidth={true} />
                                             <DisplayField label="Contraseña / Patrón" value={formData.password_or_pattern} fullWidth={true} />
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-500 mb-1">Origen del Repuesto</label>
+                                                <div className="flex bg-gray-100/70 rounded-lg p-1 h-[42px] border border-gray-200">
+                                                    <div className={`w-1/2 text-sm rounded-md font-semibold flex items-center justify-center ${fullOrderData?.status?.status_name !== 'Waiting for parts' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>En Stock</div>
+                                                    <div className={`w-1/2 text-sm rounded-md font-semibold flex items-center justify-center ${fullOrderData?.status?.status_name === 'Waiting for parts' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>Para Pedir</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </section>
 
-                                {(isTechEditMode || (isReadOnly && fullOrderData?.technician_diagnosis)) && (
+                                {(isTechnician || (isReadOnlyView && fullOrderData?.technician_diagnosis)) && (
                                     <section>
                                         <h3 className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4">Diagnóstico Técnico</h3>
                                         <div className="space-y-4">
-                                            {isTechEditMode ? (
+                                            {canUpdateOrder ? (
                                                 <>
                                                     <TextAreaField label="Diagnóstico del Técnico" name="technician_diagnosis" value={formData.technician_diagnosis} onChange={handleFormChange} />
                                                     <TextAreaField label="Notas de Reparación" name="repair_notes" value={formData.repair_notes} onChange={handleFormChange} />
@@ -384,7 +402,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                                         )}
                                                     </div>
 
-                                                    {isTechEditMode && (
+                                                    {canUpdateOrder && (
                                                         <div className='flex items-center gap-2'>
                                                             <span className='text-sm font-semibold text-indigo-600 w-20'>Técnico:</span>
                                                             <button type="button" onClick={() => handleChecklistChange(index, 'technician_finding', true)} className={`p-1.5 rounded-full ${item.technician_finding === true ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-green-200'}`}><ThumbsUp size={16} /></button>
@@ -393,7 +411,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                                         </div>
                                                     )}
 
-                                                    {isReadOnly && item.technician_finding !== null && (
+                                                    {isReadOnlyView && item.technician_finding !== null && (
                                                          <div className='flex items-center gap-2'>
                                                             <span className='text-sm font-semibold text-indigo-600 w-20'>Técnico:</span>
                                                             {item.technician_finding === true ? <ThumbsUp size={18} className="text-green-500" /> : item.technician_finding === false ? <ThumbsDown size={18} className="text-red-500" /> : <span className="text-xs text-gray-400">Sin revisar</span>}
@@ -407,22 +425,28 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                 </section>
                             </form>
                             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3 mt-auto">
-                                {error && <p className="text-red-500 text-sm mr-auto self-center animate-pulse">{error}</p>}
+                                {error && <p className="text-red-500 text-sm mr-auto self-center">{error}</p>}
 
-                                {isTechEditMode && fullOrderData && !fullOrderData.technician && (
+                                {canTakeOrder && (
                                     <motion.button type="button" onClick={() => setIsTakeConfirmModalOpen(true)} disabled={isSubmitting} className="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                         {isSubmitting ? <Loader size={20} className="animate-spin" /> : 'Tomar Orden'}
                                     </motion.button>
                                 )}
 
-                                {(mode === 'create' || (isTechEditMode && fullOrderData?.technician)) && (
+                                {mode === 'create' && (
                                      <motion.button type="submit" form="order-form" disabled={isSubmitting} className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : (mode === 'create' ? 'Guardar Orden' : 'Actualizar Orden')}
+                                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : 'Guardar Orden'}
+                                    </motion.button>
+                                )}
+
+                                {canUpdateOrder && (
+                                     <motion.button type="submit" form="order-form" disabled={isSubmitting} className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : 'Actualizar Orden'}
                                     </motion.button>
                                 )}
 
                                 <motion.button type="button" onClick={() => onClose(false)} className="bg-gray-200 text-gray-800 font-semibold py-2 px-5 rounded-lg hover:bg-gray-300" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                    {isReadOnly ? 'Cerrar' : 'Cancelar'}
+                                    {isReadOnlyView ? 'Cerrar' : 'Cancelar'}
                                 </motion.button>
                             </div>
                         </>
@@ -443,9 +467,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 isOpen={isUpdateConfirmModalOpen}
                 onClose={() => setIsUpdateConfirmModalOpen(false)}
                 onConfirm={handleConfirmUpdate}
-                title="Finalizar Reparación"
-                message="¿Estás seguro de que quieres actualizar esta orden? Al hacerlo, la marcarás como 'Completada' y no podrás revertir esta acción."
-                confirmText="Sí, completar orden"
+                title="Actualizar Orden"
+                message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar."
+                confirmText="Sí, actualizar orden"
             />
         </>
     );
