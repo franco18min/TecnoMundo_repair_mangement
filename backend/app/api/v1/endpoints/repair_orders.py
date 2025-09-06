@@ -8,10 +8,8 @@ import traceback
 from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
 from app.db.session import SessionLocal
-# --- INICIO DE LA MODIFICACIÓN ---
 from app.models.user import User
-from app.api.v1.dependencies import get_current_user # Importamos la dependencia de seguridad
-# --- FIN DE LA MODIFICACIÓN ---
+from app.api.v1.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -64,11 +62,9 @@ def create_new_repair_order(
 def take_order(
         order_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)  # Obtenemos el usuario del token
+        current_user: User = Depends(get_current_user)
 ):
-    # El ID del técnico es el del usuario autenticado
     technician_id = current_user.id
-
     updated_order = crud_repair_order.assign_technician_and_start_process(
         db=db, order_id=order_id, technician_id=technician_id
     )

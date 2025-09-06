@@ -9,7 +9,7 @@ from .user import User
 from .status_order import StatusOrder
 from .device_type import DeviceType
 from .device_condition import DeviceCondition, DeviceConditionCreate, \
-    DeviceConditionUpdate  # Importamos el nuevo schema
+    DeviceConditionUpdate
 
 
 # Esquema para la respuesta de una orden de reparación (lectura)
@@ -17,8 +17,6 @@ class RepairOrder(BaseModel):
     id: int
     device_model: Optional[str] = None
     created_at: datetime
-    # --- CAMBIO ---
-    # Aseguramos que todos los campos anidados puedan ser leídos
     customer: Customer
     technician: Optional[User] = None
     status: Optional[StatusOrder] = None
@@ -51,7 +49,10 @@ class RepairOrderCreate(BaseModel):
     problem_description: str
     password_or_pattern: Optional[str] = None
     observations: Optional[str] = None
+    # --- INICIO DE LA MODIFICACIÓN ---
+    total_cost: Optional[float] = 0.0 # Añadimos el costo total
     deposit: Optional[float] = 0.0
+    # --- FIN DE LA MODIFICACIÓN ---
     checklist: List[DeviceConditionCreate] = []
 
     class Config:
@@ -60,15 +61,10 @@ class RepairOrderCreate(BaseModel):
 
 # --- NUEVO SCHEMA PARA ACTUALIZACIÓN ---
 class RepairOrderUpdate(BaseModel):
-    # Campos que el técnico puede modificar
     technician_diagnosis: Optional[str] = None
     repair_notes: Optional[str] = None
     parts_used: Optional[str] = None
     total_cost: Optional[float] = None
     deposit: Optional[float] = None
-
-    # El status se manejará con endpoints específicos, pero lo dejamos por si se necesita
     status_id: Optional[int] = None
-
-    # El checklist también se actualiza
     checklist: Optional[List[DeviceConditionUpdate]] = None
