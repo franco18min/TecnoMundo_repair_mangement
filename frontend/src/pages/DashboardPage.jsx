@@ -1,12 +1,12 @@
 // frontend/src/pages/DashboardPage.jsx
 
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
 import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
 import { DashboardHome } from '../components/DashboardHome';
 import { OrdersPage } from '../components/OrdersPage';
-import { OrderModal } from '../components/OrderModal';
+import { OrderModal } from '../components/OrderModal/OrderModal'; // <-- RUTA DE IMPORTACIÓN CORREGIDA
 import { useAuth } from '../context/AuthContext';
 
 export function DashboardPage({ onLogout }) {
@@ -24,6 +24,7 @@ export function DashboardPage({ onLogout }) {
     setIsModalOpen(false);
     setSelectedOrderId(null);
     if (refresh) {
+      // Truco para forzar el re-renderizado de la página activa
       const currentPage = activePage;
       setActivePage('');
       setTimeout(() => setActivePage(currentPage), 0);
@@ -55,12 +56,12 @@ export function DashboardPage({ onLogout }) {
       </main>
 
       <AnimatePresence>
-        {isModalOpen && currentUser && ( // Aseguramos que currentUser no sea nulo
+        {isModalOpen && currentUser && (
           <OrderModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             orderId={selectedOrderId}
-            currentUser={currentUser}
+            currentUser={currentUser} // Pasamos currentUser para el hook de permisos
           />
         )}
       </AnimatePresence>
