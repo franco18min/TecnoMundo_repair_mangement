@@ -2,13 +2,22 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Loader } from 'lucide-react';
 
-export function ModalFooter({ mode, permissions, onClose, isSubmitting, error }) {
+export function ModalFooter({ mode, permissions, onClose, isSubmitting, error, setIsTakeConfirmModalOpen }) {
     return (
         <div className="p-6 border-t bg-gray-50 flex justify-end gap-3 mt-auto">
             {error && <p className="text-red-500 text-sm mr-auto self-center">{error}</p>}
 
             {permissions.canTakeOrder && (
-                <motion.button type="button" form="take-order-form" disabled={isSubmitting} className="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.button
+                    type="button"
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    onClick={() => setIsTakeConfirmModalOpen(true)}
+                    // --- FIN DE LA CORRECCIÓN ---
+                    disabled={isSubmitting}
+                    className="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-300 flex items-center justify-center"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
                     {isSubmitting ? <Loader size={20} className="animate-spin" /> : 'Tomar Orden'}
                 </motion.button>
             )}

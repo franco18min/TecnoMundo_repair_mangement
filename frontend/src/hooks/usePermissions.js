@@ -12,20 +12,24 @@ export const usePermissions = (mode, order = null) => {
         const isReceptionist = role === 'Receptionist';
         const isTechnician = role === 'Technical';
 
-        // Lógica para el modo CREACIÓN
+        const canCreateOrders = isAdmin || isReceptionist;
+        const canEditCosts = isAdmin || isReceptionist;
+        // --- INICIO DE LA MODIFICACIÓN ---
+        const canEditPartsUsed = isAdmin; // Solo el admin puede editar este campo
+
         if (mode === 'create') {
-            const canCreate = isAdmin || isReceptionist;
             return {
-                canCreateOrder: canCreate,
-                canEditInitialDetails: canCreate,
-                canEditDiagnosisPanel: false, // No se puede diagnosticar al crear
-                isReadOnly: !canCreate,
+                canCreateOrder: canCreateOrders,
+                canEditInitialDetails: canCreateOrders,
+                canEditCosts: canCreateOrders,
+                canEditDiagnosisPanel: false,
+                canEditPartsUsed: canEditPartsUsed, // Aplicamos el permiso en creación
+                isReadOnly: !canCreateOrders,
             };
         }
 
-        if (!order) return { canCreateOrders: isAdmin || isReceptionist };
+        if (!order) return { canCreateOrders };
 
-        // Lógica para modos VISTA/EDICIÓN
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
         const isPending = ['Pending', 'Waiting for parts'].includes(order.status?.status_name);
@@ -36,8 +40,11 @@ export const usePermissions = (mode, order = null) => {
             canEditDiagnosisPanel: (isAdmin) || (isTechnician && isMyOrder && isInProcess),
             canInteractWithTechnicianChecklist: (isAdmin) || (isTechnician && isMyOrder && isInProcess),
             canTakeOrder: isTechnician && isUnassigned && isPending,
+            canEditCosts: canEditCosts,
+            canEditPartsUsed: canEditPartsUsed, // Aplicamos el permiso en vista/edición
             isReadOnly: !( (isAdmin || isReceptionist) && isPending ) && !( (isAdmin || (isTechnician && isMyOrder)) && isInProcess ),
         };
+        // --- FIN DE LA MODIFICACIÓN ---
     }, [currentUser, mode, order]);
 
     return permissions;

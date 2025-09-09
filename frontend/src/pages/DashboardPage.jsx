@@ -1,13 +1,15 @@
-// frontend/src/pages/DashboardPage.jsx
-
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
 import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
 import { DashboardHome } from '../components/DashboardHome';
 import { OrdersPage } from '../components/OrdersPage';
-import { OrderModal } from '../components/OrderModal/OrderModal'; // <-- RUTA DE IMPORTACIÓN CORREGIDA
+import { OrderModal } from '../components/OrderModal/OrderModal';
 import { useAuth } from '../context/AuthContext';
+// --- INICIO DE LA MODIFICACIÓN ---
+import { NotificationBell } from '../components/Notifications/NotificationBell';
+import { NotificationToast } from '../components/Notifications/NotificationToast';
+// --- FIN DE LA MODIFICACIÓN ---
 
 export function DashboardPage({ onLogout }) {
   const [activePage, setActivePage] = useState('dashboard');
@@ -24,7 +26,6 @@ export function DashboardPage({ onLogout }) {
     setIsModalOpen(false);
     setSelectedOrderId(null);
     if (refresh) {
-      // Truco para forzar el re-renderizado de la página activa
       const currentPage = activePage;
       setActivePage('');
       setTimeout(() => setActivePage(currentPage), 0);
@@ -61,10 +62,16 @@ export function DashboardPage({ onLogout }) {
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             orderId={selectedOrderId}
-            currentUser={currentUser} // Pasamos currentUser para el hook de permisos
+            currentUser={currentUser}
           />
         )}
       </AnimatePresence>
+
+      {/* --- INICIO DE LA MODIFICACIÓN --- */}
+      {/* Añadimos los componentes de notificación al layout principal */}
+      <NotificationToast />
+      <NotificationBell />
+      {/* --- FIN DE LA MODIFICACIÓN --- */}
     </div>
   );
 }

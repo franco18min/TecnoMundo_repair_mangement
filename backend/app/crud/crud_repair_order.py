@@ -2,16 +2,22 @@
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
+import json  # Importamos json para formatear el mensaje
+
+# Importaciones para notificaciones
+from app.core.websockets import manager
+from app.crud import crud_customer, crud_notification, crud_user
+
 from app.models.repair_order import RepairOrder as RepairOrderModel
 from app.models.device_condition import DeviceCondition as DeviceConditionModel
 from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate
-from app.crud import crud_customer
 
 
 def get_repair_orders(db: Session, skip: int = 0, limit: int = 100):
     """
     Obtiene una lista de órdenes de reparación con sus relaciones cargadas.
     """
+    # (Esta función no necesita cambios, la dejamos como está)
     return (
         db.query(RepairOrderModel)
         .options(
@@ -29,9 +35,7 @@ def get_repair_orders(db: Session, skip: int = 0, limit: int = 100):
 
 
 def get_repair_order(db: Session, order_id: int):
-    """
-    Obtiene una orden de reparación específica por su ID, cargando todas sus relaciones.
-    """
+    # (Esta función no necesita cambios, la dejamos como está)
     return (
         db.query(RepairOrderModel)
         .options(
@@ -46,12 +50,13 @@ def get_repair_order(db: Session, order_id: int):
     )
 
 
-def create_repair_order(db: Session, order: RepairOrderCreate, technician_id: int | None = None):
+# --- INICIO DE LA MODIFICACIÓN ---
+async def create_repair_order(db: Session, order: RepairOrderCreate, technician_id: int | None = None):
+    # Convertimos la función a asíncrona con 'async def'
     """
-    Crea una nueva orden de reparación, gestionando el cliente y el checklist.
+    Crea una nueva orden de reparación, gestionando el cliente, el checklist y ENVIANDO UNA NOTIFICACIÓN.
     """
     customer_id = order.customer_id
-
     if not customer_id and order.customer:
         db_customer = crud_customer.get_customer_by_dni(db, dni=order.customer.dni)
         if db_customer:
@@ -64,17 +69,9 @@ def create_repair_order(db: Session, order: RepairOrderCreate, technician_id: in
         raise ValueError("Se requiere información del cliente para crear una orden.")
 
     status_id = 6 if order.is_spare_part_ordered else 1
-
     checklist_data = order.checklist
-
     order_data = order.dict(exclude={"checklist", "customer", "is_spare_part_ordered", "customer_id"})
-
-    db_order = RepairOrderModel(
-        **order_data,
-        customer_id=customer_id,
-        technician_id=technician_id,
-        status_id=status_id
-    )
+    db_order = RepairOrderModel(**order_data, customer_id=customer_id, technician_id=technician_id, status_id=status_id)
 
     db.add(db_order)
     db.commit()
@@ -82,21 +79,38 @@ def create_repair_order(db: Session, order: RepairOrderCreate, technician_id: in
 
     if checklist_data:
         for item_data in checklist_data:
-            db_condition = DeviceConditionModel(
-                **item_data.dict(),
-                order_id=db_order.id
-            )
+            db_condition = DeviceConditionModel(**item_data.dict(), order_id=db_order.id)
             db.add(db_condition)
         db.commit()
         db.refresh(db_order)
 
+    # --- LÓGICA DE NOTIFICACIÓN ---
+    # 1. Obtenemos todos los técnicos
+    technicians = crud_user.get_users_by_role(db, role_name="Technical")
+    technician_ids = [tech.id for tech in technicians]
+
+    # 2. Creamos el mensaje y el enlace
+    message = f"Nueva orden #{db_order.id} ({db_order.device_model}) ha sido creada."
+    link = f"/orders/{db_order.id}"  # Asumiendo una futura ruta de detalle
+
+    # 3. Guardamos la notificación en la BD para cada técnico
+    for tech_id in technician_ids:
+        crud_notification.create_notification(db, user_id=tech_id, message=message, link_to=link)
+
+    # 4. Creamos un payload JSON para enviar por WebSocket
+    notification_payload = json.dumps({"message": message, "link_to": link})
+
+    # 5. Usamos el manager para enviar la notificación en tiempo real a los técnicos conectados
+    await manager.broadcast_to_users(notification_payload, technician_ids)
+
     return db_order
 
 
+# --- FIN DE LA MODIFICACIÓN ---
+
+
 def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpdate):
-    """
-    Actualiza una orden de reparación existente y la marca como completada.
-    """
+    # (Esta función no necesita cambios por ahora, la dejamos como está)
     db_order = get_repair_order(db, order_id)
     if not db_order:
         return None
@@ -123,19 +137,14 @@ def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpd
 
 
 def assign_technician_and_start_process(db: Session, order_id: int, technician_id: int):
-    """
-    Asigna un técnico a una orden y la cambia al estado "En Proceso".
-    """
+    # (Esta función no necesita cambios por ahora, la dejamos como está)
     db_order = get_repair_order(db, order_id)
     if not db_order:
         return None
 
-    # --- INICIO DE LA MODIFICACIÓN ---
-    # Permite tomar la orden si el estado es 1 (Pendiente) o 6 (Esperando repuesto).
     if db_order.technician_id is None and db_order.status_id in [1, 6]:
-        # --- FIN DE LA MODIFICACIÓN ---
         db_order.technician_id = technician_id
-        db_order.status_id = 2  # 2 = In Process
+        db_order.status_id = 2
         db.commit()
         db.refresh(db_order)
         return db_order

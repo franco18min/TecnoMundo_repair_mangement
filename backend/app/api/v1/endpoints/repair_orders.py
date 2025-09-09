@@ -41,7 +41,7 @@ def read_repair_order(order_id: int, db: Session = Depends(get_db)):
     return db_order
 
 @router.post("/", response_model=schemas_repair_order.RepairOrder)
-def create_new_repair_order(
+async def create_new_repair_order(
         order: schemas_repair_order.RepairOrderCreate,
         db: Session = Depends(get_db)
 ):

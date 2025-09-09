@@ -1,14 +1,17 @@
 # backend/app/api/v1/api.py
 
 from fastapi import APIRouter
-from .endpoints import repair_orders, auth, customers, device_types, users # IMPORTAMOS USERS
+# V ---- PASO 1: ASEGÚRATE DE QUE 'notifications' ESTÉ IMPORTADO AQUÍ ---- V
+from .endpoints import repair_orders, auth, customers, device_types, users, notifications
 
 api_router = APIRouter()
 
-# --- INICIO DE LA MODIFICACIÓN ---
-# Añadimos el router de users. Es buena práctica ponerlo antes de los que lo usan.
+# Registramos los routers existentes
 api_router.include_router(users.router, prefix="/users", tags=["users"])
-# --- FIN DE LA MODIFICACIÓN ---
+
+# V ---- PASO 2: AÑADE ESTA LÍNEA PARA REGISTRAR EL ROUTER DE NOTIFICACIONES ---- V
+# Esta línea es la que falta y causa el error.
+api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 
 api_router.include_router(device_types.router, prefix="/device-types", tags=["device-types"])
 api_router.include_router(customers.router, prefix="/customers", tags=["customers"])

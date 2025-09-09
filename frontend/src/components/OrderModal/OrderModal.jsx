@@ -16,7 +16,7 @@ import { DiagnosisSection } from './DiagnosisSection';
 import { ChecklistSection } from './ChecklistSection';
 import { ModalFooter } from './ModalFooter';
 
-export function OrderModal({ isOpen, onClose, orderId }) {
+export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
     const initialFormData = useMemo(() => ({
         dni: '', first_name: '', last_name: '', phone_number: '', device_type_id: '', device_model: '',
@@ -146,42 +146,29 @@ export function OrderModal({ isOpen, onClose, orderId }) {
         <>
             <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <motion.div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
-                    <div className="p-6 border-b flex justify-between items-center">
-                        <AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : `Detalles de la Orden #${orderId}`}</motion.h2></AnimatePresence>
-                        <button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
-                    </div>
+                    <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : `Detalles de la Orden #${orderId}`}</motion.h2></AnimatePresence><button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button></div>
                     {isLoading ? (<div className="flex-1 flex justify-center items-center p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
                         <>
                             <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
-                                <ClientSection
-                                    permissions={permissions} formData={formData} handleFormChange={handleFormChange}
-                                    clientType={clientType} setClientType={setClientType} clientSearch={clientSearch}
-                                    setClientSearch={setClientSearch} clientSearchResults={clientSearchResults}
-                                    isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused}
-                                    handleClientSelect={handleClientSelect}
-                                />
-                                <EquipmentSection
-                                    mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange}
-                                    deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus}
-                                    unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange}
-                                    isPatternValue={isPatternValue}
-                                />
+                                <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
+                                <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} />
                                 <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                 <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
-                                <ChecklistSection
-                                    mode={mode} permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion}
-                                    handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange}
-                                />
+                                <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
                             </form>
                             <ModalFooter
-                                mode={mode} permissions={permissions} onClose={onClose}
-                                isSubmitting={isSubmitting} error={error}
+                                mode={mode}
+                                permissions={permissions}
+                                onClose={onClose}
+                                isSubmitting={isSubmitting}
+                                error={error}
+                                setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
                             />
                         </>
                     )}
                 </motion.div>
             </motion.div>
-            <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
+            <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico responsable y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
         </>
     );

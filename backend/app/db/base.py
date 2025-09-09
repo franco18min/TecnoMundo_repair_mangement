@@ -10,6 +10,7 @@ from app.models.customer import Customer
 from app.models.repair_order import RepairOrder
 from app.models.status_order import StatusOrder
 from app.models.device_type import DeviceType # ¡Importa el nuevo modelo!
+from app.models.notification import Notification
 
 def init_db():
     """

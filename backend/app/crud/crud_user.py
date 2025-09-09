@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from app.models.user import User as UserModel
 from app.schemas.user import UserCreate
 from app.core.security import get_password_hash
+from app.models.roles import Role
+from typing import List
 
 def get_user_by_username(db: Session, username: str):
     """Busca un usuario por su nombre de usuario."""
@@ -19,3 +21,7 @@ def create_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def get_users_by_role(db: Session, role_name: str) -> List[UserModel]:
+    """Busca todos los usuarios que pertenecen a un rol específico."""
+    return db.query(UserModel).join(Role).filter(Role.role_name == role_name).all()
