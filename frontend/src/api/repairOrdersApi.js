@@ -2,14 +2,9 @@
 
 const API_BASE_URL = 'http://127.0.0.1:8001';
 
-// --- INICIO DE LA MODIFICACIÓN ---
-// Función auxiliar para obtener las cabeceras de autenticación.
-// Esto nos evita repetir código y asegura que todas las peticiones estén protegidas.
 const getAuthHeaders = () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
-        // En un futuro, podríamos redirigir al login si no hay token.
-        // Por ahora, el backend lo manejará con un 401.
         console.warn("No se encontró token de acceso en localStorage.");
     }
     return {
@@ -17,24 +12,14 @@ const getAuthHeaders = () => {
         'Authorization': `Bearer ${token}`
     };
 };
-// --- FIN DE LA MODIFICACIÓN ---
 
-
-/**
- * Obtiene todas las órdenes de reparación del backend.
- */
 export const fetchRepairOrders = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`, {
-        // Nota: Esta petición podría ser pública o protegida. Si la protegemos en el futuro,
-        // solo tendríamos que añadir: headers: getAuthHeaders()
-    });
+    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`);
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
     const data = await response.json();
-
-    // Mapeamos los datos del backend a la estructura que necesita el frontend
     return data.map(order => ({
       id: order.id,
       customer: { name: `${order.customer.first_name} ${order.customer.last_name}` },
@@ -47,30 +32,23 @@ export const fetchRepairOrders = async () => {
       dateReceived: order.created_at,
       parts_used: order.parts_used || 'N/A',
     }));
-
   } catch (error) {
     console.error("No se pudieron obtener las órdenes de reparación:", error);
     return [];
   }
 };
 
-
-/**
- * Envía los datos de una nueva orden de reparación al backend para crearla.
- */
 export const createRepairOrder = async (orderData) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`, {
       method: 'POST',
-      headers: getAuthHeaders(), // Usamos la función auxiliar
+      headers: getAuthHeaders(),
       body: JSON.stringify(orderData),
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
     }
-
     return await response.json();
   } catch (error) {
     console.error("No se pudo crear la orden de reparación:", error);
@@ -78,14 +56,10 @@ export const createRepairOrder = async (orderData) => {
   }
 };
 
-
-/**
- * Obtiene los detalles completos de una única orden de reparación.
- */
 export const fetchRepairOrderById = async (orderId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}`, {
-        headers: getAuthHeaders() // Protegemos también esta ruta
+        headers: getAuthHeaders()
     });
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
@@ -97,16 +71,11 @@ export const fetchRepairOrderById = async (orderId) => {
   }
 };
 
-
-/**
- * Asigna un técnico a una orden y la cambia a "En Proceso".
- */
 export const takeRepairOrder = async (orderId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/take`, {
       method: 'PATCH',
-      headers: getAuthHeaders(), // Usamos la función auxiliar
-      // Ya no enviamos el body, el backend sabe quién es el técnico por el token
+      headers: getAuthHeaders(),
     });
     if (!response.ok) {
       const errorData = await response.json();
@@ -119,15 +88,11 @@ export const takeRepairOrder = async (orderId) => {
   }
 };
 
-
-/**
- * Actualiza los datos de una orden de reparación existente.
- */
 export const updateRepairOrder = async (orderId, orderData) => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}`, {
             method: 'PUT',
-            headers: getAuthHeaders(), // Usamos la función auxiliar
+            headers: getAuthHeaders(),
             body: JSON.stringify(orderData),
         });
         if (!response.ok) {
@@ -140,3 +105,29 @@ export const updateRepairOrder = async (orderId, orderData) => {
         throw error;
     }
 };
+
+// --- INICIO DE LA MODIFICACIÓN ---
+export const deleteRepairOrder = async (orderId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    // Una respuesta 204 (No Content) también indica éxito (response.ok será true)
+    if (!response.ok) {
+      // Si hay un error, intentamos leer el JSON. Si no, lanzamos un error genérico.
+      const errorData = await response.json().catch(() => ({ detail: `Error HTTP: ${response.status}` }));
+      throw new Error(errorData.detail);
+    }
+
+    // Si la operación fue exitosa (ej. 204), no hay cuerpo JSON que leer.
+    // Simplemente retornamos un valor de éxito.
+    return true;
+
+  } catch (error) {
+    console.error(`No se pudo eliminar la orden ${orderId}:`, error);
+    throw error;
+  }
+};
+// --- FIN DE LA MODIFICACIÓN ---

@@ -1,13 +1,18 @@
-// frontend/src/components/layout/Sidebar.jsx
-
 import React, { useState, createContext, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext'; // 1. Importar useAuth
 
 const SidebarContext = createContext();
 
 export function Sidebar({ onLogout, children }) {
   const [expanded, setExpanded] = useState(true);
+  const { currentUser } = useAuth(); // 2. Obtener el usuario actual
+
+  // Si aún no hay usuario, no renderizamos nada para evitar errores
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <aside className="h-screen sticky top-0">
@@ -30,11 +35,17 @@ export function Sidebar({ onLogout, children }) {
         </SidebarContext.Provider>
 
         <div className="border-t border-gray-200 flex p-3">
-          <img src="https://ui-avatars.com/api/?background=6366f1&color=fff&name=Admin" alt="Avatar" className="w-10 h-10 rounded-md" />
+          {/* 3. Usar datos dinámicos para el avatar */}
+          <img
+            src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${currentUser.username}`}
+            alt="Avatar"
+            className="w-10 h-10 rounded-md"
+          />
           <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}`}>
             <div className="leading-4">
-              <h4 className="font-semibold text-gray-800">Admin</h4>
-              <span className="text-xs text-gray-500">admin@tecnomundo.com</span>
+              {/* 4. Usar datos dinámicos para el nombre y email */}
+              <h4 className="font-semibold text-gray-800">{currentUser.username}</h4>
+              <span className="text-xs text-gray-500">{currentUser.email}</span>
             </div>
             <LogOut size={20} className="text-gray-500 hover:text-red-500 cursor-pointer" onClick={onLogout} />
           </div>
@@ -44,26 +55,28 @@ export function Sidebar({ onLogout, children }) {
   );
 }
 
+// El componente SidebarItem no necesita cambios
 export function SidebarItem({ icon, text, active, alert, onClick }) {
-  const { expanded } = useContext(SidebarContext);
-  return (
-    <li
-      onClick={onClick}
-      className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${
-        active
-          ? "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm"
-          : "hover:bg-indigo-50 text-gray-600"
-      }`}
-    >
-      {icon}
-      <span className={`overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}`}>{text}</span>
-      {alert && <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? "" : "top-2"}`} />}
+    // ... (código sin cambios)
+    const { expanded } = useContext(SidebarContext);
+    return (
+      <li
+        onClick={onClick}
+        className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${
+          active
+            ? "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm"
+            : "hover:bg-indigo-50 text-gray-600"
+        }`}
+      >
+        {icon}
+        <span className={`overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}`}>{text}</span>
+        {alert && <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? "" : "top-2"}`} />}
 
-      {!expanded && (
-        <div className="absolute left-full rounded-md px-2 py-1 ml-6 bg-gray-800 text-white text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50">
-          {text}
-        </div>
-      )}
-    </li>
-  );
+        {!expanded && (
+          <div className="absolute left-full rounded-md px-2 py-1 ml-6 bg-gray-800 text-white text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50">
+            {text}
+          </div>
+        )}
+      </li>
+    );
 }

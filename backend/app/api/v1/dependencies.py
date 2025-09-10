@@ -22,7 +22,6 @@ def get_db():
         db.close()
 
 
-# --- INICIO DE LA MODIFICACIÓN ---
 async def get_current_user_from_token(
         token: Optional[str] = Query(None),
         db: Session = Depends(get_db)
@@ -49,11 +48,7 @@ async def get_current_user_from_token(
     return user
 
 
-# --- FIN DE LA MODIFICACIÓN ---
-
-
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    # ... (esta función no cambia)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudieron validar las credenciales",
@@ -70,4 +65,31 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(User).options(joinedload(User.role)).filter(User.username == username).first()
     if user is None:
         raise credentials_exception
+    return user
+
+def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Verifica si el usuario actual es un Administrador.
+    Si no lo es, lanza un error de permisos.
+    """
+    if not current_user.role or current_user.role.role_name != "Administrator":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tiene los permisos suficientes para realizar esta acción"
+        )
+    return current_user
+
+def get_user_from_token(db: Session, token: str) -> Optional[User]:
+    """
+    Decodifica un token JWT y obtiene el usuario. No usa inyección de dependencias.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+    except JWTError:
+        return None
+
+    user = db.query(User).options(joinedload(User.role)).filter(User.username == username).first()
     return user

@@ -17,7 +17,6 @@ class RepairOrder(Base):
     parts_used = Column(String)
     total_cost = Column(Float, default=0.0)
     created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
     delivered_at = Column(DateTime)
     accesories = Column(String)
     observations = Column(String)

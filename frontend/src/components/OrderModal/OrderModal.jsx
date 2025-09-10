@@ -1,3 +1,5 @@
+// frontend/src/components/OrderModal/OrderModal.jsx
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader } from 'lucide-react';
@@ -8,6 +10,7 @@ import { createRepairOrder, fetchRepairOrderById, takeRepairOrder, updateRepairO
 
 import { ConfirmationModal } from '../ConfirmationModal';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useToast } from '../../context/ToastContext';
 
 import { ClientSection } from './ClientSection';
 import { EquipmentSection } from './EquipmentSection';
@@ -43,6 +46,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [sparePartStatus, setSparePartStatus] = useState('local');
 
     const permissions = usePermissions(mode, fullOrderData);
+    const { showToast } = useToast();
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -100,29 +104,51 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         e.target.value = '';
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
+
     const handleTakeOrder = async () => {
         if (!orderId) return;
-        setIsTakeConfirmModalOpen(false); setIsSubmitting(true); setError('');
-        try { await takeRepairOrder(orderId); onClose(true); }
-        catch (err) { setError(err.message || "No se pudo tomar la orden."); }
-        finally { setIsSubmitting(false); }
+        setIsTakeConfirmModalOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await takeRepairOrder(orderId);
+            showToast('Orden tomada con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo tomar la orden.");
+            showToast(err.message || "No se pudo tomar la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
     const handleConfirmUpdate = async () => {
         if (!orderId) return;
-        setIsUpdateConfirmModalOpen(false); setIsSubmitting(true); setError('');
+        setIsUpdateConfirmModalOpen(false);
+        setIsSubmitting(true);
+        setError('');
         const payload = {
             technician_diagnosis: formData.technician_diagnosis, repair_notes: formData.repair_notes, parts_used: formData.parts_used,
             total_cost: Number(formData.total_cost) || 0, deposit: Number(formData.deposit) || 0,
             checklist: checklistItems.map(item => ({ check_description: item.check_description, client_answer: item.client_answer, technician_finding: item.technician_finding, technician_notes: item.technician_notes })),
         };
-        try { await updateRepairOrder(orderId, payload); onClose(true); }
-        catch (err) { setError(err.message || "No se pudo actualizar la orden."); }
-        finally { setIsSubmitting(false); }
+        try {
+            await updateRepairOrder(orderId, payload);
+            showToast('Orden actualizada con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo actualizar la orden.");
+            showToast(err.message || "No se pudo actualizar la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (mode === 'create') {
-            setIsSubmitting(true); setError('');
+            setIsSubmitting(true);
+            setError('');
             const payload = {
                 customer: clientType === 'nuevo' ? { first_name: formData.first_name, last_name: formData.last_name, phone_number: formData.phone_number, dni: formData.dni } : null,
                 customer_id: clientType === 'registrado' ? selectedClientId : null,
@@ -133,10 +159,19 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 is_spare_part_ordered: sparePartStatus === 'pedido',
                 checklist: checklistItems.filter(item => item.client_answer !== null),
             };
-            try { await createRepairOrder(payload); onClose(true); }
-            catch (err) { setError(err.message || "No se pudo crear la orden."); }
-            finally { setIsSubmitting(false); }
-        } else if (permissions.canEditDiagnosisPanel) { setIsUpdateConfirmModalOpen(true); }
+            try {
+                await createRepairOrder(payload);
+                showToast('Orden creada con éxito', 'success');
+                onClose(true);
+            } catch (err) {
+                setError(err.message || "No se pudo crear la orden.");
+                showToast(err.message || "No se pudo crear la orden", 'error');
+            } finally {
+                setIsSubmitting(false);
+            }
+        } else if (permissions.canEditDiagnosisPanel) {
+            setIsUpdateConfirmModalOpen(true);
+        }
     };
 
     const isPatternValue = formData.password_or_pattern && formData.password_or_pattern.includes('-');
@@ -151,24 +186,17 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                         <>
                             <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
                                 <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
-                                <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} />
+                                <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
                                 <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                 <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                 <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
                             </form>
-                            <ModalFooter
-                                mode={mode}
-                                permissions={permissions}
-                                onClose={onClose}
-                                isSubmitting={isSubmitting}
-                                error={error}
-                                setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
-                            />
+                            <ModalFooter mode={mode} permissions={permissions} onClose={onClose} isSubmitting={isSubmitting} error={error} setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}/>
                         </>
                     )}
                 </motion.div>
             </motion.div>
-            <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico responsable y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
+            <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
         </>
     );

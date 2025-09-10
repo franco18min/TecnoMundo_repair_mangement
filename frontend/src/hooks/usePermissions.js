@@ -14,8 +14,11 @@ export const usePermissions = (mode, order = null) => {
 
         const canCreateOrders = isAdmin || isReceptionist;
         const canEditCosts = isAdmin || isReceptionist;
+        const canEditPartsUsed = isAdmin;
         // --- INICIO DE LA MODIFICACIÓN ---
-        const canEditPartsUsed = isAdmin; // Solo el admin puede editar este campo
+        const canDeleteOrders = isAdmin;
+        // --- FIN DE LA MODIFICACIÓN ---
+
 
         if (mode === 'create') {
             return {
@@ -23,12 +26,18 @@ export const usePermissions = (mode, order = null) => {
                 canEditInitialDetails: canCreateOrders,
                 canEditCosts: canCreateOrders,
                 canEditDiagnosisPanel: false,
-                canEditPartsUsed: canEditPartsUsed, // Aplicamos el permiso en creación
+                canEditPartsUsed: canEditPartsUsed,
+                canDeleteOrders: canDeleteOrders,
                 isReadOnly: !canCreateOrders,
             };
         }
 
-        if (!order) return { canCreateOrders };
+        if (!order) {
+            return {
+                canCreateOrders,
+                canDeleteOrders,
+            };
+        }
 
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
@@ -41,10 +50,10 @@ export const usePermissions = (mode, order = null) => {
             canInteractWithTechnicianChecklist: (isAdmin) || (isTechnician && isMyOrder && isInProcess),
             canTakeOrder: isTechnician && isUnassigned && isPending,
             canEditCosts: canEditCosts,
-            canEditPartsUsed: canEditPartsUsed, // Aplicamos el permiso en vista/edición
+            canEditPartsUsed: canEditPartsUsed,
+            canDeleteOrders: canDeleteOrders,
             isReadOnly: !( (isAdmin || isReceptionist) && isPending ) && !( (isAdmin || (isTechnician && isMyOrder)) && isInProcess ),
         };
-        // --- FIN DE LA MODIFICACIÓN ---
     }, [currentUser, mode, order]);
 
     return permissions;

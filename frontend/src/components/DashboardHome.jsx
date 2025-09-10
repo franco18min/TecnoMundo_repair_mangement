@@ -1,21 +1,22 @@
-// frontend/src/components/DashboardHome.jsx
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
 import { OrderCard } from './OrderCard';
 import { fetchRepairOrders } from '../api/repairOrdersApi';
+import { useAuth } from '../context/AuthContext'; // 1. Importar useAuth
+import { usePermissions } from '../hooks/usePermissions'; // 2. Importar usePermissions
 
 export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentUser } = useAuth(); // 3. Obtener usuario actual
+  const { canCreateOrders } = usePermissions(); // 4. Obtener permisos
 
   useEffect(() => {
     const loadOrders = async () => {
       setIsLoading(true);
       try {
         const fetchedOrders = await fetchRepairOrders();
-        // Mostrar solo las 6 más recientes en el dashboard
         setOrders(fetchedOrders.slice(0, 6));
       } catch (error) {
         console.error("Error al cargar las órdenes:", error);
@@ -26,7 +27,6 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
     loadOrders();
   }, []);
 
-
   return (
     <>
       <div className="flex justify-between items-center mb-8">
@@ -34,22 +34,27 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
           <motion.h1 className="text-3xl font-bold text-gray-800" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             Órdenes Recientes
           </motion.h1>
+          {/* 5. Mensaje de bienvenida dinámico */}
           <motion.p className="text-gray-500 mt-1" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-            Hola Admin, bienvenido de nuevo.
+            Hola {currentUser?.username}, bienvenido de nuevo.
           </motion.p>
         </div>
-        <motion.button
-          onClick={onNewOrderClick}
-          className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <PlusCircle size={20} />
-          <span className="hidden sm:inline">Crear Nueva Orden</span>
-        </motion.button>
+
+        {/* 6. Botón de crear orden condicional */}
+        {canCreateOrders && (
+            <motion.button
+            onClick={onNewOrderClick}
+            className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <PlusCircle size={20} />
+            <span className="hidden sm:inline">Crear Nueva Orden</span>
+          </motion.button>
+        )}
       </div>
 
       {isLoading ? (
