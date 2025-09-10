@@ -130,4 +130,20 @@ export const deleteRepairOrder = async (orderId) => {
     throw error;
   }
 };
-// --- FIN DE LA MODIFICACIÓN ---
+
+export const reopenRepairOrder = async (orderId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/reopen`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`No se pudo reabrir la orden ${orderId}:`, error);
+    throw error;
+  }
+};

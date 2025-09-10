@@ -1,3 +1,5 @@
+# backend/app/crud/crud_repair_order.py
+
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 import json
@@ -67,6 +69,26 @@ async def send_order_deleted_notification(order_id: int):
         event_payload = {"event": "ORDER_DELETED", "payload": {"id": order_id}}
         all_users = db.query(UserModel).all()
         await manager.broadcast_to_users(json.dumps(event_payload), [user.id for user in all_users])
+async def send_order_reopened_notification(order_id: int):
+    """
+    Emite un evento ORDER_UPDATED y notifica al técnico asignado que la orden fue reabierta.
+    """
+    with SessionLocal() as db:
+        order = get_repair_order(db, order_id=order_id)
+        if not order: return
+
+        # 1. Notificar a TODOS los usuarios para que actualicen la orden en su tabla
+        event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(order).dict()}
+        all_users = db.query(UserModel).all()
+        await manager.broadcast_to_users(json.dumps(event_payload, default=str), [user.id for user in all_users])
+
+        # 2. Enviar notificación de CAMPANA solo al técnico asignado
+        if order.technician_id:
+            message = f"La orden #{order.id} ({order.device_model}) ha sido reabierta y requiere tu atención."
+            link = f"/orders/{order.id}"
+            db_notification = crud_notification.create_notification(db, user_id=order.technician_id, message=message, link_to=link)
+            notification_event = {"event": "NEW_NOTIFICATION", "payload": NotificationSchema.from_orm(db_notification).dict()}
+            await manager.send_to_user(json.dumps(notification_event, default=str), order.technician_id)
 
 def get_repair_orders(db: Session, skip: int = 0, limit: int = 100):
     return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer), joinedload(RepairOrderModel.technician), joinedload(RepairOrderModel.status), joinedload(RepairOrderModel.device_type), joinedload(RepairOrderModel.device_conditions)).order_by(RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
@@ -132,3 +154,30 @@ def delete_repair_order(db: Session, order_id: int, background_tasks: Background
         background_tasks.add_task(send_order_deleted_notification, order_id=order_id)
         return True
     return False
+
+
+def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
+    """
+    Reabre una orden que estaba completada, la devuelve a "En Proceso".
+    """
+    db_order = get_repair_order(db, order_id)
+    if not db_order:
+        return None
+
+    # Solo se pueden reabrir órdenes completadas (status 3)
+    if db_order.status_id == 3:
+        db_order.status_id = 2  # 2 = In Process
+        db_order.completed_at = None  # Limpiamos la fecha de completado
+
+        # Opcional: añadir una nota automática
+        note_prefix = "\n--- ORDEN REABIERTA ---"
+        db_order.repair_notes = f"{db_order.repair_notes or ''}{note_prefix}"
+
+        db.commit()
+        db.refresh(db_order)
+
+        # Añadimos la tarea de notificación
+        background_tasks.add_task(send_order_reopened_notification, order_id=order_id)
+
+        return db_order
+    return None  # No se puede reabrir si no está completada

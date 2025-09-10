@@ -9,7 +9,7 @@ from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
 from app.db.session import SessionLocal
 from app.models.user import User
-from app.api.v1.dependencies import get_current_user, get_current_admin_user
+from app.api.v1.dependencies import get_current_user, get_current_admin_user, get_current_admin_or_receptionist_user
 
 router = APIRouter()
 
@@ -107,3 +107,19 @@ def delete_order(
 
     # No devolvemos nada, solo la respuesta con el código de estado
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.patch("/{order_id}/reopen", response_model=schemas_repair_order.RepairOrder)
+def reopen_order_endpoint(
+    order_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_or_receptionist_user) # Ruta protegida
+):
+    """
+    Reabre una orden completada. Solo para Admins y Recepcionistas.
+    """
+    reopened_order = crud_repair_order.reopen_order(db=db, order_id=order_id, background_tasks=background_tasks)
+    if reopened_order is None:
+        raise HTTPException(status_code=400, detail="La orden no se puede reabrir (puede que no esté completada).")
+    return reopened_order
+# --- FIN DE LA MODIFICACIÓN ---

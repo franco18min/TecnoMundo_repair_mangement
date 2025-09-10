@@ -6,7 +6,7 @@ import { X, Loader } from 'lucide-react';
 
 import { searchClients } from '../../api/customerApi';
 import { fetchDeviceTypes } from '../../api/deviceTypeApi';
-import { createRepairOrder, fetchRepairOrderById, takeRepairOrder, updateRepairOrder } from '../../api/repairOrdersApi';
+import { createRepairOrder, fetchRepairOrderById, takeRepairOrder, updateRepairOrder, reopenRepairOrder } from '../../api/repairOrdersApi';
 
 import { ConfirmationModal } from '../ConfirmationModal';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -37,6 +37,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [error, setError] = useState('');
     const [isTakeConfirmModalOpen, setIsTakeConfirmModalOpen] = useState(false);
     const [isUpdateConfirmModalOpen, setIsUpdateConfirmModalOpen] = useState(false);
+    const [isReopenConfirmOpen, setIsReopenConfirmOpen] = useState(false);
     const [deviceTypes, setDeviceTypes] = useState([]);
     const [clientType, setClientType] = useState('nuevo');
     const [clientSearch, setClientSearch] = useState('');
@@ -144,6 +145,23 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         }
     };
 
+    const handleReopenOrder = async () => {
+        if (!orderId) return;
+        setIsReopenConfirmOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await reopenRepairOrder(orderId);
+            showToast('Orden reabierta con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo reabrir la orden.");
+            showToast(err.message || "No se pudo reabrir la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (mode === 'create') {
@@ -191,13 +209,26 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                 <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                 <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
                             </form>
-                            <ModalFooter mode={mode} permissions={permissions} onClose={onClose} isSubmitting={isSubmitting} error={error} setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}/>
+                            <ModalFooter
+                                mode={mode} permissions={permissions} onClose={onClose}
+                                isSubmitting={isSubmitting} error={error}
+                                setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
+                                setIsReopenConfirmOpen={setIsReopenConfirmOpen}
+                            />
                         </>
                     )}
                 </motion.div>
             </motion.div>
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
+            <ConfirmationModal
+                isOpen={isReopenConfirmOpen}
+                onClose={() => setIsReopenConfirmOpen(false)}
+                onConfirm={handleReopenOrder}
+                title="Confirmar Reapertura"
+                message={`¿Estás seguro de que quieres reabrir la orden #${orderId} y pasarla al estado 'En Proceso'?`}
+                confirmText="Sí, Reabrir"
+            />
         </>
     );
 }
