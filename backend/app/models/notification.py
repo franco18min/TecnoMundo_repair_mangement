@@ -1,3 +1,5 @@
+#backend/app/models/notification.py
+
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from .base_class import Base

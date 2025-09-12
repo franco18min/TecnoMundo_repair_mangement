@@ -1,3 +1,5 @@
+//frontend/src/components/Notifications/NotificationPanel.jsx
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, X, CheckCheck } from 'lucide-react';

@@ -1,3 +1,4 @@
+//frontend/src/components/Notifications/NotificationBell.jsx
 import React, { useState, useMemo, useRef } from 'react'; // 1. Importar useRef
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
