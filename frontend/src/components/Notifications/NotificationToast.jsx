@@ -1,49 +1,73 @@
-//frontend/src/components/Notifications/NotificationToast.jsx
+// frontend/src/components/Notifications/NotificationToast.jsx
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export function NotificationToast() {
-  const { notifications } = useAuth();
+export function NotificationToast({ onNotificationClick }) {
+  const { notifications, markAsRead } = useAuth();
   const [visibleNotification, setVisibleNotification] = useState(null);
   const [timerId, setTimerId] = useState(null);
 
-  // Efecto para MOSTRAR la notificación más reciente
+  // --- INICIO DE LA CORRECCIÓN DEFINITIVA ---
+  // El useEffect ahora solo depende de `notifications`.
   useEffect(() => {
-    if (notifications.length > 0 && !notifications[0].is_read) {
-      const latestNotification = notifications[0];
-      if (latestNotification.id !== visibleNotification?.id) {
-        setVisibleNotification(latestNotification);
-      }
-    }
-  }, [notifications]);
+    // Buscamos la primera notificación en la lista que realmente no esté leída.
+    const firstUnread = notifications.find(n => !n.is_read);
 
-  // Efecto para GESTIONAR EL TEMPORIZADOR de auto-cierre
+    // Lógica declarativa:
+    // Si encontramos una notificación no leída, esa es la que debe estar visible.
+    if (firstUnread) {
+      setVisibleNotification(firstUnread);
+    } else {
+      // Si no hay ninguna notificación no leída, no debe haber ninguna visible.
+      setVisibleNotification(null);
+    }
+  }, [notifications]); // La única dependencia es la fuente de verdad externa.
+  // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
+
+  // Efecto para el temporizador de auto-cierre
   useEffect(() => {
-    if (visibleNotification) {
-      const newTimerId = setTimeout(() => {
-        handleClose();
-      }, 7000);
-      setTimerId(newTimerId);
+    // Si no hay notificación visible, no hacemos nada.
+    if (!visibleNotification) return;
 
-      // Limpieza: se ejecuta si el componente se desmonta o la notificación cambia
-      return () => clearTimeout(newTimerId);
-    }
-  }, [visibleNotification]);
+    // Si hay una, iniciamos el temporizador para cerrarla.
+    const newTimerId = setTimeout(() => {
+      handleClose();
+    }, 7000);
+    setTimerId(newTimerId);
 
+    // Función de limpieza para evitar fugas de memoria
+    return () => clearTimeout(newTimerId);
+  }, [visibleNotification]); // Este efecto SÍ depende de la notificación visible.
+
+  // Función para cerrar el toast
   const handleClose = () => {
     if (timerId) clearTimeout(timerId);
-    setVisibleNotification(null);
+    if (visibleNotification) {
+      // Marcamos la notificación como leída en el estado global.
+      // Esto actualizará `notifications` y el primer useEffect se encargará de ocultar el toast.
+      markAsRead(visibleNotification.id);
+    }
   };
+
+  const handleToastClick = () => {
+    if (visibleNotification && visibleNotification.link_to) {
+      onNotificationClick(visibleNotification.link_to);
+      handleClose();
+    }
+  };
+
+  const isClickable = visibleNotification && !!visibleNotification.link_to;
 
   const handleMouseEnter = () => {
     if (timerId) clearTimeout(timerId);
   };
 
   const handleMouseLeave = () => {
-    const newTimerId = setTimeout(handleClose, 2000); // Cierra 2s después de quitar el mouse
+    // Reiniciamos un temporizador más corto al quitar el mouse
+    const newTimerId = setTimeout(handleClose, 2000);
     setTimerId(newTimerId);
   };
 
@@ -51,7 +75,10 @@ export function NotificationToast() {
     <AnimatePresence>
       {visibleNotification && (
         <motion.div
-          className="fixed bottom-24 right-5 bg-white border border-gray-200 rounded-lg shadow-xl w-full max-w-sm p-4 z-50 flex items-start space-x-4"
+          onClick={handleToastClick}
+          className={`fixed bottom-24 right-5 bg-white border border-gray-200 rounded-lg shadow-xl w-full max-w-sm p-4 z-50 flex items-start space-x-4 ${
+            isClickable ? 'cursor-pointer hover:bg-gray-50' : ''
+          }`}
           initial={{ opacity: 0, y: 50, scale: 0.3 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.5, transition: { duration: 0.3 } }}
@@ -66,7 +93,13 @@ export function NotificationToast() {
             <h4 className="font-semibold text-gray-800">Nueva Notificación</h4>
             <p className="text-sm text-gray-600 mt-1">{visibleNotification.message}</p>
           </div>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <X size={18} />
           </button>
         </motion.div>

@@ -14,6 +14,7 @@ from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, Repai
 from app.schemas.notification import Notification as NotificationSchema
 from app.db.session import SessionLocal
 
+
 async def send_technician_notifications(order_id: int):
     with SessionLocal() as db:
         order = get_repair_order(db, order_id=order_id)
@@ -24,11 +25,15 @@ async def send_technician_notifications(order_id: int):
         technicians = crud_user.get_users_by_role(db, role_name="Technical")
         if not technicians: return
         message = f"Nueva orden #{order.id} ({order.device_model}) ha sido creada."
-        link = f"/orders/{order.id}"
+        # --- MODIFICADO ---
+        link = f"order:{order.id}"
+        # --- FIN DE LA MODIFICACIÓN ---
         for tech in technicians:
             db_notification = crud_notification.create_notification(db, user_id=tech.id, message=message, link_to=link)
-            notification_event = {"event": "NEW_NOTIFICATION", "payload": NotificationSchema.from_orm(db_notification).dict()}
+            notification_event = {"event": "NEW_NOTIFICATION",
+                                  "payload": NotificationSchema.from_orm(db_notification).dict()}
             await manager.send_to_user(json.dumps(notification_event, default=str), tech.id)
+
 
 async def send_order_taken_notification(order_id: int, technician_id: int):
     with SessionLocal() as db:
@@ -39,14 +44,19 @@ async def send_order_taken_notification(order_id: int, technician_id: int):
         await manager.broadcast_to_users(json.dumps(event_payload, default=str), [user.id for user in all_users])
         technician = db.query(UserModel).filter(UserModel.id == technician_id).first()
         if not technician: return
-        admins_receptionists = crud_user.get_users_by_role(db, "Administrator") + crud_user.get_users_by_role(db, "Receptionist")
+        admins_receptionists = crud_user.get_users_by_role(db, "Administrator") + crud_user.get_users_by_role(db,
+                                                                                                              "Receptionist")
         if not admins_receptionists: return
         message = f"El técnico {technician.username} ha tomado la orden #{order.id}."
-        link = f"/orders/{order.id}"
+        # --- MODIFICADO ---
+        link = f"order:{order.id}"
+        # --- FIN DE LA MODIFICACIÓN ---
         for user in admins_receptionists:
             db_notification = crud_notification.create_notification(db, user_id=user.id, message=message, link_to=link)
-            notification_event = {"event": "NEW_NOTIFICATION", "payload": NotificationSchema.from_orm(db_notification).dict()}
+            notification_event = {"event": "NEW_NOTIFICATION",
+                                  "payload": NotificationSchema.from_orm(db_notification).dict()}
             await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
+
 
 async def send_order_updated_notification(order_id: int):
     with SessionLocal() as db:
@@ -55,20 +65,27 @@ async def send_order_updated_notification(order_id: int):
         event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(order).dict()}
         all_users = db.query(UserModel).all()
         await manager.broadcast_to_users(json.dumps(event_payload, default=str), [user.id for user in all_users])
-        admins_receptionists = crud_user.get_users_by_role(db, "Administrator") + crud_user.get_users_by_role(db, "Receptionist")
+        admins_receptionists = crud_user.get_users_by_role(db, "Administrator") + crud_user.get_users_by_role(db,
+                                                                                                              "Receptionist")
         if not admins_receptionists: return
         message = f"La orden #{order.id} ha sido completada por el técnico."
-        link = f"/orders/{order.id}"
+        # --- MODIFICADO ---
+        link = f"order:{order.id}"
+        # --- FIN DE LA MODIFICACIÓN ---
         for user in admins_receptionists:
             db_notification = crud_notification.create_notification(db, user_id=user.id, message=message, link_to=link)
-            notification_event = {"event": "NEW_NOTIFICATION", "payload": NotificationSchema.from_orm(db_notification).dict()}
+            notification_event = {"event": "NEW_NOTIFICATION",
+                                  "payload": NotificationSchema.from_orm(db_notification).dict()}
             await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
+
 
 async def send_order_deleted_notification(order_id: int):
     with SessionLocal() as db:
         event_payload = {"event": "ORDER_DELETED", "payload": {"id": order_id}}
         all_users = db.query(UserModel).all()
         await manager.broadcast_to_users(json.dumps(event_payload), [user.id for user in all_users])
+
+
 async def send_order_reopened_notification(order_id: int):
     """
     Emite un evento ORDER_UPDATED y notifica al técnico asignado que la orden fue reabierta.
@@ -85,22 +102,41 @@ async def send_order_reopened_notification(order_id: int):
         # 2. Enviar notificación de CAMPANA solo al técnico asignado
         if order.technician_id:
             message = f"La orden #{order.id} ({order.device_model}) ha sido reabierta y requiere tu atención."
-            link = f"/orders/{order.id}"
-            db_notification = crud_notification.create_notification(db, user_id=order.technician_id, message=message, link_to=link)
-            notification_event = {"event": "NEW_NOTIFICATION", "payload": NotificationSchema.from_orm(db_notification).dict()}
+            # --- MODIFICADO ---
+            link = f"order:{order.id}"
+            # --- FIN DE LA MODIFICACIÓN ---
+            db_notification = crud_notification.create_notification(db, user_id=order.technician_id, message=message,
+                                                                    link_to=link)
+            notification_event = {"event": "NEW_NOTIFICATION",
+                                  "payload": NotificationSchema.from_orm(db_notification).dict()}
             await manager.send_to_user(json.dumps(notification_event, default=str), order.technician_id)
 
+
 def get_repair_orders(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer), joinedload(RepairOrderModel.technician), joinedload(RepairOrderModel.status), joinedload(RepairOrderModel.device_type), joinedload(RepairOrderModel.device_conditions)).order_by(RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
+    return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer),
+                                              joinedload(RepairOrderModel.technician),
+                                              joinedload(RepairOrderModel.status),
+                                              joinedload(RepairOrderModel.device_type),
+                                              joinedload(RepairOrderModel.device_conditions)).order_by(
+        RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
+
 
 def get_repair_order(db: Session, order_id: int):
-    return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer), joinedload(RepairOrderModel.technician), joinedload(RepairOrderModel.status), joinedload(RepairOrderModel.device_type), joinedload(RepairOrderModel.device_conditions)).filter(RepairOrderModel.id == order_id).first()
+    return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer),
+                                              joinedload(RepairOrderModel.technician),
+                                              joinedload(RepairOrderModel.status),
+                                              joinedload(RepairOrderModel.device_type),
+                                              joinedload(RepairOrderModel.device_conditions)).filter(
+        RepairOrderModel.id == order_id).first()
 
-def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks: BackgroundTasks, technician_id: int | None = None):
+
+def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks: BackgroundTasks,
+                        technician_id: int | None = None):
     customer_id = order.customer_id
     if not customer_id and order.customer:
         db_customer = crud_customer.get_customer_by_dni(db, dni=order.customer.dni)
-        if db_customer: customer_id = db_customer.id
+        if db_customer:
+            customer_id = db_customer.id
         else:
             new_customer = crud_customer.create_customer(db, customer=order.customer)
             customer_id = new_customer.id
@@ -113,6 +149,7 @@ def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks:
     db.refresh(db_order)
     background_tasks.add_task(send_technician_notifications, order_id=db_order.id)
     return db_order
+
 
 def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpdate, background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
@@ -133,7 +170,9 @@ def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpd
     background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
     return db_order
 
-def assign_technician_and_start_process(db: Session, order_id: int, technician_id: int, background_tasks: BackgroundTasks):
+
+def assign_technician_and_start_process(db: Session, order_id: int, technician_id: int,
+                                        background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
     if db_order.technician_id is None and db_order.status_id in [1, 6]:
@@ -145,6 +184,7 @@ def assign_technician_and_start_process(db: Session, order_id: int, technician_i
         background_tasks.add_task(send_order_taken_notification, order_id=order_id, technician_id=technician_id)
         return db_order
     return None
+
 
 def delete_repair_order(db: Session, order_id: int, background_tasks: BackgroundTasks) -> bool:
     db_order = db.query(RepairOrderModel).filter(RepairOrderModel.id == order_id).first()

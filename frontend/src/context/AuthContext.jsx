@@ -1,3 +1,5 @@
+// frontend/src/context/AuthContext.jsx
+
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from '../api/authApi';
 import { fetchRepairOrders } from '../api/repairOrdersApi';
