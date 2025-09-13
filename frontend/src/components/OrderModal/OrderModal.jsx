@@ -18,9 +18,9 @@ import { CostsSection } from './CostsSection';
 import { DiagnosisSection } from './DiagnosisSection';
 import { ChecklistSection } from './ChecklistSection';
 import { ModalFooter } from './ModalFooter';
+import { PrintPreviewModal } from './PrintPreviewModal'; // Importar el nuevo modal
 
 export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
-
     const initialFormData = useMemo(() => ({
         dni: '', first_name: '', last_name: '', phone_number: '', device_type_id: '', device_model: '',
         serial_number: '', accesories: '', problem_description: '', observations: '', parts_used: '',
@@ -45,6 +45,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [isClientSearchFocused, setIsClientSearchFocused] = useState(false);
     const [selectedClientId, setSelectedClientId] = useState(null);
     const [sparePartStatus, setSparePartStatus] = useState('local');
+    // Nuevos estados para el flujo de impresión
+    const [showPrintPreview, setShowPrintPreview] = useState(false);
+    const [newlyCreatedOrder, setNewlyCreatedOrder] = useState(null);
 
     const permissions = usePermissions(mode, fullOrderData);
     const { showToast } = useToast();
@@ -54,6 +57,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             if (!isOpen) return;
             setIsLoading(true); setError(''); setFormData(initialFormData); setFullOrderData(null); setChecklistItems([]);
             setClientType('nuevo'); setClientSearch(''); setSelectedClientId(null); setUnlockMethod('password'); setMode(orderId ? 'view' : 'create'); setSparePartStatus('local');
+            setShowPrintPreview(false); setNewlyCreatedOrder(null);
             try {
                 const types = await fetchDeviceTypes();
                 setDeviceTypes(types);
@@ -105,7 +109,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         e.target.value = '';
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
-
     const handleTakeOrder = async () => {
         if (!orderId) return;
         setIsTakeConfirmModalOpen(false);
@@ -122,7 +125,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             setIsSubmitting(false);
         }
     };
-
     const handleConfirmUpdate = async () => {
         if (!orderId) return;
         setIsUpdateConfirmModalOpen(false);
@@ -144,7 +146,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             setIsSubmitting(false);
         }
     };
-
     const handleReopenOrder = async () => {
         if (!orderId) return;
         setIsReopenConfirmOpen(false);
@@ -178,9 +179,10 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 checklist: checklistItems.filter(item => item.client_answer !== null),
             };
             try {
-                await createRepairOrder(payload);
+                const newOrder = await createRepairOrder(payload);
                 showToast('Orden creada con éxito', 'success');
-                onClose(true);
+                setNewlyCreatedOrder(newOrder); // Guardamos la orden para el preview
+                setShowPrintPreview(true); // Activamos el modal de preview
             } catch (err) {
                 setError(err.message || "No se pudo crear la orden.");
                 showToast(err.message || "No se pudo crear la orden", 'error');
@@ -197,38 +199,42 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
     return (
         <>
-            <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <motion.div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
-                    <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : `Detalles de la Orden #${orderId}`}</motion.h2></AnimatePresence><button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button></div>
-                    {isLoading ? (<div className="flex-1 flex justify-center items-center p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
-                        <>
-                            <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
-                                <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
-                                <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
-                                <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
-                                <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
-                                <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
-                            </form>
-                            <ModalFooter
-                                mode={mode} permissions={permissions} onClose={onClose}
-                                isSubmitting={isSubmitting} error={error}
-                                setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
-                                setIsReopenConfirmOpen={setIsReopenConfirmOpen}
-                            />
-                        </>
-                    )}
+            <AnimatePresence>
+              {!showPrintPreview && (
+                <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
+                        <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : `Detalles de la Orden #${orderId}`}</motion.h2></AnimatePresence><button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button></div>
+                        {isLoading ? (<div className="flex-1 flex justify-center items-center p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
+                            <>
+                                <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
+                                    <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
+                                    <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
+                                    <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
+                                    <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
+                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
+                                </form>
+                                <ModalFooter
+                                    mode={mode} permissions={permissions} onClose={onClose}
+                                    isSubmitting={isSubmitting} error={error}
+                                    setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
+                                    setIsReopenConfirmOpen={setIsReopenConfirmOpen}
+                                />
+                            </>
+                        )}
+                    </motion.div>
                 </motion.div>
-            </motion.div>
+              )}
+            </AnimatePresence>
+
+            <PrintPreviewModal
+                isOpen={showPrintPreview}
+                onClose={onClose} // La prop onClose del padre cierra todo el flujo
+                orderData={newlyCreatedOrder}
+            />
+
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
-            <ConfirmationModal
-                isOpen={isReopenConfirmOpen}
-                onClose={() => setIsReopenConfirmOpen(false)}
-                onConfirm={handleReopenOrder}
-                title="Confirmar Reapertura"
-                message={`¿Estás seguro de que quieres reabrir la orden #${orderId} y pasarla al estado 'En Proceso'?`}
-                confirmText="Sí, Reabrir"
-            />
+            <ConfirmationModal isOpen={isReopenConfirmOpen} onClose={() => setIsReopenConfirmOpen(false)} onConfirm={handleReopenOrder} title="Confirmar Reapertura" message={`¿Estás seguro de que quieres reabrir la orden #${orderId} y pasarla al estado 'En Proceso'?`} confirmText="Sí, Reabrir" />
         </>
     );
 }
