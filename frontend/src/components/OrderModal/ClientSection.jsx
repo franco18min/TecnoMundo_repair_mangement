@@ -26,10 +26,10 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
                             </div>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <FormField label="DNI" name="dni" type="text" value={formData.dni} onChange={handleFormChange} required={clientType === 'nuevo'} />
-                            <FormField label="Nombre" name="first_name" type="text" value={formData.first_name} onChange={handleFormChange} required={clientType === 'nuevo'} />
-                            <FormField label="Apellido" name="last_name" type="text" value={formData.last_name} onChange={handleFormChange} required={clientType === 'nuevo'} />
-                            <FormField label="Teléfono" name="phone_number" type="tel" value={formData.phone_number} onChange={handleFormChange} required={clientType === 'nuevo'} />
+                            <FormField label="DNI" name="dni" type="text" value={formData.dni} onChange={handleFormChange} disabled={clientType === 'registrado'} required={clientType === 'nuevo'} />
+                            <FormField label="Nombre" name="first_name" type="text" value={formData.first_name} onChange={handleFormChange} disabled={clientType === 'registrado'} required={clientType === 'nuevo'} />
+                            <FormField label="Apellido" name="last_name" type="text" value={formData.last_name} onChange={handleFormChange} disabled={clientType === 'registrado'} required={clientType === 'nuevo'} />
+                            <FormField label="Teléfono" name="phone_number" type="tel" value={formData.phone_number} onChange={handleFormChange} disabled={clientType === 'registrado'} required={clientType === 'nuevo'} />
                         </div>
                     </motion.div>
                 </AnimatePresence>
