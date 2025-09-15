@@ -5,7 +5,6 @@ import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from '
 import { fetchRepairOrders } from '../api/repairOrdersApi';
 import { fetchNotifications, markNotificationAsRead as apiMarkAsRead } from '../api/notificationsApi';
 import { Loader } from 'lucide-react';
-// Ya no necesitamos useToast aquí
 
 const AuthContext = createContext(null);
 
@@ -16,23 +15,35 @@ export const AuthProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const websocketRef = useRef(null);
 
-  const mapOrderData = (order) => ({
+  // --- INICIO DE LA CORRECCIÓN ---
+  // Esta función ahora será la ÚNICA responsable de dar formato a los datos de las órdenes
+  const mapOrderData = useCallback((order) => ({
       id: order.id,
       customer: { name: `${order.customer.first_name} ${order.customer.last_name}` },
-      device: { type: order.device_type?.type_name || 'Desconocido', model: order.device_model },
+      // Aquí está la clave: creamos el objeto 'device' que esperan los componentes
+      device: {
+          type: order.device_type?.type_name || 'Desconocido',
+          model: order.device_model
+      },
       status: order.status?.status_name || 'Desconocido',
       assignedTechnician: { name: order.technician?.username || 'No asignado' },
       dateReceived: order.created_at,
       parts_used: order.parts_used || 'N/A',
-  });
+  }), []);
+  // --- FIN DE LA CORRECCIÓN ---
 
   const loadInitialData = useCallback(async () => {
       const user = await getCurrentUser();
       setCurrentUser(user);
       const [initialOrders, initialNotifications] = await Promise.all([ fetchRepairOrders(), fetchNotifications() ]);
-      setOrders(initialOrders);
+
+      // --- INICIO DE LA CORRECCIÓN ---
+      // Mapeamos los datos iniciales para que tengan la estructura correcta
+      setOrders(initialOrders.map(mapOrderData));
+      // --- FIN DE LA CORRECCIÓN ---
+
       setNotifications(initialNotifications);
-  }, []);
+  }, [mapOrderData]); // Añadimos mapOrderData como dependencia
 
   const validateToken = useCallback(async () => {
     const token = localStorage.getItem('accessToken');
@@ -70,15 +81,12 @@ export const AuthProvider = ({ children }) => {
         switch (data.event) {
             case 'ORDER_CREATED':
                 setOrders(prev => [mapOrderData(data.payload), ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived)));
-                // Se elimina la llamada a showToast
                 break;
             case 'ORDER_UPDATED':
                 setOrders(prev => prev.map(o => o.id === data.payload.id ? mapOrderData(data.payload) : o));
-                // Se elimina la llamada a showToast
                 break;
             case 'ORDER_DELETED':
                 setOrders(prev => prev.filter(o => o.id !== data.payload.id));
-                // Se elimina la llamada a showToast
                 break;
             case 'NEW_NOTIFICATION':
                 setNotifications(prev => [data.payload, ...prev]);
@@ -91,7 +99,7 @@ export const AuthProvider = ({ children }) => {
 
       return () => websocketRef.current?.close();
     }
-  }, [currentUser]);
+  }, [currentUser, mapOrderData]); // Añadimos mapOrderData como dependencia
 
   const login = async (username, password) => {
     await apiLogin(username, password);

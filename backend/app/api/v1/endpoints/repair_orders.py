@@ -20,42 +20,38 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/", response_model=List[schemas_repair_order.RepairOrder])
+@router.get("/", response_model=List[schemas_repair_order.RepairOrder], dependencies=[Depends(get_current_user)])
 def read_repair_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     try:
         orders = crud_repair_order.get_repair_orders(db, skip=skip, limit=limit)
         return orders
     except Exception as e:
-        print("--- 🚨 ERROR AL OBTENER LAS ÓRDENES DE REPARACIÓN 🚨 ---")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error en el servidor al consultar las órdenes.")
 
-@router.get("/{order_id}", response_model=schemas_repair_order.RepairOrder)
+@router.get("/{order_id}", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_user)])
 def read_repair_order(order_id: int, db: Session = Depends(get_db)):
     db_order = crud_repair_order.get_repair_order(db, order_id=order_id)
     if db_order is None:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
     return db_order
 
-@router.post("/", response_model=schemas_repair_order.RepairOrder)
+@router.post("/", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_admin_or_receptionist_user)])
 def create_new_repair_order(
         order: schemas_repair_order.RepairOrderCreate,
         background_tasks: BackgroundTasks,
         db: Session = Depends(get_db)
 ):
-    print("\n✅ [DEBUG] Petición a /repair-orders (POST) recibida.")
     try:
         new_order = crud_repair_order.create_repair_order(db=db, order=order, background_tasks=background_tasks)
-        print(f"✨ [DEBUG] Orden creada exitosamente con ID: {new_order.id}")
         return new_order
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        print("--- 🚨 ERROR AL CREAR LA ORDEN DE REPARACIÓN 🚨 ---")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error interno al crear la orden.")
 
-@router.patch("/{order_id}/take", response_model=schemas_repair_order.RepairOrder)
+@router.patch("/{order_id}/take", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_user)])
 def take_order(
         order_id: int,
         background_tasks: BackgroundTasks,
@@ -64,62 +60,60 @@ def take_order(
 ):
     technician_id = current_user.id
     updated_order = crud_repair_order.assign_technician_and_start_process(
-        db=db,
-        order_id=order_id,
-        technician_id=technician_id,
-        background_tasks=background_tasks
+        db=db, order_id=order_id, technician_id=technician_id, background_tasks=background_tasks
     )
     if updated_order is None:
         raise HTTPException(status_code=400, detail="La orden no se puede tomar (ya asignada o no está pendiente).")
     return updated_order
 
-@router.put("/{order_id}", response_model=schemas_repair_order.RepairOrder)
-def update_order(
+# --- RUTA MODIFICADA: Ahora es para que el TÉCNICO complete su trabajo ---
+@router.put("/{order_id}/complete", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_user)])
+def complete_order(
     order_id: int,
     order_update: schemas_repair_order.RepairOrderUpdate,
-    background_tasks: BackgroundTasks, # <-- Añadir
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    updated_order = crud_repair_order.update_repair_order(
-        db=db,
-        order_id=order_id,
-        order_update=order_update,
-        background_tasks=background_tasks # <-- Pasar
+    updated_order = crud_repair_order.complete_technician_work(
+        db=db, order_id=order_id, order_update=order_update, background_tasks=background_tasks
+    )
+    if updated_order is None:
+        raise HTTPException(status_code=404, detail="Orden no encontrada para completar.")
+    return updated_order
+
+# --- NUEVA RUTA: Para que ADMIN/RECEP modifiquen detalles ---
+@router.patch("/{order_id}/details", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_admin_or_receptionist_user)])
+def update_order_details_endpoint(
+    order_id: int,
+    order_update: schemas_repair_order.RepairOrderDetailsUpdate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    updated_order = crud_repair_order.update_order_details(
+        db=db, order_id=order_id, order_update=order_update, background_tasks=background_tasks
     )
     if updated_order is None:
         raise HTTPException(status_code=404, detail="Orden no encontrada para actualizar.")
     return updated_order
 
-
-@router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(get_current_admin_user)])
 def delete_order(
         order_id: int,
         background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),
-        current_admin: User = Depends(get_current_admin_user)
 ):
-    """
-    Elimina una orden de reparación. Devuelve 204 si tiene éxito.
-    """
     success = crud_repair_order.delete_repair_order(db=db, order_id=order_id, background_tasks=background_tasks)
     if not success:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
-
-    # No devolvemos nada, solo la respuesta con el código de estado
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.patch("/{order_id}/reopen", response_model=schemas_repair_order.RepairOrder)
+@router.patch("/{order_id}/reopen", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_admin_or_receptionist_user)])
 def reopen_order_endpoint(
     order_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_or_receptionist_user) # Ruta protegida
 ):
-    """
-    Reabre una orden completada. Solo para Admins y Recepcionistas.
-    """
     reopened_order = crud_repair_order.reopen_order(db=db, order_id=order_id, background_tasks=background_tasks)
     if reopened_order is None:
         raise HTTPException(status_code=400, detail="La orden no se puede reabrir (puede que no esté completada).")
     return reopened_order
-# --- FIN DE LA MODIFICACIÓN ---

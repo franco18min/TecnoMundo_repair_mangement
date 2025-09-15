@@ -10,7 +10,7 @@ from app.crud import crud_customer, crud_notification, crud_user
 from app.models.repair_order import RepairOrder as RepairOrderModel
 from app.models.device_condition import DeviceCondition as DeviceConditionModel
 from app.models.user import User as UserModel
-from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, RepairOrder as RepairOrderSchema
+from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, RepairOrder as RepairOrderSchema, RepairOrderDetailsUpdate
 from app.schemas.notification import Notification as NotificationSchema
 from app.db.session import SessionLocal
 
@@ -141,21 +141,45 @@ def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks:
             new_customer = crud_customer.create_customer(db, customer=order.customer)
             customer_id = new_customer.id
     if not customer_id: raise ValueError("Se requiere información del cliente para crear una orden.")
+
     status_id = 6 if order.is_spare_part_ordered else 1
+
+    # 1. Separamos los datos del checklist del resto del payload.
+    checklist_data = order.checklist
     order_data = order.dict(exclude={"checklist", "customer", "is_spare_part_ordered", "customer_id"})
+
+    # 2. Creamos la orden principal.
     db_order = RepairOrderModel(**order_data, customer_id=customer_id, technician_id=technician_id, status_id=status_id)
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
+
+    # 3. Si hay datos en el checklist, los recorremos y guardamos en la base de datos.
+    if checklist_data:
+        for item_data in checklist_data:
+            db_condition = DeviceConditionModel(
+                **item_data.dict(),
+                order_id=db_order.id  # <-- Aquí asociamos cada ítem a la orden creada.
+            )
+            db.add(db_condition)
+        db.commit()
+        db.refresh(db_order)
+
     background_tasks.add_task(send_technician_notifications, order_id=db_order.id)
     return db_order
 
 
-def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpdate, background_tasks: BackgroundTasks):
+# --- FIN DE LA FUNCIÓN MODIFICADA ---
+
+
+def complete_technician_work(db: Session, order_id: int, order_update: RepairOrderUpdate,
+                             background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
+
     update_data = order_update.dict(exclude_unset=True, exclude={'checklist'})
     for key, value in update_data.items(): setattr(db_order, key, value)
+
     if order_update.checklist is not None:
         existing_conditions = {c.check_description: c for c in db_order.device_conditions}
         for item_update in order_update.checklist:
@@ -163,11 +187,47 @@ def update_repair_order(db: Session, order_id: int, order_update: RepairOrderUpd
                 condition_to_update = existing_conditions[item_update.check_description]
                 item_data = item_update.dict(exclude_unset=True)
                 for key, value in item_data.items(): setattr(condition_to_update, key, value)
-    db_order.status_id = 3
+
+    db_order.status_id = 3  # Cambia el estado a "Completado"
     db_order.completed_at = func.now()
+    db_order.updated_at = func.now()
+
     db.commit()
     db.refresh(db_order)
-    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
+
+    message = f"La orden #{db_order.id} ha sido completada por el técnico."
+    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id, message=message)
+    return db_order
+
+
+# --- NUEVA FUNCIÓN ---
+def update_order_details(db: Session, order_id: int, order_update: RepairOrderDetailsUpdate,
+                         background_tasks: BackgroundTasks):
+    db_order = get_repair_order(db, order_id)
+    if not db_order:
+        return None
+
+    # 1. Extraemos los datos del cliente del payload de actualización
+    customer_update_data = order_update.customer
+    # 2. Excluimos 'customer' del diccionario principal para evitar el error
+    order_update_data = order_update.dict(exclude_unset=True, exclude={'customer'})
+
+    # 3. Actualizamos los campos de la orden principal (RepairOrder)
+    for key, value in order_update_data.items():
+        setattr(db_order, key, value)
+
+    # 4. Si hay datos del cliente para actualizar, lo hacemos campo por campo
+    if customer_update_data and db_order.customer:
+        for key, value in customer_update_data.dict(exclude_unset=True).items():
+            setattr(db_order.customer, key, value)
+
+    db_order.updated_at = func.now()
+
+    db.commit()
+    db.refresh(db_order)
+
+    message = f"Los detalles de la orden #{db_order.id} han sido modificados."
+    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id, message=message)
     return db_order
 
 

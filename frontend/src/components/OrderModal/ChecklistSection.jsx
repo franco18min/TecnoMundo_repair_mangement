@@ -1,3 +1,5 @@
+//frontend/src/components/OrderModal/ChecklistSection.jsx
+
 import React from 'react';
 import { X, ThumbsUp, ThumbsDown } from 'lucide-react';
 

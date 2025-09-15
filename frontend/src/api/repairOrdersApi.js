@@ -15,23 +15,14 @@ const getAuthHeaders = () => {
 
 export const fetchRepairOrders = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`, { headers: getAuthHeaders() });
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
     const data = await response.json();
-    return data.map(order => ({
-      id: order.id,
-      customer: { name: `${order.customer.first_name} ${order.customer.last_name}` },
-      device: {
-        type: order.device_type ? order.device_type.type_name : 'Desconocido',
-        model: order.device_model
-      },
-      status: order.status ? order.status.status_name : 'Desconocido',
-      assignedTechnician: { name: order.technician?.username || 'No asignado' },
-      dateReceived: order.created_at,
-      parts_used: order.parts_used || 'N/A',
-    }));
+    // El mapeo de datos que tenías aquí es específico para la tabla,
+    // es mejor que el backend devuelva siempre el objeto completo y el frontend lo adapte donde lo necesite.
+    return data;
   } catch (error) {
     console.error("No se pudieron obtener las órdenes de reparación:", error);
     return [];
@@ -88,9 +79,11 @@ export const takeRepairOrder = async (orderId) => {
   }
 };
 
-export const updateRepairOrder = async (orderId, orderData) => {
+// --- FUNCIÓN RENOMBRADA Y MODIFICADA ---
+// Usada por el TÉCNICO para enviar su diagnóstico y completar la orden.
+export const completeRepairOrder = async (orderId, orderData) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/complete`, { // Apunta al nuevo endpoint
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(orderData),
@@ -101,30 +94,43 @@ export const updateRepairOrder = async (orderId, orderData) => {
         }
         return await response.json();
     } catch (error) {
-        console.error(`No se pudo actualizar la orden ${orderId}:`, error);
+        console.error(`No se pudo completar la orden ${orderId}:`, error);
         throw error;
     }
 };
 
-// --- INICIO DE LA MODIFICACIÓN ---
+// --- NUEVA FUNCIÓN ---
+// Usada por ADMIN/RECEPCIONISTA para modificar detalles sin cambiar el estado.
+export const updateOrderDetails = async (orderId, orderData) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/details`, { // Apunta al nuevo endpoint
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(orderData),
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`No se pudieron actualizar los detalles de la orden ${orderId}:`, error);
+        throw error;
+    }
+};
+
+
 export const deleteRepairOrder = async (orderId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
-
-    // Una respuesta 204 (No Content) también indica éxito (response.ok será true)
     if (!response.ok) {
-      // Si hay un error, intentamos leer el JSON. Si no, lanzamos un error genérico.
       const errorData = await response.json().catch(() => ({ detail: `Error HTTP: ${response.status}` }));
       throw new Error(errorData.detail);
     }
-
-    // Si la operación fue exitosa (ej. 204), no hay cuerpo JSON que leer.
-    // Simplemente retornamos un valor de éxito.
     return true;
-
   } catch (error) {
     console.error(`No se pudo eliminar la orden ${orderId}:`, error);
     throw error;
