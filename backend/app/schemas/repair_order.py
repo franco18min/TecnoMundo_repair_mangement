@@ -80,3 +80,4 @@ class RepairOrderDetailsUpdate(BaseModel):
     deposit: Optional[float] = None
     parts_used: Optional[str] = None
     status_id: Optional[int] = Field(None, ge=1, le=6) # Permitir cambio de estado manual
+    checklist: Optional[List[DeviceConditionUpdate]] = None # Permitir la actualización del checklist

@@ -207,29 +207,48 @@ def update_order_details(db: Session, order_id: int, order_update: RepairOrderDe
     if not db_order:
         return None
 
-    # 1. Extraemos los datos del cliente del payload de actualización
     customer_update_data = order_update.customer
-    # 2. Excluimos 'customer' del diccionario principal para evitar el error
-    order_update_data = order_update.dict(exclude_unset=True, exclude={'customer'})
+    # Excluimos 'customer' y ahora también 'checklist' del diccionario principal
+    order_update_data = order_update.dict(exclude_unset=True, exclude={'customer', 'checklist'})
 
-    # 3. Actualizamos los campos de la orden principal (RepairOrder)
     for key, value in order_update_data.items():
         setattr(db_order, key, value)
 
-    # 4. Si hay datos del cliente para actualizar, lo hacemos campo por campo
     if customer_update_data and db_order.customer:
         for key, value in customer_update_data.dict(exclude_unset=True).items():
             setattr(db_order.customer, key, value)
+
+    # V--- BLOQUE DE CÓDIGO AÑADIDO PARA MANEJAR EL CHECKLIST ---V
+    if order_update.checklist is not None:
+        # Creamos un diccionario para acceder fácilmente a las condiciones existentes por su descripción
+        existing_conditions = {cond.check_description: cond for cond in db_order.device_conditions}
+
+        for item_update in order_update.checklist:
+            # Si el ítem ya existe en la BD, lo actualizamos
+            if item_update.check_description in existing_conditions:
+                condition_to_update = existing_conditions[item_update.check_description]
+                item_data = item_update.dict(exclude_unset=True)
+                for key, value in item_data.items():
+                    setattr(condition_to_update, key, value)
+            # Si el ítem NO existe, es nuevo y debemos crearlo
+            else:
+                new_condition = DeviceConditionModel(
+                    **item_update.dict(),
+                    order_id=db_order.id  # Lo asociamos a la orden actual
+                )
+                db.add(new_condition)
+    # ^--- FIN DEL BLOQUE AÑADIDO ---^
 
     db_order.updated_at = func.now()
 
     db.commit()
     db.refresh(db_order)
 
+    # El sistema de notificaciones ya está preparado para este cambio.
     message = f"Los detalles de la orden #{db_order.id} han sido modificados."
-    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id, message=message)
+    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
     return db_order
-
+# --- FIN DE LA MODIFICACIÓN ---
 
 def assign_technician_and_start_process(db: Session, order_id: int, technician_id: int,
                                         background_tasks: BackgroundTasks):
