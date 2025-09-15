@@ -137,9 +137,42 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         e.target.value = '';
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
-    const handleTakeOrder = async () => { /* ... (código existente) ... */ };
-    const handleReopenOrder = async () => { /* ... (código existente) ... */ };
 
+    const handleTakeOrder = async () => {
+        if (!orderId) return;
+        setIsTakeConfirmModalOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await takeRepairOrder(orderId);
+            showToast('Orden tomada con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            const errorMessage = err.message || "No se pudo tomar la orden.";
+            setError(errorMessage);
+            showToast(errorMessage, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleReopenOrder = async () => {
+        if (!orderId) return;
+        setIsReopenConfirmOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await reopenRepairOrder(orderId);
+            showToast('Orden reabierta correctamente', 'success');
+            onClose(true);
+        } catch (err) {
+            const errorMessage = err.message || "No se pudo reabrir la orden.";
+            setError(errorMessage);
+            showToast(errorMessage, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     const handleConfirmUpdate = async () => {
         if (!orderId) return;
         setIsUpdateConfirmModalOpen(false);
