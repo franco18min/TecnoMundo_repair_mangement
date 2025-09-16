@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
+import { X, Loader } from 'lucide-react';
 
 import {
     createRepairOrder,
@@ -30,6 +30,23 @@ import { PrintPreviewModal } from './PrintPreviewModal';
 import { ClientTicket } from '../tickets/ClientTicket';
 import { WorkshopTicket } from '../tickets/WorkshopTicket';
 
+// --- INICIO DE LA CORRECCIÓN ---
+// Se mueve la definición de la clase FUERA del componente OrderModal.
+// Esto asegura que el componente sea estable y no se recree en cada renderizado.
+class PrintableContent extends React.Component {
+  render() {
+    const { order } = this.props;
+    if (!order) return null;
+    return (
+      <div>
+        <ClientTicket order={order} />
+        <div style={{ pageBreakBefore: 'always' }}></div>
+        <WorkshopTicket order={order} />
+      </div>
+    );
+  }
+}
+// --- FIN DE LA CORRECCIÓN ---
 
 export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const initialFormData = useMemo(() => ({
@@ -62,23 +79,19 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const permissions = usePermissions(mode, fullOrderData, currentUser);
     const { showToast } = useToast();
 
-    const printExistingOrderRef = useRef();
-    const handlePrintExistingOrder = useReactToPrint({
-        content: () => printExistingOrderRef.current,
+    const printComponentRef = useRef();
+    const handlePrint = useReactToPrint({
+        content: () => printComponentRef.current,
+        onAfterPrint: () => {
+          setShowPrintPreview(false);
+          onClose(true);
+        },
     });
 
-    const handlePreviewExistingOrder = () => {
-        setOrderForPreview(fullOrderData);
+    const handlePreviewAndPrint = (order) => {
+        setOrderForPreview(order);
         setShowPrintPreview(true);
     };
-
-    const PrintExistingContainer = () => (
-        <div ref={printExistingOrderRef} className="hidden">
-            <ClientTicket order={fullOrderData} />
-            <div style={{ pageBreakBefore: 'always' }}></div>
-            <WorkshopTicket order={fullOrderData} />
-        </div>
-    );
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -173,6 +186,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             setIsSubmitting(false);
         }
     };
+
     const handleConfirmUpdate = async () => {
         if (!orderId) return;
         setIsUpdateConfirmModalOpen(false);
@@ -214,8 +228,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             try {
                 const newOrder = await createRepairOrder(payload);
                 showToast('Orden creada con éxito', 'success');
-                setOrderForPreview(newOrder);
-                setShowPrintPreview(true);
+                handlePreviewAndPrint(newOrder);
             } catch (err) {
                 setError(err.message || "No se pudo crear la orden.");
                 showToast(err.message || "No se pudo crear la orden", 'error');
@@ -244,7 +257,10 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
     return (
         <>
-            <PrintExistingContainer />
+            <div className="hidden">
+                <PrintableContent ref={printComponentRef} order={orderForPreview} />
+            </div>
+
             <AnimatePresence>
               {!showPrintPreview && (
                 <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -267,7 +283,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     error={error}
                                     setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
                                     setIsReopenConfirmOpen={setIsReopenConfirmOpen}
-                                    handlePrint={handlePreviewExistingOrder}
+                                    handlePrint={() => handlePreviewAndPrint(fullOrderData)}
                                     setMode={setMode}
                                     currentUser={currentUser}
                                 />
@@ -280,11 +296,12 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
             <PrintPreviewModal
                 isOpen={showPrintPreview}
-                onClose={onClose}
-                // --- INICIO DE LA CORRECCIÓN ---
-                // La variable correcta es 'orderForPreview'
+                onClose={() => {
+                  setShowPrintPreview(false);
+                  onClose(true);
+                }}
                 orderData={orderForPreview}
-                // --- FIN DE LA CORRECCIÓN ---
+                onPrint={handlePrint}
             />
 
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
