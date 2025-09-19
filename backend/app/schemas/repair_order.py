@@ -48,6 +48,9 @@ class RepairOrderCreate(BaseModel):
     observations: Optional[str] = None
     total_cost: Optional[float] = 0.0
     deposit: Optional[float] = 0.0
+    # --- INICIO DE LA MODIFICACIÓN ---
+    parts_used: Optional[str] = None # Se añade el campo que faltaba
+    # --- FIN DE LA MODIFICACIÓN ---
     checklist: List[DeviceConditionCreate] = []
 
     class Config:

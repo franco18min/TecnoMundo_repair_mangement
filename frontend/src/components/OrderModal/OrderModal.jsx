@@ -20,12 +20,7 @@ import { CostsSection } from './CostsSection';
 import { DiagnosisSection } from './DiagnosisSection';
 import { ChecklistSection } from './ChecklistSection';
 import { ModalFooter } from './ModalFooter';
-// --- INICIO DE LA MODIFICACIÓN ---
-// Importamos el nuevo componente de impresión y eliminamos el de previsualización
 import { OrderPrinter } from '../tickets/OrderPrinter';
-
-// Se elimina la clase 'PrintableContent' de aquí.
-// --- FIN DE LA MODIFICACIÓN ---
 
 
 export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
@@ -53,15 +48,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [isClientSearchFocused, setIsClientSearchFocused] = useState(false);
     const [selectedClientId, setSelectedClientId] = useState(null);
     const [sparePartStatus, setSparePartStatus] = useState('local');
-
-    // --- INICIO DE LA MODIFICACIÓN ---
-    // Se eliminan los estados relacionados a la previsualización
-    // const [showPrintPreview, setShowPrintPreview] = useState(false);
-    // const [orderForPreview, setOrderForPreview] = useState(null);
-
-    // Creamos una ref para nuestro nuevo componente de impresión
     const printerRef = useRef();
-    // --- FIN DE LA MODIFICACIÓN ---
 
     const permissions = usePermissions(mode, fullOrderData, currentUser);
     const { showToast } = useToast();
@@ -123,9 +110,73 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
 
-    const handleTakeOrder = async () => { /* ... (sin cambios) ... */ };
-    const handleReopenOrder = async () => { /* ... (sin cambios) ... */ };
-    const handleConfirmUpdate = async () => { /* ... (sin cambios) ... */ };
+    // --- INICIO DE LA RESTAURACIÓN ---
+    const handleTakeOrder = async () => {
+        if (!orderId) return;
+        setIsTakeConfirmModalOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await takeRepairOrder(orderId);
+            showToast('Orden tomada con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo tomar la orden.");
+            showToast(err.message || "No se pudo tomar la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleReopenOrder = async () => {
+        if (!orderId) return;
+        setIsReopenConfirmOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await reopenRepairOrder(orderId);
+            showToast('Orden reabierta con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo reabrir la orden.");
+            showToast(err.message || "No se pudo reabrir la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleConfirmUpdate = async () => {
+        if (!orderId) return;
+        setIsUpdateConfirmModalOpen(false);
+        setIsSubmitting(true);
+        setError('');
+
+        const payload = {
+            technician_diagnosis: formData.technician_diagnosis,
+            repair_notes: formData.repair_notes,
+            parts_used: formData.parts_used,
+            total_cost: Number(formData.total_cost) || 0,
+            deposit: Number(formData.deposit) || 0,
+            checklist: checklistItems.map(item => ({
+                check_description: item.check_description,
+                client_answer: item.client_answer,
+                technician_finding: item.technician_finding,
+                technician_notes: item.technician_notes,
+            })),
+        };
+
+        try {
+            await completeRepairOrder(orderId, payload);
+            showToast('Orden actualizada con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo actualizar la orden.");
+            showToast(err.message || "No se pudo actualizar la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    // --- FIN DE LA RESTAURACIÓN ---
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -146,41 +197,43 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             try {
                 const newOrder = await createRepairOrder(payload);
                 showToast('Orden creada con éxito', 'success');
-                // --- INICIO DE LA MODIFICACIÓN ---
-                // Llamamos a la función de impresión expuesta por nuestro componente OrderPrinter
                 printerRef.current?.triggerPrint(newOrder);
-                onClose(true); // Cerramos el modal
-                // --- FIN DE LA MODIFICACIÓN ---
+                onClose(true);
             } catch (err) {
                 setError(err.message || "No se pudo crear la orden.");
                 showToast(err.message || "No se pudo crear la orden", 'error');
                 setIsSubmitting(false);
             }
         }
-        else if (mode === 'edit') { /* ... (sin cambios) ... */ }
+        else if (mode === 'edit') {
+             try {
+                await updateOrderDetails(orderId, payload);
+                showToast('Orden modificada con éxito', 'success');
+                onClose(true);
+            } catch (err) {
+                 setError(err.message || "No se pudo modificar la orden.");
+                 showToast(err.message || "No se pudo modificar la orden", 'error');
+            } finally {
+                setIsSubmitting(false);
+            }
+        }
         else if (permissions.canEditDiagnosisPanel) {
             setIsUpdateConfirmModalOpen(true);
         }
     };
 
-    // --- INICIO DE LA MODIFICACIÓN ---
-    // Función que pasaremos al footer para imprimir una orden existente
     const handleDirectPrint = () => {
         if (fullOrderData) {
             printerRef.current?.triggerPrint(fullOrderData);
         }
     };
-    // --- FIN DE LA MODIFICACIÓN ---
 
     const isPatternValue = formData.password_or_pattern && formData.password_or_pattern.includes('-');
     if (!isOpen) return null;
 
     return (
         <>
-            {/* --- INICIO DE LA MODIFICACIÓN --- */}
-            {/* Renderizamos el componente de impresión y le pasamos la ref */}
             <OrderPrinter ref={printerRef} />
-            {/* --- FIN DE LA MODIFICACIÓN --- */}
 
             <AnimatePresence>
                 <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -203,9 +256,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     error={error}
                                     setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
                                     setIsReopenConfirmOpen={setIsReopenConfirmOpen}
-                                    // --- INICIO DE LA MODIFICACIÓN ---
-                                    handlePrint={handleDirectPrint} // Pasamos la nueva función directa
-                                    // --- FIN DE LA MODIFICACIÓN ---
+                                    handlePrint={handleDirectPrint}
                                     setMode={setMode}
                                     currentUser={currentUser}
                                 />
@@ -214,10 +265,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                     </motion.div>
                 </motion.div>
             </AnimatePresence>
-
-            {/* --- INICIO DE LA MODIFICACIÓN --- */}
-            {/* Se elimina el PrintPreviewModal de aquí */}
-            {/* --- FIN DE LA MODIFICACIÓN --- */}
 
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
