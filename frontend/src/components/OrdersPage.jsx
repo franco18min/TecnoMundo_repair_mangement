@@ -51,7 +51,8 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
 );
 
 export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
-    const { orders } = useAuth();
+    // Usamos 'filteredOrders' en lugar de 'orders'. La variable ahora se llama 'ordersToDisplay' para mayor claridad.
+    const { filteredOrders: ordersToDisplay } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [orderToDelete, setOrderToDelete] = useState(null);
@@ -81,19 +82,20 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         }
     };
 
-    const uniqueTechnicians = useMemo(() => ['Todos', ...new Set((orders || []).map(order => order.assignedTechnician.name))], [orders]);
-    const uniqueDeviceTypes = useMemo(() => ['Todos', ...new Set((orders || []).map(order => order.device.type))], [orders]);
+    // Los filtros ahora operan sobre la lista de órdenes ya filtrada por sucursal.
+    const uniqueTechnicians = useMemo(() => ['Todos', ...new Set((ordersToDisplay || []).map(order => order.assignedTechnician.name))], [ordersToDisplay]);
+    const uniqueDeviceTypes = useMemo(() => ['Todos', ...new Set((ordersToDisplay || []).map(order => order.device.type))], [ordersToDisplay]);
     const uniqueStatusesOptions = useMemo(() => {
-        const statuses = [...new Set((orders || []).map(order => order.status))];
+        const statuses = [...new Set((ordersToDisplay || []).map(order => order.status))];
         const options = statuses.map(status => ({
             value: status,
             text: statusConfig[status]?.text || status
         }));
         return [{ value: 'Todos', text: 'Todos' }, ...options];
-    }, [orders]);
+    }, [ordersToDisplay]);
 
-    const filteredOrders = useMemo(() => {
-        return (orders || []).filter(order => {
+    const filteredAndSortedOrders = useMemo(() => {
+        return (ordersToDisplay || []).filter(order => {
             const filterId = filters.id.trim();
             const filterClient = filters.client.trim().toLowerCase();
             const filterParts = filters.parts_used.trim().toLowerCase();
@@ -107,7 +109,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
             if (filterParts && !order.parts_used.toLowerCase().includes(filterParts)) return false;
             return true;
         });
-    }, [orders, filters]);
+    }, [ordersToDisplay, filters]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -163,8 +165,8 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
           </thead>
           <tbody>
             <AnimatePresence>
-            {(!orders || orders.length === 0) ? ( <tr><td colSpan="7" className="text-center p-8 text-gray-500">No hay órdenes para mostrar.</td></tr> )
-            : filteredOrders.length > 0 ? filteredOrders.map((order) => {
+            {(!ordersToDisplay || ordersToDisplay.length === 0) ? ( <tr><td colSpan="7" className="text-center p-8 text-gray-500">No hay órdenes para mostrar en esta sucursal.</td></tr> )
+            : filteredAndSortedOrders.length > 0 ? filteredAndSortedOrders.map((order) => {
               const currentStatus = statusConfig[order.status] || statusConfig['Default'];
               return (
                 <motion.tr key={order.id} className="border-b border-gray-200 hover:bg-indigo-50/50" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} layout>

@@ -10,7 +10,8 @@ from app.crud import crud_customer, crud_notification, crud_user
 from app.models.repair_order import RepairOrder as RepairOrderModel
 from app.models.device_condition import DeviceCondition as DeviceConditionModel
 from app.models.user import User as UserModel
-from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, RepairOrder as RepairOrderSchema, RepairOrderDetailsUpdate
+from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, RepairOrder as RepairOrderSchema, \
+    RepairOrderDetailsUpdate
 from app.schemas.notification import Notification as NotificationSchema
 from app.db.session import SessionLocal
 
@@ -25,9 +26,7 @@ async def send_technician_notifications(order_id: int):
         technicians = crud_user.get_users_by_role(db, role_name="Technical")
         if not technicians: return
         message = f"Nueva orden #{order.id} ({order.device_model}) ha sido creada."
-        # --- MODIFICADO ---
         link = f"order:{order.id}"
-        # --- FIN DE LA MODIFICACIÓN ---
         for tech in technicians:
             db_notification = crud_notification.create_notification(db, user_id=tech.id, message=message, link_to=link)
             notification_event = {"event": "NEW_NOTIFICATION",
@@ -48,9 +47,7 @@ async def send_order_taken_notification(order_id: int, technician_id: int):
                                                                                                               "Receptionist")
         if not admins_receptionists: return
         message = f"El técnico {technician.username} ha tomado la orden #{order.id}."
-        # --- MODIFICADO ---
         link = f"order:{order.id}"
-        # --- FIN DE LA MODIFICACIÓN ---
         for user in admins_receptionists:
             db_notification = crud_notification.create_notification(db, user_id=user.id, message=message, link_to=link)
             notification_event = {"event": "NEW_NOTIFICATION",
@@ -69,9 +66,7 @@ async def send_order_updated_notification(order_id: int):
                                                                                                               "Receptionist")
         if not admins_receptionists: return
         message = f"La orden #{order.id} ha sido completada por el técnico."
-        # --- MODIFICADO ---
         link = f"order:{order.id}"
-        # --- FIN DE LA MODIFICACIÓN ---
         for user in admins_receptionists:
             db_notification = crud_notification.create_notification(db, user_id=user.id, message=message, link_to=link)
             notification_event = {"event": "NEW_NOTIFICATION",
@@ -87,24 +82,15 @@ async def send_order_deleted_notification(order_id: int):
 
 
 async def send_order_reopened_notification(order_id: int):
-    """
-    Emite un evento ORDER_UPDATED y notifica al técnico asignado que la orden fue reabierta.
-    """
     with SessionLocal() as db:
         order = get_repair_order(db, order_id=order_id)
         if not order: return
-
-        # 1. Notificar a TODOS los usuarios para que actualicen la orden en su tabla
         event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(order).dict()}
         all_users = db.query(UserModel).all()
         await manager.broadcast_to_users(json.dumps(event_payload, default=str), [user.id for user in all_users])
-
-        # 2. Enviar notificación de CAMPANA solo al técnico asignado
         if order.technician_id:
             message = f"La orden #{order.id} ({order.device_model}) ha sido reabierta y requiere tu atención."
-            # --- MODIFICADO ---
             link = f"order:{order.id}"
-            # --- FIN DE LA MODIFICACIÓN ---
             db_notification = crud_notification.create_notification(db, user_id=order.technician_id, message=message,
                                                                     link_to=link)
             notification_event = {"event": "NEW_NOTIFICATION",
@@ -112,26 +98,87 @@ async def send_order_reopened_notification(order_id: int):
             await manager.send_to_user(json.dumps(notification_event, default=str), order.technician_id)
 
 
-def get_repair_orders(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer),
-                                              joinedload(RepairOrderModel.technician),
-                                              joinedload(RepairOrderModel.status),
-                                              joinedload(RepairOrderModel.device_type),
-                                              joinedload(RepairOrderModel.device_conditions)).order_by(
-        RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
+async def send_order_details_updated_notification(order_id: int, actor_user_id: int):
+    with SessionLocal() as db:
+        order = get_repair_order(db, order_id=order_id)
+        if not order: return
+
+        # 1. Notificar a todos los clientes conectados para que la UI se actualice en tiempo real.
+        event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(order).dict()}
+        all_users = db.query(UserModel).all()
+        await manager.broadcast_to_users(json.dumps(event_payload, default=str), [user.id for user in all_users])
+
+        # 2. Construir la lista de destinatarios para la notificación de "campana".
+        recipients = []
+
+        # Añadir administradores y recepcionistas
+        admins_receptionists = crud_user.get_users_by_role(db, "Administrator") + crud_user.get_users_by_role(db,
+                                                                                                              "Receptionist")
+        recipients.extend(admins_receptionists)
+
+        # Añadir al técnico asignado, si existe
+        all_technicians = crud_user.get_users_by_role(db, "Technical")
+        recipients.extend(all_technicians)
+
+        # 3. Filtrar para evitar duplicados y al actor que originó el cambio.
+        # Usamos un diccionario para eliminar duplicados (ej: si un admin es el técnico) y luego filtramos al actor.
+        final_recipients = {user.id: user for user in recipients}.values()
+
+        message = f"Los detalles de la orden #{order.id} han sido modificados."
+        link = f"order:{order.id}"
+
+        for user in final_recipients:
+            if user.id != actor_user_id:
+                db_notification = crud_notification.create_notification(db, user_id=user.id, message=message,
+                                                                        link_to=link)
+                notification_event = {"event": "NEW_NOTIFICATION",
+                                      "payload": NotificationSchema.from_orm(db_notification).dict()}
+                await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
+
+
+def get_repair_orders(db: Session, user: UserModel, skip: int = 0, limit: int = 100):
+    """
+    Obtiene una lista de órdenes de reparación.
+    - Si el usuario es Administrador, obtiene todas las órdenes.
+    - Para otros roles, filtra las órdenes por la sucursal del usuario.
+    """
+    query = db.query(RepairOrderModel).options(
+        joinedload(RepairOrderModel.customer),
+        joinedload(RepairOrderModel.technician),
+        joinedload(RepairOrderModel.status),
+        joinedload(RepairOrderModel.device_type),
+        joinedload(RepairOrderModel.device_conditions),
+        joinedload(RepairOrderModel.branch) # <-- Cargamos la relación con la sucursal
+    )
+
+    # Si el usuario NO es Administrador y TIENE una sucursal asignada, filtramos.
+    if user.role.role_name != "Administrator" and user.branch_id:
+        query = query.filter(RepairOrderModel.branch_id == user.branch_id)
+
+    return query.order_by(RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def get_repair_order(db: Session, order_id: int):
-    return db.query(RepairOrderModel).options(joinedload(RepairOrderModel.customer),
-                                              joinedload(RepairOrderModel.technician),
-                                              joinedload(RepairOrderModel.status),
-                                              joinedload(RepairOrderModel.device_type),
-                                              joinedload(RepairOrderModel.device_conditions)).filter(
-        RepairOrderModel.id == order_id).first()
+    return db.query(RepairOrderModel).options(
+        joinedload(RepairOrderModel.customer),
+        joinedload(RepairOrderModel.technician),
+        joinedload(RepairOrderModel.status),
+        joinedload(RepairOrderModel.device_type),
+        joinedload(RepairOrderModel.device_conditions),
+        joinedload(RepairOrderModel.branch) # <-- Cargamos la relación con la sucursal
+    ).filter(RepairOrderModel.id == order_id).first()
 
 
-def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks: BackgroundTasks,
-                        technician_id: int | None = None):
+def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks: BackgroundTasks, user_id: int):
+    """
+    Crea una nueva orden de reparación, asignando automáticamente
+    la sucursal del usuario que la crea.
+    """
+    # Obtenemos el usuario para acceder a su branch_id
+    creating_user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not creating_user or not creating_user.branch_id:
+        raise ValueError("El usuario no tiene una sucursal asignada y no puede crear órdenes.")
+
     customer_id = order.customer_id
     if not customer_id and order.customer:
         db_customer = crud_customer.get_customer_by_dni(db, dni=order.customer.dni)
@@ -143,24 +190,22 @@ def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks:
     if not customer_id: raise ValueError("Se requiere información del cliente para crear una orden.")
 
     status_id = 6 if order.is_spare_part_ordered else 1
-
-    # 1. Separamos los datos del checklist del resto del payload.
     checklist_data = order.checklist
     order_data = order.dict(exclude={"checklist", "customer", "is_spare_part_ordered", "customer_id"})
 
-    # 2. Creamos la orden principal.
-    db_order = RepairOrderModel(**order_data, customer_id=customer_id, technician_id=technician_id, status_id=status_id)
+    db_order = RepairOrderModel(
+        **order_data,
+        customer_id=customer_id,
+        status_id=status_id,
+        branch_id=creating_user.branch_id  # Asignación automática de la sucursal
+    )
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
 
-    # 3. Si hay datos en el checklist, los recorremos y guardamos en la base de datos.
     if checklist_data:
         for item_data in checklist_data:
-            db_condition = DeviceConditionModel(
-                **item_data.dict(),
-                order_id=db_order.id  # <-- Aquí asociamos cada ítem a la orden creada.
-            )
+            db_condition = DeviceConditionModel(**item_data.dict(), order_id=db_order.id)
             db.add(db_condition)
         db.commit()
         db.refresh(db_order)
@@ -169,17 +214,12 @@ def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks:
     return db_order
 
 
-# --- FIN DE LA FUNCIÓN MODIFICADA ---
-
-
 def complete_technician_work(db: Session, order_id: int, order_update: RepairOrderUpdate,
                              background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
-
     update_data = order_update.dict(exclude_unset=True, exclude={'checklist'})
     for key, value in update_data.items(): setattr(db_order, key, value)
-
     if order_update.checklist is not None:
         existing_conditions = {c.check_description: c for c in db_order.device_conditions}
         for item_update in order_update.checklist:
@@ -187,68 +227,47 @@ def complete_technician_work(db: Session, order_id: int, order_update: RepairOrd
                 condition_to_update = existing_conditions[item_update.check_description]
                 item_data = item_update.dict(exclude_unset=True)
                 for key, value in item_data.items(): setattr(condition_to_update, key, value)
-
-    db_order.status_id = 3  # Cambia el estado a "Completado"
+    db_order.status_id = 3
     db_order.completed_at = func.now()
     db_order.updated_at = func.now()
-
     db.commit()
     db.refresh(db_order)
-
-    message = f"La orden #{db_order.id} ha sido completada por el técnico."
-    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id, message=message)
+    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
     return db_order
 
 
-# --- NUEVA FUNCIÓN ---
 def update_order_details(db: Session, order_id: int, order_update: RepairOrderDetailsUpdate,
-                         background_tasks: BackgroundTasks):
+                         background_tasks: BackgroundTasks, user_id: int):
     db_order = get_repair_order(db, order_id)
-    if not db_order:
-        return None
-
+    if not db_order: return None
     customer_update_data = order_update.customer
-    # Excluimos 'customer' y ahora también 'checklist' del diccionario principal
     order_update_data = order_update.dict(exclude_unset=True, exclude={'customer', 'checklist'})
-
     for key, value in order_update_data.items():
         setattr(db_order, key, value)
-
     if customer_update_data and db_order.customer:
         for key, value in customer_update_data.dict(exclude_unset=True).items():
             setattr(db_order.customer, key, value)
-
-    # V--- BLOQUE DE CÓDIGO AÑADIDO PARA MANEJAR EL CHECKLIST ---V
     if order_update.checklist is not None:
-        # Creamos un diccionario para acceder fácilmente a las condiciones existentes por su descripción
         existing_conditions = {cond.check_description: cond for cond in db_order.device_conditions}
-
         for item_update in order_update.checklist:
-            # Si el ítem ya existe en la BD, lo actualizamos
             if item_update.check_description in existing_conditions:
                 condition_to_update = existing_conditions[item_update.check_description]
                 item_data = item_update.dict(exclude_unset=True)
                 for key, value in item_data.items():
                     setattr(condition_to_update, key, value)
-            # Si el ítem NO existe, es nuevo y debemos crearlo
             else:
-                new_condition = DeviceConditionModel(
-                    **item_update.dict(),
-                    order_id=db_order.id  # Lo asociamos a la orden actual
-                )
+                new_condition = DeviceConditionModel(**item_update.dict(), order_id=db_order.id)
                 db.add(new_condition)
-    # ^--- FIN DEL BLOQUE AÑADIDO ---^
-
     db_order.updated_at = func.now()
-
     db.commit()
     db.refresh(db_order)
 
-    # El sistema de notificaciones ya está preparado para este cambio.
-    message = f"Los detalles de la orden #{db_order.id} han sido modificados."
-    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
+    # --- INICIO DE LA CORRECCIÓN ---
+    # Llamamos a la nueva función de notificación pasándole el ID del actor para que sea excluido.
+    background_tasks.add_task(send_order_details_updated_notification, order_id=db_order.id, actor_user_id=user_id)
+    # --- FIN DE LA CORRECCIÓN ---
     return db_order
-# --- FIN DE LA MODIFICACIÓN ---
+
 
 def assign_technician_and_start_process(db: Session, order_id: int, technician_id: int,
                                         background_tasks: BackgroundTasks):
@@ -276,27 +295,15 @@ def delete_repair_order(db: Session, order_id: int, background_tasks: Background
 
 
 def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
-    """
-    Reabre una orden que estaba completada, la devuelve a "En Proceso".
-    """
     db_order = get_repair_order(db, order_id)
-    if not db_order:
-        return None
-
-    # Solo se pueden reabrir órdenes completadas (status 3)
+    if not db_order: return None
     if db_order.status_id == 3:
-        db_order.status_id = 2  # 2 = In Process
-        db_order.completed_at = None  # Limpiamos la fecha de completado
-
-        # Opcional: añadir una nota automática
+        db_order.status_id = 2
+        db_order.completed_at = None
         note_prefix = "\n--- ORDEN REABIERTA ---"
         db_order.repair_notes = f"{db_order.repair_notes or ''}{note_prefix}"
-
         db.commit()
         db.refresh(db_order)
-
-        # Añadimos la tarea de notificación
         background_tasks.add_task(send_order_reopened_notification, order_id=order_id)
-
         return db_order
-    return None  # No se puede reabrir si no está completada
+    return None

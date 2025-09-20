@@ -2,8 +2,8 @@
 
 from pydantic import BaseModel
 from typing import Optional
+from .branch import Branch # <-- IMPORTAMOS EL NUEVO ESQUEMA
 
-# --- INICIO DE LA MODIFICACIÓN ---
 # Nuevo schema para representar el rol
 class Role(BaseModel):
     role_name: str
@@ -16,11 +16,12 @@ class UserWithRole(BaseModel):
     username: str
     email: str
     role: Role
+    # --- INICIO DE LA MODIFICACIÓN ---
+    branch: Optional[Branch] = None # <-- AÑADIMOS LA SUCURSAL
+    # --- FIN DE LA MODIFICACIÓN ---
 
     class Config:
         from_attributes = True
-# --- FIN DE LA MODIFICACIÓN ---
-
 
 # Esquema para mostrar la información pública de un usuario (ej. un técnico)
 class User(BaseModel):
@@ -40,9 +41,6 @@ class UserCreate(UserBase):
 
 class UserInDB(UserBase):
     id: int
-    # En tu modelo User no tienes 'is_active', así que lo comentamos o eliminamos
-    # is_active: bool
-
     class Config:
         from_attributes = True
 

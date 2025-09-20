@@ -9,6 +9,7 @@ from .user import User
 from .status_order import StatusOrder
 from .device_type import DeviceType
 from .device_condition import DeviceCondition, DeviceConditionCreate, DeviceConditionUpdate
+from .branch import Branch # <-- IMPORTAMOS EL NUEVO ESQUEMA
 
 
 class RepairOrder(BaseModel):
@@ -19,6 +20,9 @@ class RepairOrder(BaseModel):
     technician: Optional[User] = None
     status: Optional[StatusOrder] = None
     device_type: Optional[DeviceType] = None
+    # --- INICIO DE LA MODIFICACIÓN ---
+    branch: Optional[Branch] = None # <-- AÑADIMOS LA SUCURSAL
+    # --- FIN DE LA MODIFICACIÓN ---
     problem_description: str
     accesories: Optional[str] = None
     observations: Optional[str] = None
@@ -34,6 +38,7 @@ class RepairOrder(BaseModel):
     class Config:
         from_attributes = True
 
+# ... (El resto de los esquemas como RepairOrderCreate, etc., no necesitan cambios por ahora)
 
 class RepairOrderCreate(BaseModel):
     is_spare_part_ordered: bool = False
@@ -48,9 +53,7 @@ class RepairOrderCreate(BaseModel):
     observations: Optional[str] = None
     total_cost: Optional[float] = 0.0
     deposit: Optional[float] = 0.0
-    # --- INICIO DE LA MODIFICACIÓN ---
-    parts_used: Optional[str] = None # Se añade el campo que faltaba
-    # --- FIN DE LA MODIFICACIÓN ---
+    parts_used: Optional[str] = None
     checklist: List[DeviceConditionCreate] = []
 
     class Config:
@@ -68,10 +71,9 @@ class RepairOrderUpdate(BaseModel):
     checklist: Optional[List[DeviceConditionUpdate]] = None
 
 
-# --- NUEVO SCHEMA AÑADIDO ---
 # Para que ADMIN/RECEPCIONISTA modifiquen detalles
 class RepairOrderDetailsUpdate(BaseModel):
-    customer: Optional[CustomerUpdate] = None # Permitir actualizar datos del cliente
+    customer: Optional[CustomerUpdate] = None
     device_type_id: Optional[int] = None
     device_model: Optional[str] = None
     serial_number: Optional[str] = None
@@ -82,5 +84,5 @@ class RepairOrderDetailsUpdate(BaseModel):
     total_cost: Optional[float] = None
     deposit: Optional[float] = None
     parts_used: Optional[str] = None
-    status_id: Optional[int] = Field(None, ge=1, le=6) # Permitir cambio de estado manual
-    checklist: Optional[List[DeviceConditionUpdate]] = None # Permitir la actualización del checklist
+    status_id: Optional[int] = Field(None, ge=1, le=6)
+    checklist: Optional[List[DeviceConditionUpdate]] = None

@@ -4,11 +4,13 @@ from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Floa
 from sqlalchemy.orm import relationship
 from .base_class import Base
 
+
 class RepairOrder(Base):
     __tablename__ = "repair_order"
     __table_args__ = {'schema': 'customer'}
 
     id = Column(Integer, primary_key=True, index=True)
+    # ... (resto de las columnas existentes sin cambios)
     device_model = Column(String)
     serial_number = Column(String)
     problem_description = Column(String)
@@ -31,9 +33,17 @@ class RepairOrder(Base):
     technician_id = Column(Integer, ForeignKey("system.user.id"))
     device_type_id = Column(Integer, ForeignKey("customer.device_type.id"))
 
+    # --- INICIO DE LA MODIFICACIÓN ---
+    branch_id = Column(Integer, ForeignKey("system.branch.id"))
+    # --- FIN DE LA MODIFICACIÓN ---
+
     # --- Relaciones de SQLAlchemy ---
     customer = relationship("Customer", back_populates="repair_orders")
     technician = relationship("User", back_populates="repair_orders")
     status = relationship("StatusOrder", back_populates="repair_orders")
     device_type = relationship("DeviceType", back_populates="repair_orders")
     device_conditions = relationship("DeviceCondition", back_populates="order", cascade="all, delete-orphan")
+
+    # --- INICIO DE LA MODIFICACIÓN ---
+    branch = relationship("Branch", back_populates="repair_orders")
+    # --- FIN DE LA MODIFICACIÓN ---

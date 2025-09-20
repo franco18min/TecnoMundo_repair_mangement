@@ -1,15 +1,15 @@
 # backend/app/api/v1/endpoints/repair_orders.py
 
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Body, BackgroundTasks, Response, status
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, status
 from sqlalchemy.orm import Session
 import traceback
 
 from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
-from app.db.session import SessionLocal
 from app.models.user import User
 from app.api.v1.dependencies import get_current_user, get_current_admin_user, get_current_admin_or_receptionist_user
+from app.db.session import SessionLocal # Importamos SessionLocal para el get_db
 
 router = APIRouter()
 
@@ -20,10 +20,20 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/", response_model=List[schemas_repair_order.RepairOrder], dependencies=[Depends(get_current_user)])
-def read_repair_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@router.get("/", response_model=List[schemas_repair_order.RepairOrder])
+def read_repair_orders(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user), # Obtenemos el usuario actual
+    skip: int = 0,
+    limit: int = 100
+):
+    """
+    Obtiene las órdenes de reparación filtradas por la sucursal del usuario.
+    Los administradores ven todas las órdenes.
+    """
     try:
-        orders = crud_repair_order.get_repair_orders(db, skip=skip, limit=limit)
+        # Pasamos el objeto 'current_user' a la función CRUD para que aplique la lógica de filtrado
+        orders = crud_repair_order.get_repair_orders(db, user=current_user, skip=skip, limit=limit)
         return orders
     except Exception as e:
         traceback.print_exc()
@@ -36,14 +46,17 @@ def read_repair_order(order_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Orden no encontrada")
     return db_order
 
-@router.post("/", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_admin_or_receptionist_user)])
+@router.post("/", response_model=schemas_repair_order.RepairOrder)
 def create_new_repair_order(
         order: schemas_repair_order.RepairOrderCreate,
         background_tasks: BackgroundTasks,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        # Obtenemos el usuario que está creando la orden
+        current_user: User = Depends(get_current_admin_or_receptionist_user)
 ):
     try:
-        new_order = crud_repair_order.create_repair_order(db=db, order=order, background_tasks=background_tasks)
+        # Pasamos el ID del usuario a la función CRUD para la asignación automática de sucursal
+        new_order = crud_repair_order.create_repair_order(db=db, order=order, background_tasks=background_tasks, user_id=current_user.id)
         return new_order
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -66,7 +79,6 @@ def take_order(
         raise HTTPException(status_code=400, detail="La orden no se puede tomar (ya asignada o no está pendiente).")
     return updated_order
 
-# --- RUTA MODIFICADA: Ahora es para que el TÉCNICO complete su trabajo ---
 @router.put("/{order_id}/complete", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_user)])
 def complete_order(
     order_id: int,
@@ -81,16 +93,26 @@ def complete_order(
         raise HTTPException(status_code=404, detail="Orden no encontrada para completar.")
     return updated_order
 
-# --- NUEVA RUTA: Para que ADMIN/RECEP modifiquen detalles ---
 @router.patch("/{order_id}/details", response_model=schemas_repair_order.RepairOrder, dependencies=[Depends(get_current_admin_or_receptionist_user)])
 def update_order_details_endpoint(
     order_id: int,
     order_update: schemas_repair_order.RepairOrderDetailsUpdate,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    # --- INICIO DE LA MODIFICACIÓN ---
+    # Obtenemos el usuario actual para saber quién realiza la acción
+    current_user: User = Depends(get_current_admin_or_receptionist_user)
+    # --- FIN DE LA MODIFICACIÓN ---
 ):
     updated_order = crud_repair_order.update_order_details(
-        db=db, order_id=order_id, order_update=order_update, background_tasks=background_tasks
+        db=db,
+        order_id=order_id,
+        order_update=order_update,
+        background_tasks=background_tasks,
+        # --- INICIO DE LA MODIFICACIÓN ---
+        # Pasamos el ID del usuario que modifica a la función crud
+        user_id=current_user.id
+        # --- FIN DE LA MODIFICACIÓN ---
     )
     if updated_order is None:
         raise HTTPException(status_code=404, detail="Orden no encontrada para actualizar.")
