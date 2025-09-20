@@ -1,3 +1,5 @@
+# backend/app/crud/crud_user.py
+
 from sqlalchemy.orm import Session
 from app.models.user import User as UserModel
 from app.schemas.user import UserCreate
@@ -25,3 +27,14 @@ def create_user(db: Session, user: UserCreate):
 def get_users_by_role(db: Session, role_name: str) -> List[UserModel]:
     """Busca todos los usuarios que pertenecen a un rol específico."""
     return db.query(UserModel).join(Role).filter(Role.role_name == role_name).all()
+
+# --- INICIO DE LA MODIFICACIÓN ---
+def get_users_by_role_and_branch(db: Session, role_name: str, branch_id: int) -> List[UserModel]:
+    """
+    Busca todos los usuarios que pertenecen a un rol y una sucursal específicos.
+    """
+    return db.query(UserModel).join(Role).filter(
+        Role.role_name == role_name,
+        UserModel.branch_id == branch_id
+    ).all()
+# --- FIN DE LA MODIFICACIÓN ---

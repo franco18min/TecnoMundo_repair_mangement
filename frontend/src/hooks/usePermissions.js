@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export const usePermissions = (mode, order = null) => {
-    // CORRECCIÓN: Obtenemos currentUser desde el contexto para evitar el breaking change.
     const { currentUser } = useAuth();
 
     const permissions = useMemo(() => {
@@ -15,60 +14,59 @@ export const usePermissions = (mode, order = null) => {
         const isReceptionist = role === 'Receptionist';
         const isTechnician = role === 'Technical';
 
-        // --- Permisos Generales Restaurados ---
+        // --- Permisos Generales Basados en Rol (Lógica Original y Correcta) ---
         const canCreateOrders = isAdmin || isReceptionist;
         const canEditCosts = isAdmin || isReceptionist;
-        const canEditPartsUsed = isAdmin; // RESTAURADO: Solo Admin puede editar repuestos.
-        const canDeleteOrders = isAdmin;  // RESTAURADO: Solo Admin puede eliminar.
+        const canEditPartsUsed = isAdmin;
+        const canDeleteOrders = isAdmin;
         const canPrintOrder = isAdmin || isReceptionist;
 
+        // --- MODO CREACIÓN ---
         if (mode === 'create') {
             return {
-                canCreateOrder: canCreateOrders,
+                // --- INICIO DE LA CORRECIÓN ---
+                canCreateOrders: canCreateOrders, // Corregido de 'canCreateOrder' a 'canCreateOrders'
+                // --- FIN DE LA CORRECIÓN ---
                 canEditInitialDetails: canCreateOrders,
                 canEditCosts: canCreateOrders,
+                canEditDiagnosisPanel: false,
                 canEditPartsUsed: canEditPartsUsed,
                 canDeleteOrders: canDeleteOrders,
                 isReadOnly: !canCreateOrders,
+                canTakeOrder: false,
+                canReopenOrder: false,
                 canPrintOrder: false,
+                canModify: false,
             };
         }
 
         if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder };
 
-        // --- Estados de la Orden ---
+        // --- MODO VISTA/EDICIÓN (Lógica Original y Correcta) ---
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
         const isPending = ['Pending', 'Waiting for parts'].includes(order.status?.status_name);
         const isInProcess = order.status?.status_name === 'In Process';
         const isCompleted = order.status?.status_name === 'Completed';
 
-        // CORRECCIÓN: Lógica de modificación restaurada para Admin y Recepcionista.
-        const canAdminOrRecepModify = isAdmin || isReceptionist;
-
-        // --- Lógica de Botones Específicos (NUEVO Y SEGURO) ---
-        const canTake = (isAdmin || isTechnician) && isUnassigned && isPending;
-        const canModify = isAdmin && mode === 'view'; // Solo Admin puede entrar en modo edición.
-        const canReopen = (isAdmin || isReceptionist) && isCompleted;
-        const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
+        const canAdminOrRecepModify = (isAdmin || isReceptionist);
 
         return {
-            // Lógica de edición de campos restaurada y corregida
+            // Lógica de edición restaurada
             canEditInitialDetails: canAdminOrRecepModify,
             canEditDiagnosisPanel: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canEditCosts: canEditCosts,
             canEditPartsUsed: canEditPartsUsed,
 
-            // Permisos de Acciones (Botones)
-            canTakeOrder: canTake,
-            canModifyOrder: canModify,
-            canReopenOrder: canReopen,
-            canCompleteOrder: canComplete,
+            // Lógica de acciones restaurada
+            canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
+            canReopenOrder: (isAdmin || isReceptionist) && isCompleted,
             canPrintOrder: canPrintOrder,
+            canModify: canAdminOrRecepModify,
 
-            // Lógica isReadOnly restaurada
+            // Lógica de solo lectura restaurada
             isReadOnly: !canAdminOrRecepModify && !(isTechnician && isMyOrder && isInProcess),
         };
 

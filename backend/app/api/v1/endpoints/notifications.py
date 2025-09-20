@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/", response_model=List[schemas_notification.Notification])
 def get_user_notifications(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # Mantenemos la dependencia normal para HTTP
+    current_user: User = Depends(get_current_user)
 ):
     """
     Obtiene el historial de notificaciones para el usuario actual.
@@ -26,26 +26,23 @@ def get_user_notifications(
 def mark_as_read(
     notification_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # Mantenemos la dependencia normal para HTTP
+    current_user: User = Depends(get_current_user)
 ):
     """
     Marca una notificación específica como leída.
     """
-    return crud_notification.mark_notification_as_read(db, notification_id=notification_id, user_id=current_user.id)
+    db_notification = crud_notification.mark_notification_as_read(db, notification_id=notification_id, user_id=current_user.id)
+    if not db_notification:
+        raise HTTPException(status_code=404, detail="Notificación no encontrada o no pertenece al usuario.")
+    return db_notification
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """
-    Maneja las conexiones WebSocket. La autenticación se realiza manualmente
-    para asegurar que la sesión de la BD se cierre correctamente.
-    """
     token = websocket.query_params.get("token")
     if not token:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
 
-    # --- INICIO DE LA MODIFICACIÓN ---
-    # Creamos una sesión de BD de corta duración solo para la autenticación
     db = next(get_db())
     try:
         current_user = get_user_from_token(db=db, token=token)
@@ -53,13 +50,12 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
     finally:
-        db.close() # Cerramos la sesión inmediatamente después de usarla
-    # --- FIN DE LA MODIFICACIÓN ---
+        db.close()
 
-    await manager.connect(websocket, current_user.id)
+    # Pasamos el objeto 'current_user' completo al gestor de conexiones
+    await manager.connect(websocket, current_user)
     try:
         while True:
-            # Mantenemos la conexión viva
             await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(current_user.id)
+        manager.disconnect(current_user)
