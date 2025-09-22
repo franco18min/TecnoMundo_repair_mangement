@@ -14,19 +14,25 @@ export const usePermissions = (mode, order = null) => {
         const isReceptionist = role === 'Receptionist';
         const isTechnician = role === 'Technical';
 
-        // --- Permisos Generales Basados en Rol (Lógica Original y Correcta) ---
+        // --- INICIO DE LA MODIFICACIÓN ---
+        // Nuevo permiso para la sección de clientes
+        const canViewClients = isAdmin || isReceptionist;
+        // --- FIN DE LA MODIFICACIÓN ---
+
         const canCreateOrders = isAdmin || isReceptionist;
         const canEditCosts = isAdmin || isReceptionist;
         const canEditPartsUsed = isAdmin;
         const canDeleteOrders = isAdmin;
         const canPrintOrder = isAdmin || isReceptionist;
 
-        // --- MODO CREACIÓN ---
+        // El hook puede ser llamado sin un modo específico, solo para obtener permisos generales
+        if (!mode) {
+            return { canViewClients, canCreateOrders };
+        }
+
         if (mode === 'create') {
             return {
-                // --- INICIO DE LA CORRECIÓN ---
-                canCreateOrders: canCreateOrders, // Corregido de 'canCreateOrder' a 'canCreateOrders'
-                // --- FIN DE LA CORRECIÓN ---
+                canCreateOrders: canCreateOrders,
                 canEditInitialDetails: canCreateOrders,
                 canEditCosts: canCreateOrders,
                 canEditDiagnosisPanel: false,
@@ -37,12 +43,12 @@ export const usePermissions = (mode, order = null) => {
                 canReopenOrder: false,
                 canPrintOrder: false,
                 canModify: false,
+                canViewClients: canViewClients,
             };
         }
 
-        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder };
+        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients };
 
-        // --- MODO VISTA/EDICIÓN (Lógica Original y Correcta) ---
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
         const isPending = ['Pending', 'Waiting for parts'].includes(order.status?.status_name);
@@ -52,22 +58,18 @@ export const usePermissions = (mode, order = null) => {
         const canAdminOrRecepModify = (isAdmin || isReceptionist);
 
         return {
-            // Lógica de edición restaurada
             canEditInitialDetails: canAdminOrRecepModify,
             canEditDiagnosisPanel: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canEditCosts: canEditCosts,
             canEditPartsUsed: canEditPartsUsed,
-
-            // Lógica de acciones restaurada
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
             canReopenOrder: (isAdmin || isReceptionist) && isCompleted,
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
-
-            // Lógica de solo lectura restaurada
             isReadOnly: !canAdminOrRecepModify && !(isTechnician && isMyOrder && isInProcess),
+            canViewClients: canViewClients,
         };
 
     }, [currentUser, mode, order]);
