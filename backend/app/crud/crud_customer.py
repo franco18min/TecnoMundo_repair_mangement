@@ -1,9 +1,10 @@
 # backend/app/crud/crud_customer.py
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from app.models.customer import Customer as CustomerModel
-from app.schemas.customer import CustomerCreate, CustomerUpdate  # Importamos CustomerUpdate
+from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.models.repair_order import RepairOrder as RepairOrderModel
 
 
 def get_customer(db: Session, customer_id: int):
@@ -13,12 +14,23 @@ def get_customer(db: Session, customer_id: int):
     return db.query(CustomerModel).filter(CustomerModel.id == customer_id).first()
 
 
-# --- INICIO DE LA MODIFICACIÓN ---
 def get_customers(db: Session, skip: int = 0, limit: int = 100):
     """
-    Obtiene un listado paginado de todos los clientes.
+    Obtiene un listado de todos los clientes junto con el conteo de sus órdenes
+    de reparación en una única y eficiente consulta.
     """
-    return db.query(CustomerModel).order_by(CustomerModel.last_name).offset(skip).limit(limit).all()
+    return (
+        db.query(
+            CustomerModel,
+            func.count(RepairOrderModel.id).label("orders_count")
+        )
+        .outerjoin(RepairOrderModel, CustomerModel.id == RepairOrderModel.customer_id)
+        .group_by(CustomerModel.id)
+        .order_by(CustomerModel.last_name)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def update_customer(db: Session, customer_id: int, customer: CustomerUpdate):
@@ -37,8 +49,6 @@ def update_customer(db: Session, customer_id: int, customer: CustomerUpdate):
     db.refresh(db_customer)
     return db_customer
 
-
-# --- FIN DE LA MODIFICACIÓN ---
 
 def search_customers(db: Session, query: str):
     """

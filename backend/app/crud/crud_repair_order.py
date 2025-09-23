@@ -290,3 +290,19 @@ def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
         background_tasks.add_task(send_order_reopened_notification, order_id=order_id)
         return db_order
     return None
+
+def get_repair_orders_by_customer(db: Session, customer_id: int):
+    """
+    Obtiene una lista de todas las órdenes de reparación para un cliente específico.
+    """
+    return (
+        db.query(RepairOrderModel)
+        .options(
+            joinedload(RepairOrderModel.technician),
+            joinedload(RepairOrderModel.status),
+            joinedload(RepairOrderModel.device_type)
+        )
+        .filter(RepairOrderModel.customer_id == customer_id)
+        .order_by(RepairOrderModel.created_at.desc())
+        .all()
+    )

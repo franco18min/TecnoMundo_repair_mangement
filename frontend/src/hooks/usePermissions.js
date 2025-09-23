@@ -14,20 +14,15 @@ export const usePermissions = (mode, order = null) => {
         const isReceptionist = role === 'Receptionist';
         const isTechnician = role === 'Technical';
 
-        // --- INICIO DE LA MODIFICACIÓN ---
-        // Nuevo permiso para la sección de clientes
-        const canViewClients = isAdmin || isReceptionist;
-        // --- FIN DE LA MODIFICACIÓN ---
-
         const canCreateOrders = isAdmin || isReceptionist;
-        const canEditCosts = isAdmin || isReceptionist;
-        const canEditPartsUsed = isAdmin;
+        const canViewClients = isAdmin || isReceptionist;
         const canDeleteOrders = isAdmin;
         const canPrintOrder = isAdmin || isReceptionist;
+        const canEditPartsUsed = isAdmin;
+        const canEditCosts = isAdmin || isReceptionist;
 
-        // El hook puede ser llamado sin un modo específico, solo para obtener permisos generales
         if (!mode) {
-            return { canViewClients, canCreateOrders };
+            return { canCreateOrders, canViewClients, canDeleteOrders };
         }
 
         if (mode === 'create') {
@@ -51,26 +46,40 @@ export const usePermissions = (mode, order = null) => {
 
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
-        const isPending = ['Pending', 'Waiting for parts'].includes(order.status?.status_name);
-        const isInProcess = order.status?.status_name === 'In Process';
-        const isCompleted = order.status?.status_name === 'Completed';
+        const status = order.status?.status_name;
+        const isPending = ['Pending', 'Waiting for parts'].includes(status);
+        const isInProcess = status === 'In Process';
+        const isCompleted = status === 'Completed';
 
         const canAdminOrRecepModify = (isAdmin || isReceptionist);
 
+        // --- INICIO DE LA CORRECCIÓN ---
+        // 1. Se define una única variable para la lógica de "Completar Orden".
+        const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
+
         return {
+            // Lógica de edición de la versión estable
             canEditInitialDetails: canAdminOrRecepModify,
-            canEditDiagnosisPanel: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
+            // 2. Ambos permisos (el que controla el formulario y el que controla el botón) usan la misma lógica.
+            canEditDiagnosisPanel: canComplete,
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canEditCosts: canEditCosts,
             canEditPartsUsed: canEditPartsUsed,
+
+            // Lógica de acciones de la versión estable
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
             canReopenOrder: (isAdmin || isReceptionist) && isCompleted,
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
+            // 3. Se añade y exporta el permiso que el ModalFooter necesita.
+            canCompleteOrder: canComplete,
+
+            // Lógica de solo lectura de la versión estable
             isReadOnly: !canAdminOrRecepModify && !(isTechnician && isMyOrder && isInProcess),
             canViewClients: canViewClients,
         };
+        // --- FIN DE LA CORRECCIÓN ---
 
     }, [currentUser, mode, order]);
 

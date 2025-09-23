@@ -7,14 +7,17 @@ import { getCustomers } from '../api/customerApi';
 import { useToast } from '../context/ToastContext';
 import { ClientCard } from './ClientCard';
 import { ClientModal } from './ClientModal';
+import { ClientOrdersModal } from './ClientOrdersModal';
 
-export function ClientsPage() {
+export function ClientsPage({ onViewOrderClick }) {
     const [clients, setClients] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
+    const [modalMode, setModalMode] = useState('create');
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -33,20 +36,46 @@ export function ClientsPage() {
         loadClients();
     }, [showToast]);
 
-    const handleEditClient = (client) => {
-        setSelectedClient(client);
-        setIsModalOpen(true);
+    const handleAddNewClient = () => {
+        setModalMode('create');
+        setSelectedClient(null);
+        setIsEditModalOpen(true);
     };
 
-    const handleCloseModal = () => {
+    const handleEditClient = (client) => {
+        setModalMode('edit');
+        setSelectedClient(client);
+        setIsEditModalOpen(true);
+    };
+
+    const handleViewClientOrders = (client) => {
+        setSelectedClient(client);
+        setIsOrdersModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
         setSelectedClient(null);
-        setIsModalOpen(false);
+        setIsEditModalOpen(false);
+    };
+
+    const handleCloseOrdersModal = () => {
+        setSelectedClient(null);
+        setIsOrdersModalOpen(false);
     };
 
     const handleClientUpdated = (updatedClient) => {
         setClients(prevClients =>
             prevClients.map(c => c.id === updatedClient.id ? updatedClient : c)
         );
+    };
+
+    const handleClientAdded = (newClient) => {
+        setClients(prevClients => [newClient, ...prevClients]);
+    };
+
+    const handleOrderSelect = (orderId) => {
+        handleCloseOrdersModal();
+        onViewOrderClick(orderId);
     };
 
     const filteredClients = useMemo(() => {
@@ -76,7 +105,7 @@ export function ClientsPage() {
                             className="w-full max-w-xs bg-white border border-gray-300 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </div>
-                    <motion.button className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button onClick={handleAddNewClient} className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <UserPlus size={20} />
                         <span>Nuevo Cliente</span>
                     </motion.button>
@@ -94,7 +123,12 @@ export function ClientsPage() {
                     <AnimatePresence>
                         {filteredClients.length > 0 ? (
                             filteredClients.map(client => (
-                                <ClientCard key={client.id} client={client} onEdit={handleEditClient} />
+                                <ClientCard
+                                    key={client.id}
+                                    client={client}
+                                    onEdit={handleEditClient}
+                                    onViewOrders={handleViewClientOrders}
+                                />
                             ))
                         ) : (
                             <p className="text-gray-500 md:col-span-4 text-center">No se encontraron clientes.</p>
@@ -104,10 +138,19 @@ export function ClientsPage() {
             )}
 
             <ClientModal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
                 client={selectedClient}
+                mode={modalMode}
                 onClientUpdated={handleClientUpdated}
+                onClientAdded={handleClientAdded}
+            />
+
+            <ClientOrdersModal
+                isOpen={isOrdersModalOpen}
+                onClose={handleCloseOrdersModal}
+                client={selectedClient}
+                onOrderSelect={handleOrderSelect}
             />
         </>
     );

@@ -2,9 +2,9 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from '../api/authApi';
-import { fetchRepairOrders } from '../api/repairOrdersApi';
+import { fetchRepairOrders, mapOrderData } from '../api/repairOrdersApi';
 import { fetchNotifications, markNotificationAsRead as apiMarkAsRead } from '../api/notificationsApi';
-import { fetchBranches } from '../api/branchApi'; // <-- 1. Importamos la nueva función de API
+import { fetchBranches } from '../api/branchApi';
 import { Loader } from 'lucide-react';
 
 const AuthContext = createContext(null);
@@ -15,48 +15,32 @@ export const AuthProvider = ({ children }) => {
     const [orders, setOrders] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const websocketRef = useRef(null);
-
-    // --- INICIO DE LA MODIFICACIÓN: Estados para sucursales ---
     const [branches, setBranches] = useState([]);
-    const [selectedBranchId, setSelectedBranchId] = useState('all'); // 'all' para administradores
-    // --- FIN DE LA MODIFICACIÓN ---
-
-    const mapOrderData = useCallback((order) => ({
-        id: order.id,
-        branch_id: order.branch?.id, // Guardamos el ID de la sucursal en la orden
-        customer: { name: `${order.customer.first_name} ${order.customer.last_name}` },
-        device: {
-            type: order.device_type?.type_name || 'Desconocido',
-            model: order.device_model
-        },
-        status: order.status?.status_name || 'Desconocido',
-        assignedTechnician: { name: order.technician?.username || 'No asignado' },
-        dateReceived: order.created_at,
-        parts_used: order.parts_used || 'N/A',
-    }), []);
+    const [selectedBranchId, setSelectedBranchId] = useState('all');
 
     const loadInitialData = useCallback(async () => {
         const user = await getCurrentUser();
         setCurrentUser(user);
 
-        // --- INICIO DE LA MODIFICACIÓN: Cargar sucursales y establecer la sucursal por defecto ---
         const [initialOrders, initialNotifications, allBranches] = await Promise.all([
             fetchRepairOrders(),
             fetchNotifications(),
             fetchBranches()
         ]);
 
-        setOrders(initialOrders.map(mapOrderData));
+        setOrders(initialOrders);
         setNotifications(initialNotifications);
         setBranches(allBranches);
 
-        // Si el usuario no es admin, su sucursal seleccionada por defecto es la suya.
+        // --- INICIO DE LA CORRECCIÓN CRÍTICA ---
+        // Se restaura la lógica correcta. El estado inicial de selectedBranchId es 'all'.
+        // Este bloque solo lo modifica si el usuario NO es un administrador.
         if (user.role?.role_name !== 'Administrator' && user.branch) {
             setSelectedBranchId(user.branch.id);
         }
-        // --- FIN DE LA MODIFICACIÓN ---
+        // --- FIN DE LA CORRECCIÓN CRÍTICA ---
 
-    }, [mapOrderData]);
+    }, []);
 
     const validateToken = useCallback(async () => {
         const token = localStorage.getItem('accessToken');
@@ -75,7 +59,6 @@ export const AuthProvider = ({ children }) => {
         validateToken();
     }, [validateToken]);
 
-    // --- Lógica de WebSocket (sin cambios por ahora) ---
     useEffect(() => {
         if (currentUser) {
             const token = localStorage.getItem('accessToken');
@@ -89,6 +72,7 @@ export const AuthProvider = ({ children }) => {
             websocketRef.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
+                // Esta sección se mantiene como estaba en la corrección anterior. Es la correcta.
                 switch (data.event) {
                     case 'ORDER_CREATED':
                         setOrders(prev => [mapOrderData(data.payload), ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived)));
@@ -110,7 +94,7 @@ export const AuthProvider = ({ children }) => {
 
             return () => websocketRef.current?.close();
         }
-    }, [currentUser, mapOrderData]);
+    }, [currentUser]);
 
     const login = async (username, password) => {
         await apiLogin(username, password);
@@ -123,7 +107,7 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(null);
         setNotifications([]);
         setOrders([]);
-        setBranches([]); // Limpiamos las sucursales al cerrar sesión
+        setBranches([]);
     };
 
     const markAsRead = async (notificationId) => {
@@ -133,15 +117,12 @@ export const AuthProvider = ({ children }) => {
         } catch (error) { console.error("Error al marcar como leída:", error); }
     };
 
-    // --- INICIO DE LA MODIFICACIÓN: Órdenes filtradas ---
-    // Este `memo` recalculará las órdenes a mostrar CADA VEZ que cambie la lista de órdenes o la sucursal seleccionada.
     const filteredOrders = useMemo(() => {
         if (selectedBranchId === 'all') {
-            return orders; // El admin ve todo
+            return orders;
         }
         return orders.filter(order => order.branch_id === selectedBranchId);
     }, [orders, selectedBranchId]);
-    // --- FIN DE LA MODIFICACIÓN ---
 
     if (isLoading) { return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><Loader className="animate-spin text-indigo-600" size={48} /></div>; }
 
@@ -153,12 +134,10 @@ export const AuthProvider = ({ children }) => {
         orders,
         notifications,
         markAsRead,
-        // --- INICIO DE LA MODIFICACIÓN: Exponemos los nuevos estados y funciones ---
         branches,
         selectedBranchId,
         setSelectedBranchId,
-        filteredOrders // ¡Exponemos las órdenes ya filtradas!
-        // --- FIN DE LA MODIFICACIÓN ---
+        filteredOrders
     };
 
     return ( <AuthContext.Provider value={value}>{children}</AuthContext.Provider> );

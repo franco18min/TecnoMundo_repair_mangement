@@ -15,7 +15,6 @@ const getAuthHeaders = () => {
     };
 };
 
-// --- INICIO DE LA MODIFICACIÓN ---
 export const getCustomers = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/customers/`, {
@@ -48,7 +47,24 @@ export const updateCustomer = async (customerId, customerData) => {
         throw error;
     }
 };
-// --- FIN DE LA MODIFICACIÓN ---
+
+export const createCustomer = async (customerData) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/customers/`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(customerData),
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'No se pudo crear el cliente.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error al crear el cliente:", error);
+        throw error;
+    }
+};
 
 export const searchClients = async (query) => {
   if (!query || query.length < 3) {

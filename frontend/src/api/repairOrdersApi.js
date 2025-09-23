@@ -13,20 +13,36 @@ const getAuthHeaders = () => {
     };
 };
 
+// 1. Creamos una función de mapeo reutilizable
+export const mapOrderData = (order) => ({
+    id: order.id,
+    branch_id: order.branch?.id,
+    customer: {
+        name: `${order.customer?.first_name || ''} ${order.customer?.last_name || ''}`.trim()
+    },
+    device: {
+        type: order.device_type?.type_name || 'Desconocido',
+        model: order.device_model
+    },
+    status: order.status?.status_name || 'Desconocido',
+    assignedTechnician: { name: order.technician?.username || 'No asignado' },
+    dateReceived: order.created_at,
+    parts_used: order.parts_used || 'N/A',
+});
+
+
 export const fetchRepairOrders = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`, { headers: getAuthHeaders() });
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/`, { headers: getAuthHeaders() });
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.map(mapOrderData); // Usamos la función de mapeo
+    } catch (error) {
+        console.error("No se pudieron obtener las órdenes de reparación:", error);
+        return [];
     }
-    const data = await response.json();
-    // El mapeo de datos que tenías aquí es específico para la tabla,
-    // es mejor que el backend devuelva siempre el objeto completo y el frontend lo adapte donde lo necesite.
-    return data;
-  } catch (error) {
-    console.error("No se pudieron obtener las órdenes de reparación:", error);
-    return [];
-  }
 };
 
 export const createRepairOrder = async (orderData) => {
@@ -62,6 +78,23 @@ export const fetchRepairOrderById = async (orderId) => {
   }
 };
 
+export const getOrdersByCustomerId = async (customerId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/customers/${customerId}/orders`, {
+            headers: getAuthHeaders(),
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'No se pudieron obtener las órdenes del cliente.');
+        }
+        const data = await response.json();
+        return data.map(mapOrderData); // Usamos la función de mapeo también aquí
+    } catch (error) {
+        console.error(`Error al obtener órdenes para el cliente ${customerId}:`, error);
+        throw error;
+    }
+};
+
 export const takeRepairOrder = async (orderId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/take`, {
@@ -79,8 +112,6 @@ export const takeRepairOrder = async (orderId) => {
   }
 };
 
-// --- FUNCIÓN RENOMBRADA Y MODIFICADA ---
-// Usada por el TÉCNICO para enviar su diagnóstico y completar la orden.
 export const completeRepairOrder = async (orderId, orderData) => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/complete`, { // Apunta al nuevo endpoint
@@ -99,8 +130,6 @@ export const completeRepairOrder = async (orderId, orderData) => {
     }
 };
 
-// --- NUEVA FUNCIÓN ---
-// Usada por ADMIN/RECEPCIONISTA para modificar detalles sin cambiar el estado.
 export const updateOrderDetails = async (orderId, orderData) => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/details`, { // Apunta al nuevo endpoint

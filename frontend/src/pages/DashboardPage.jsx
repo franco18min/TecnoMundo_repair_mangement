@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { NotificationBell } from '../components/Notifications/NotificationBell';
 import { NotificationToast } from '../components/Notifications/NotificationToast';
 import { usePermissions } from '../hooks/usePermissions';
-import { ClientsPage } from '../components/ClientsPage'; // <-- 1. Importar el componente real
+import { ClientsPage } from '../components/ClientsPage';
 
 export function DashboardPage({ onLogout }) {
     const [activePage, setActivePage] = useState('dashboard');
@@ -47,8 +47,7 @@ export function DashboardPage({ onLogout }) {
             case 'orders':
                 return <OrdersPage onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
             case 'clients':
-                // 3. Renderizar el componente real
-                return <ClientsPage />;
+                return <ClientsPage onViewOrderClick={handleOpenModal} />;
             default:
                 return <DashboardHome onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
         }
