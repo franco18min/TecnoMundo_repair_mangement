@@ -1,6 +1,8 @@
+// frontend/src/context/ToastContext.jsx
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { Toast } from '../components/Toast'; // Crearemos este componente a continuación
+import { Toast } from '../components/shared/Toast'; // RUTA CORREGIDA
 
 const ToastContext = createContext(null);
 

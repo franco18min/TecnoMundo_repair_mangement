@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DisplayField, FormField, TextAreaField } from './shared';
 import { KeyRound, Lock, Package, Store } from 'lucide-react';
-import PatternLock from '../PatternLock';
+import PatternLock from '../../shared/PatternLock'; // RUTA CORREGIDA
 
 export function EquipmentSection({ permissions, formData, handleFormChange, deviceTypes, sparePartStatus, setSparePartStatus, unlockMethod, setUnlockMethod, handlePatternChange, isPatternValue, fullOrderData }) {
     return (

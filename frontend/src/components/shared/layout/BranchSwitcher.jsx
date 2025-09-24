@@ -1,7 +1,7 @@
 // frontend/src/components/layout/BranchSwitcher.jsx
 
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext'; // RUTA CORREGIDA
 import { Building, Globe } from 'lucide-react';
 
 export function BranchSwitcher() {

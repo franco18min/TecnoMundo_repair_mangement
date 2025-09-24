@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader, User, Phone, Fingerprint } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
-import { updateCustomer, createCustomer } from '../api/customerApi'; // Importar createCustomer
+import { useToast } from '../../context/ToastContext';
+import { updateCustomer, createCustomer } from '../../api/customerApi'; // Importar createCustomer
 
 const FormField = ({ icon, ...props }) => (
     <div className="relative">
