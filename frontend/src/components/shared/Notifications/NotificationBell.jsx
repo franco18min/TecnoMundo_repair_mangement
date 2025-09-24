@@ -1,9 +1,9 @@
-// frontend/src/components/Notifications/NotificationBell.jsx
+// frontend/src/components/shared/Notifications/NotificationBell.jsx
 
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import { NotificationPanel } from './NotificationPanel';
 
 export function NotificationBell({ onNotificationClick }) {

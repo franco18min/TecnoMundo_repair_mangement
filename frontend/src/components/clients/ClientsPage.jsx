@@ -1,10 +1,10 @@
-// frontend/src/components/ClientsPage.jsx
+// frontend/src/components/clients/ClientsPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Search, Loader } from 'lucide-react';
-import { getCustomers } from '../api/customerApi';
-import { useToast } from '../context/ToastContext';
+import { getCustomers } from '../../api/customerApi';
+import { useToast } from '../../context/ToastContext';
 import { ClientCard } from './ClientCard';
 import { ClientModal } from './ClientModal';
 import { ClientOrdersModal } from './ClientOrdersModal';

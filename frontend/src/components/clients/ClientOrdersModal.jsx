@@ -1,11 +1,11 @@
-// frontend/src/components/ClientOrdersModal.jsx
+// frontend/src/components/clients/ClientOrdersModal.jsx
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader, FolderKanban } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
-import { getOrdersByCustomerId } from '../api/repairOrdersApi';
-import { OrderListItem } from './OrderListItem';
+import { useToast } from '../../context/ToastContext';
+import { getOrdersByCustomerId } from '../../api/repairOrdersApi';
+import { OrderListItem } from '../orders/OrderListItem';
 
 export function ClientOrdersModal({ isOpen, onClose, client, onOrderSelect }) {
     const [orders, setOrders] = useState([]);

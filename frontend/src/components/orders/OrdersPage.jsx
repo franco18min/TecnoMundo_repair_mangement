@@ -1,13 +1,13 @@
-// frontend/src/components/OrdersPage.jsx
+// frontend/src/components/orders/OrdersPage.jsx
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye } from 'lucide-react';
-import { deleteRepairOrder } from '../api/repairOrdersApi';
-import { usePermissions } from '../hooks/usePermissions';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { ConfirmationModal } from './ConfirmationModal';
+import { deleteRepairOrder } from '../../api/repairOrdersApi';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { ConfirmationModal } from '../shared/ConfirmationModal';
 
 const statusConfig = {
     'Pending': { text: 'Pendiente', badge: 'bg-red-100 text-red-800', icon: <AlertTriangle size={14} className="text-red-600" /> },

@@ -1,11 +1,11 @@
-// frontend/src/components/DashboardHome.jsx
+// frontend/src/components/dashboard/DashboardHome.jsx
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Loader } from 'lucide-react';
-import { OrderCard } from './OrderCard';
-import { useAuth } from '../context/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { OrderCard } from '../orders/OrderCard';
+import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
     // --- INICIO DE LA MODIFICACIÓN ---

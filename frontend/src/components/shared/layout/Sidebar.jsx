@@ -1,9 +1,9 @@
-// frontend/src/components/layout/Sidebar.jsx
+// frontend/src/components/shared/layout/Sidebar.jsx
 
 import React, { useState, createContext, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsLeft, ChevronsRight, LogOut, Building } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import { BranchSwitcher } from './BranchSwitcher';
 
 const SidebarContext = createContext();

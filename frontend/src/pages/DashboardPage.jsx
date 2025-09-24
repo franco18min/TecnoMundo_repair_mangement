@@ -3,15 +3,15 @@
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
-import { Sidebar, SidebarItem } from '../components/layout/Sidebar';
-import { DashboardHome } from '../components/DashboardHome';
-import { OrdersPage } from '../components/OrdersPage';
-import { OrderModal } from '../components/OrderModal/OrderModal';
+import { Sidebar, SidebarItem } from '../components/shared/layout/Sidebar';
+import { DashboardHome } from '../components/dashboard/DashboardHome';
+import { OrdersPage } from '../components/orders/OrdersPage';
+import { OrderModal } from '../components/orders/OrderModal/OrderModal';
 import { useAuth } from '../context/AuthContext';
-import { NotificationBell } from '../components/Notifications/NotificationBell';
-import { NotificationToast } from '../components/Notifications/NotificationToast';
+import { NotificationBell } from '../components/shared/Notifications/NotificationBell';
+import { NotificationToast } from '../components/shared/Notifications/NotificationToast';
 import { usePermissions } from '../hooks/usePermissions';
-import { ClientsPage } from '../components/ClientsPage';
+import { ClientsPage } from '../components/clients/ClientsPage';
 
 export function DashboardPage({ onLogout }) {
     const [activePage, setActivePage] = useState('dashboard');

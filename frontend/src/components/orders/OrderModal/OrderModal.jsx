@@ -1,4 +1,4 @@
-// frontend/src/components/OrderModal/OrderModal.jsx
+// frontend/src/components/orders/OrderModal/OrderModal.jsx
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,13 +6,13 @@ import { X, Loader } from 'lucide-react';
 
 import {
     createRepairOrder, fetchRepairOrderById, takeRepairOrder, reopenRepairOrder, completeRepairOrder, updateOrderDetails
-} from '../../api/repairOrdersApi';
-import { searchClients } from '../../api/customerApi';
-import { fetchDeviceTypes } from '../../api/deviceTypeApi';
+} from '../../../api/repairOrdersApi';
+import { searchClients } from '../../../api/customerApi';
+import { fetchDeviceTypes } from '../../../api/deviceTypeApi';
 
-import { ConfirmationModal } from '../ConfirmationModal';
-import { usePermissions } from '../../hooks/usePermissions';
-import { useToast } from '../../context/ToastContext';
+import { ConfirmationModal } from '../../shared/ConfirmationModal';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { useToast } from '../../../context/ToastContext';
 
 import { ClientSection } from './ClientSection';
 import { EquipmentSection } from './EquipmentSection';
