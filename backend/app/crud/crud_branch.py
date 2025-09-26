@@ -1,10 +1,9 @@
 # backend/app/crud/crud_branch.py
+from app.crud.base import CRUDBase
+from app.models.branch import Branch
+from app.schemas.branch import BranchCreate, BranchUpdate
 
-from sqlalchemy.orm import Session
-from app.models.branch import Branch as BranchModel
+class CRUDBranch(CRUDBase[Branch, BranchCreate, BranchUpdate]):
+    pass
 
-def get_branches(db: Session):
-    """
-    Obtiene todas las sucursales de la base de datos.
-    """
-    return db.query(BranchModel).order_by(BranchModel.branch_name).all()
+branch = CRUDBranch(Branch)
