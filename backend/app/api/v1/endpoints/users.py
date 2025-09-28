@@ -1,15 +1,104 @@
 # backend/app/api/v1/endpoints/users.py
 
-from fastapi import APIRouter, Depends
-from app.schemas.user import UserWithRole
+from typing import List, Any, Optional
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.crud import crud_user, crud_role, crud_branch
 from app.models.user import User
-from app.api.v1.dependencies import get_current_user
+from app.api.v1 import dependencies as deps
+from app.schemas.user import UserWithRole, UserCreateByAdmin, UserUpdateByAdmin
 
 router = APIRouter()
 
 @router.get("/me", response_model=UserWithRole)
-def read_users_me(current_user: User = Depends(get_current_user)):
+def read_current_user(current_user: User = Depends(deps.get_current_user)):
     """
-    Obtiene los datos del usuario actualmente autenticado, incluyendo su rol.
+    Obtiene los datos del usuario actualmente autenticado.
     """
     return current_user
+
+@router.get("/", response_model=List[UserWithRole])
+def read_users(
+    db: Session = Depends(deps.get_db),
+    skip: int = 0,
+    limit: int = 100,
+    status: str = 'all',
+    current_user: User = Depends(deps.get_current_active_admin),
+):
+    """
+    Recupera una lista de usuarios.
+    - `status`: 'all', 'active', 'inactive'.
+    """
+    users = crud_user.get_multi(db, skip=skip, limit=limit, status=status)
+    return users
+
+@router.post("/", response_model=UserWithRole)
+def create_user(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_in: UserCreateByAdmin,
+    current_user: User = Depends(deps.get_current_active_admin),
+):
+    """
+    Crea un nuevo usuario (solo para administradores).
+    """
+    user = crud_user.get_by_username(db, username=user_in.username)
+    if user:
+        raise HTTPException(
+            status_code=400,
+            detail="The user with this username already exists in the system.",
+        )
+    # Valida que el rol exista
+    role = crud_role.get(db, id=user_in.role_id)
+    if not role:
+        raise HTTPException(
+            status_code=404,
+            detail=f"The role with id {user_in.role_id} does not exist.",
+        )
+    # Valida que la sucursal exista si se proporciona
+    if user_in.branch_id:
+        branch = crud_branch.get(db, id=user_in.branch_id)
+        if not branch:
+            raise HTTPException(
+                status_code=404,
+                detail=f"The branch with id {user_in.branch_id} does not exist.",
+            )
+            
+    user = crud_user.create(db, obj_in=user_in)
+    return user
+
+@router.put("/{user_id}", response_model=UserWithRole)
+def update_user(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_id: int,
+    user_in: UserUpdateByAdmin,
+    current_user: User = Depends(deps.get_current_active_admin),
+):
+    """
+    Actualiza un usuario (solo para administradores).
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this username does not exist in the system.",
+        )
+    # Validaciones de rol y sucursal si se actualizan
+    if user_in.role_id:
+        role = crud_role.get(db, id=user_in.role_id)
+        if not role:
+            raise HTTPException(
+                status_code=404,
+                detail=f"The role with id {user_in.role_id} does not exist.",
+            )
+    if user_in.branch_id:
+        branch = crud_branch.get(db, id=user_in.branch_id)
+        if not branch:
+            raise HTTPException(
+                status_code=404,
+                detail=f"The branch with id {user_in.branch_id} does not exist.",
+            )
+
+    user = crud_user.update(db, db_obj=user, obj_in=user_in, admin_user=current_user)
+    return user

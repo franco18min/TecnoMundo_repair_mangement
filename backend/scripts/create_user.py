@@ -72,7 +72,7 @@ def create_user():
             return
 
         # 3. Cifrar contraseña y crear el objeto de usuario
-        hashed_password = get_password_hash(password)
+        hashed_password = get_password_hash(password[:72])
 
         new_user = User(
             username=username,

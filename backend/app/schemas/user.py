@@ -2,13 +2,8 @@
 
 from pydantic import BaseModel
 from typing import Optional
-from .branch import Branch # <-- IMPORTAMOS EL NUEVO ESQUEMA
-
-# Nuevo schema para representar el rol
-class Role(BaseModel):
-    role_name: str
-    class Config:
-        from_attributes = True
+from .branch import Branch
+from .role import Role
 
 # Nuevo schema para devolver el usuario completo con su rol
 class UserWithRole(BaseModel):
@@ -16,9 +11,8 @@ class UserWithRole(BaseModel):
     username: str
     email: str
     role: Role
-    # --- INICIO DE LA MODIFICACIÓN ---
-    branch: Optional[Branch] = None # <-- AÑADIMOS LA SUCURSAL
-    # --- FIN DE LA MODIFICACIÓN ---
+    branch: Optional[Branch] = None
+    is_active: bool  # <-- CAMPO AÑADIDO
 
     class Config:
         from_attributes = True
@@ -51,3 +45,18 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+# Schemas para la gestión de usuarios por un administrador
+class UserCreateByAdmin(BaseModel):
+    username: str
+    email: str
+    password: str
+    role_id: int
+    branch_id: Optional[int] = None
+    is_active: bool = True
+
+class UserUpdateByAdmin(BaseModel):
+    email: Optional[str] = None
+    role_id: Optional[int] = None
+    branch_id: Optional[int] = None
+    is_active: Optional[bool] = None

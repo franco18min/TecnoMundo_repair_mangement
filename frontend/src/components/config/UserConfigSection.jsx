@@ -18,7 +18,15 @@ export const UserConfigSection = () => {
     const { showToast } = useToast();
     const { currentUser } = useAuth();
 
+    // --- INICIO DE LA CORRECCIÓN ---
     const loadUsers = useCallback(async () => {
+        // Si no hay usuario (ej. al cerrar sesión), no hacer nada.
+        if (!currentUser) {
+            setUsers([]);
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         try {
             const fetchedUsers = await getUsers(filter);
@@ -30,11 +38,12 @@ export const UserConfigSection = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [showToast, filter, currentUser.id]);
+    }, [showToast, filter, currentUser]); // Depender del objeto currentUser completo
 
     useEffect(() => {
         loadUsers();
     }, [loadUsers]);
+    // --- FIN DE LA CORRECCIÓN ---
 
     const handleOpenModal = (user = null) => {
         setSelectedUser(user);

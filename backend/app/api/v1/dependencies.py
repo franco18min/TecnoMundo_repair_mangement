@@ -65,3 +65,10 @@ def get_current_admin_or_receptionist_user(current_user: User = Depends(get_curr
             detail="No tiene los permisos suficientes para realizar esta acción"
         )
     return current_user
+
+def get_current_active_admin(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.role or current_user.role.role_name != 'Administrator':
+        raise HTTPException(status_code=403, detail='The user does not have enough privileges')
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail='Inactive user')
+    return current_user

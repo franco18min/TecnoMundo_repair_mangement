@@ -15,11 +15,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica si una contraseña en texto plano coincide con su hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    return pwd_context.verify(plain_password[:72], hashed_password)
 
 def get_password_hash(password: str) -> str:
-    """Genera el hash de una contraseña."""
-    return pwd_context.hash(password)
+    """Genera el hash de una contraseña, truncándola si es necesario."""
+    return pwd_context.hash(password[:72])
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Crea un nuevo token de acceso JWT."""
