@@ -1,29 +1,10 @@
-  // frontend/src/api/branchApi.js
+import getApiClient from './apiClient';
+let apiClient;
 
-const API_BASE_URL = 'http://127.0.0.1:8001';
-
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-        throw new Error("No se encontró token de acceso.");
-    }
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
+export const initializeBranchApi = (getAccessToken, logout) => {
+    apiClient = getApiClient(getAccessToken, logout);
 };
 
-export const fetchBranches = async () => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/branches/`, {
-            headers: getAuthHeaders()
-        });
-        if (!response.ok) {
-            throw new Error('No se pudo obtener la lista de sucursales.');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Error al obtener sucursales:", error);
-        return [];
-    }
-};
+export const fetchBranches = () => apiClient('/branches/');
+export const createBranch = (branchData) => apiClient('/branches/', { method: 'POST', body: branchData });
+export const updateBranch = (branchId, branchData) => apiClient(`/branches/${branchId}`, { method: 'PUT', body: branchData });

@@ -7,12 +7,16 @@ export const usePermissions = (mode, order = null) => {
     const { currentUser } = useAuth();
 
     const permissions = useMemo(() => {
-        if (!currentUser) return { isReadOnly: true };
+        if (!currentUser) return { isReadOnly: true, canAccessConfig: false };
 
         const role = currentUser.role?.role_name;
         const isAdmin = role === 'Administrator';
         const isReceptionist = role === 'Receptionist';
         const isTechnician = role === 'Technical';
+
+        // --- INICIO DE LA MODIFICACIÓN ADITIVA ---
+        const canAccessConfig = isAdmin;
+        // --- FIN DE LA MODIFICACIÓN ADITIVA ---
 
         const canCreateOrders = isAdmin || isReceptionist;
         const canViewClients = isAdmin || isReceptionist;
@@ -22,7 +26,7 @@ export const usePermissions = (mode, order = null) => {
         const canEditCosts = isAdmin || isReceptionist;
 
         if (!mode) {
-            return { canCreateOrders, canViewClients, canDeleteOrders };
+            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig };
         }
 
         if (mode === 'create') {
@@ -39,10 +43,11 @@ export const usePermissions = (mode, order = null) => {
                 canPrintOrder: false,
                 canModify: false,
                 canViewClients: canViewClients,
+                canAccessConfig: canAccessConfig,
             };
         }
 
-        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients };
+        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients, canAccessConfig };
 
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
@@ -52,35 +57,24 @@ export const usePermissions = (mode, order = null) => {
         const isCompleted = status === 'Completed';
 
         const canAdminOrRecepModify = (isAdmin || isReceptionist);
-
-        // --- INICIO DE LA CORRECCIÓN ---
-        // 1. Se define una única variable para la lógica de "Completar Orden".
         const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
 
         return {
-            // Lógica de edición de la versión estable
             canEditInitialDetails: canAdminOrRecepModify,
-            // 2. Ambos permisos (el que controla el formulario y el que controla el botón) usan la misma lógica.
             canEditDiagnosisPanel: canComplete,
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canEditCosts: canEditCosts,
             canEditPartsUsed: canEditPartsUsed,
-
-            // Lógica de acciones de la versión estable
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
             canReopenOrder: (isAdmin || isReceptionist) && isCompleted,
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
-            // 3. Se añade y exporta el permiso que el ModalFooter necesita.
             canCompleteOrder: canComplete,
-
-            // Lógica de solo lectura de la versión estable
             isReadOnly: !canAdminOrRecepModify && !(isTechnician && isMyOrder && isInProcess),
             canViewClients: canViewClients,
+            canAccessConfig: canAccessConfig,
         };
-        // --- FIN DE LA CORRECCIÓN ---
-
     }, [currentUser, mode, order]);
 
     return permissions;

@@ -1,5 +1,3 @@
-// frontend/src/pages/DashboardPage.jsx
-
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
@@ -12,6 +10,9 @@ import { NotificationBell } from '../components/shared/Notifications/Notificatio
 import { NotificationToast } from '../components/shared/Notifications/NotificationToast';
 import { usePermissions } from '../hooks/usePermissions';
 import { ClientsPage } from '../components/clients/ClientsPage';
+// --- INICIO DE LA MODIFICACIÓN ADITIVA ---
+import { ConfigurationPage } from '../components/config/ConfigurationPage';
+// --- FIN DE LA MODIFICACIÓN ADITIVA ---
 
 export function DashboardPage({ onLogout }) {
     const [activePage, setActivePage] = useState('dashboard');
@@ -48,6 +49,11 @@ export function DashboardPage({ onLogout }) {
                 return <OrdersPage onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
             case 'clients':
                 return <ClientsPage onViewOrderClick={handleOpenModal} />;
+            // --- INICIO DE LA MODIFICACIÓN ADITIVA ---
+            case 'config':
+                return <ConfigurationPage />;
+            // --- FIN DE LA MODIFICACIÓN ADITIVA ---
+            case 'dashboard':
             default:
                 return <DashboardHome onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
         }
@@ -58,14 +64,19 @@ export function DashboardPage({ onLogout }) {
             <Sidebar onLogout={onLogout}>
                 <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" active={activePage === 'dashboard'} onClick={() => setActivePage('dashboard')} />
                 <SidebarItem icon={<Wrench size={20} />} text="Órdenes" active={activePage === 'orders'} onClick={() => setActivePage('orders')} />
-
                 {permissions.canViewClients && (
                     <SidebarItem icon={<Users size={20} />} text="Clientes" active={activePage === 'clients'} onClick={() => setActivePage('clients')} />
                 )}
-
                 <SidebarItem icon={<History size={20} />} text="Historial" active={activePage === 'history'} onClick={() => setActivePage('history')} />
                 <hr className="my-3 border-gray-200" />
-                <SidebarItem icon={<Settings size={20} />} text="Configuración" active={activePage === 'settings'} onClick={() => setActivePage('settings')} />
+                {permissions.canAccessConfig && (
+                    <SidebarItem
+                        icon={<Settings size={20} />}
+                        text="Configuración"
+                        active={activePage === 'config'}
+                        onClick={() => setActivePage('config')}
+                    />
+                )}
             </Sidebar>
 
             <main className="flex-1 p-8 overflow-y-auto">

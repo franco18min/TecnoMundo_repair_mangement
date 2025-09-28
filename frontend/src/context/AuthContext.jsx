@@ -1,11 +1,14 @@
-// frontend/src/context/AuthContext.jsx
-
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from '../api/authApi';
 import { fetchRepairOrders, mapOrderData } from '../api/repairOrdersApi';
 import { fetchNotifications, markNotificationAsRead as apiMarkAsRead } from '../api/notificationsApi';
-import { fetchBranches } from '../api/branchApi';
+// --- INICIO DE LA MODIFICACIÓN ---
+import { fetchBranches as apiFetchBranches } from '../api/branchApi';
 import { Loader } from 'lucide-react';
+import { initializeUserApi } from '../api/userApi';
+import { initializeRolesApi } from '../api/rolesApi';
+import { initializeBranchApi } from '../api/branchApi';
+// --- FIN DE LA MODIFICACIÓN ---
 
 const AuthContext = createContext(null);
 
@@ -18,6 +21,26 @@ export const AuthProvider = ({ children }) => {
     const [branches, setBranches] = useState([]);
     const [selectedBranchId, setSelectedBranchId] = useState('all');
 
+    // --- INICIO DE LA MODIFICACIÓN ---
+    const getAccessToken = useCallback(() => localStorage.getItem('accessToken'), []);
+
+    const logout = useCallback(() => {
+        websocketRef.current?.close();
+        apiLogout();
+        setCurrentUser(null);
+        setNotifications([]);
+        setOrders([]);
+        setBranches([]);
+        setSelectedBranchId('all'); // Reseteo corregido
+    }, []);
+
+    useEffect(() => {
+        initializeUserApi(getAccessToken, logout);
+        initializeRolesApi(getAccessToken, logout);
+        initializeBranchApi(getAccessToken, logout);
+    }, [getAccessToken, logout]);
+    // --- FIN DE LA MODIFICACIÓN ---
+
     const loadInitialData = useCallback(async () => {
         const user = await getCurrentUser();
         setCurrentUser(user);
@@ -25,35 +48,29 @@ export const AuthProvider = ({ children }) => {
         const [initialOrders, initialNotifications, allBranches] = await Promise.all([
             fetchRepairOrders(),
             fetchNotifications(),
-            fetchBranches()
+            apiFetchBranches() // Se usa la función importada con alias
         ]);
 
         setOrders(initialOrders);
         setNotifications(initialNotifications);
         setBranches(allBranches);
 
-        // --- INICIO DE LA CORRECCIÓN CRÍTICA ---
-        // Se restaura la lógica correcta. El estado inicial de selectedBranchId es 'all'.
-        // Este bloque solo lo modifica si el usuario NO es un administrador.
         if (user.role?.role_name !== 'Administrator' && user.branch) {
             setSelectedBranchId(user.branch.id);
         }
-        // --- FIN DE LA CORRECCIÓN CRÍTICA ---
-
-    }, []);
+    }, []); // Se eliminan dependencias que ya no son necesarias aquí
 
     const validateToken = useCallback(async () => {
-        const token = localStorage.getItem('accessToken');
+        const token = getAccessToken();
         if (token) {
             try { await loadInitialData(); }
             catch (error) {
                 console.error("Token inválido o expirado.", error);
-                apiLogout();
-                setCurrentUser(null);
+                logout(); // Se llama a la función de logout centralizada
             }
         }
         setIsLoading(false);
-    }, [loadInitialData]);
+    }, [loadInitialData, getAccessToken, logout]);
 
     useEffect(() => {
         validateToken();
@@ -61,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (currentUser) {
-            const token = localStorage.getItem('accessToken');
+            const token = getAccessToken();
             const wsUrl = `ws://127.0.0.1:8001/api/v1/notifications/ws?token=${token}`;
             websocketRef.current = new WebSocket(wsUrl);
 
@@ -71,8 +88,6 @@ export const AuthProvider = ({ children }) => {
 
             websocketRef.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-
-                // Esta sección se mantiene como estaba en la corrección anterior. Es la correcta.
                 switch (data.event) {
                     case 'ORDER_CREATED':
                         setOrders(prev => [mapOrderData(data.payload), ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived)));
@@ -94,20 +109,11 @@ export const AuthProvider = ({ children }) => {
 
             return () => websocketRef.current?.close();
         }
-    }, [currentUser]);
+    }, [currentUser, getAccessToken]);
 
     const login = async (username, password) => {
         await apiLogin(username, password);
         await validateToken();
-    };
-
-    const logout = () => {
-        websocketRef.current?.close();
-        apiLogout();
-        setCurrentUser(null);
-        setNotifications([]);
-        setOrders([]);
-        setBranches([]);
     };
 
     const markAsRead = async (notificationId) => {
