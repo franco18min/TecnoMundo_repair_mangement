@@ -15,10 +15,10 @@ def read_branches(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: models.user.User = Depends(deps.get_current_user),
+    current_user: models.user.User = Depends(deps.get_current_active_user), # <-- Guardia actualizado
 ):
     """
-    Recupera una lista de sucursales.
+    Recupera una lista de sucursales. Solo para usuarios activos.
     """
     branches = crud_branch.get_multi(db, skip=skip, limit=limit)
     return branches

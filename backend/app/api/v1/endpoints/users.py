@@ -11,9 +11,10 @@ from app.schemas.user import UserWithRole, UserCreateByAdmin, UserUpdateByAdmin
 router = APIRouter()
 
 @router.get("/me", response_model=UserWithRole)
-def read_current_user(current_user: User = Depends(deps.get_current_user)):
+def read_current_user(current_user: User = Depends(deps.get_current_active_user)):
     """
     Obtiene los datos del usuario actualmente autenticado.
+    Ahora protegido para asegurar que el usuario esté activo.
     """
     return current_user
 
@@ -48,14 +49,12 @@ def create_user(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    # Valida que el rol exista
     role = crud_role.get(db, id=user_in.role_id)
     if not role:
         raise HTTPException(
             status_code=404,
             detail=f"The role with id {user_in.role_id} does not exist.",
         )
-    # Valida que la sucursal exista si se proporciona
     if user_in.branch_id:
         branch = crud_branch.get(db, id=user_in.branch_id)
         if not branch:
@@ -63,7 +62,6 @@ def create_user(
                 status_code=404,
                 detail=f"The branch with id {user_in.branch_id} does not exist.",
             )
-            
     user = crud_user.create(db, obj_in=user_in)
     return user
 
@@ -84,7 +82,6 @@ def update_user(
             status_code=404,
             detail="The user with this username does not exist in the system.",
         )
-    # Validaciones de rol y sucursal si se actualizan
     if user_in.role_id:
         role = crud_role.get(db, id=user_in.role_id)
         if not role:
@@ -99,6 +96,5 @@ def update_user(
                 status_code=404,
                 detail=f"The branch with id {user_in.branch_id} does not exist.",
             )
-
     user = crud_user.update(db, db_obj=user, obj_in=user_in, admin_user=current_user)
     return user

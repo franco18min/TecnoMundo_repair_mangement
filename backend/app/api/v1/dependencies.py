@@ -1,6 +1,6 @@
 # backend/app/api/v1/dependencies.py
 
-from fastapi import Depends, HTTPException, status, Query
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session, joinedload
@@ -8,11 +8,9 @@ from typing import Optional
 
 from app.core.security import SECRET_KEY, ALGORITHM
 from app.db.session import SessionLocal
-from app.crud import crud_user
 from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
-
 
 def get_db():
     db = SessionLocal()
@@ -20,7 +18,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 def get_user_from_token(db: Session, token: str) -> Optional[User]:
     try:
@@ -30,9 +27,8 @@ def get_user_from_token(db: Session, token: str) -> Optional[User]:
             return None
     except JWTError:
         return None
-    user = db.query(User).options(joinedload(User.role)).filter(User.username == username).first()
+    user = db.query(User).options(joinedload(User.role), joinedload(User.branch)).filter(User.username == username).first()
     return user
-
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     credentials_exception = HTTPException(
@@ -45,30 +41,39 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
-
-def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
-    if not current_user.role or current_user.role.role_name != "Administrator":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tiene los permisos suficientes para realizar esta acción"
-        )
+# --- CAPA 2: EL GUARDIA ESTÁNDAR ---
+def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Obtiene el usuario actual y verifica que esté activo.
+    Este es el nuevo estándar de seguridad para todos los endpoints operativos.
+    """
+    if not current_user.is_active:
+        raise HTTPException(status_code=403, detail="El usuario está inactivo y no tiene permisos.")
     return current_user
 
-
-def get_current_admin_or_receptionist_user(current_user: User = Depends(get_current_user)) -> User:
+# --- CAPA 3: GUARDIAS ESPECIALIZADOS (POR ROL) ---
+def get_current_active_admin(current_user: User = Depends(get_current_active_user)) -> User:
     """
-    Verifica si el usuario actual es Administrador o Recepcionista.
+    Verifica que el usuario actual sea un administrador activo.
+    """
+    if not current_user.role or current_user.role.role_name != "Administrator":
+        raise HTTPException(status_code=403, detail="No tiene los permisos suficientes para realizar esta acción.")
+    return current_user
+
+def get_current_active_admin_or_receptionist(current_user: User = Depends(get_current_active_user)) -> User:
+    """
+    Verifica que el usuario actual sea un administrador o recepcionista activo.
     """
     if not current_user.role or current_user.role.role_name not in ["Administrator", "Receptionist"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tiene los permisos suficientes para realizar esta acción"
-        )
+        raise HTTPException(status_code=403, detail="No tiene los permisos suficientes para realizar esta acción.")
     return current_user
 
-def get_current_active_admin(current_user: User = Depends(get_current_user)) -> User:
-    if not current_user.role or current_user.role.role_name != 'Administrator':
-        raise HTTPException(status_code=403, detail='The user does not have enough privileges')
-    if not current_user.is_active:
-        raise HTTPException(status_code=400, detail='Inactive user')
+# --- INICIO DE LA CORRECCIÓN ---
+def get_current_active_technician_or_admin(current_user: User = Depends(get_current_active_user)) -> User:
+    """
+    Verifica que el usuario actual sea un técnico o administrador activo.
+    """
+    if not current_user.role or current_user.role.role_name not in ["Administrator", "Technical"]:
+        raise HTTPException(status_code=403, detail="Solo un técnico o administrador puede realizar esta acción.")
     return current_user
+# --- FIN DE LA CORRECCIÓN ---

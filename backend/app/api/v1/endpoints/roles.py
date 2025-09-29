@@ -13,11 +13,10 @@ router = APIRouter()
 @router.get("/", response_model=List[Role])
 def read_roles(
     db: Session = Depends(deps.get_db),
-    current_user: models.user.User = Depends(deps.get_current_user),
+    current_user: models.user.User = Depends(deps.get_current_active_user), # <-- Guardia actualizado
 ):
     """
-    Obtiene una lista de todos los roles.
+    Obtiene una lista de todos los roles. Solo para usuarios activos.
     """
-    # Esta es una implementación simple. En una app real, podrías querer paginación.
     roles = db.query(models.roles.Role).all()
     return roles
