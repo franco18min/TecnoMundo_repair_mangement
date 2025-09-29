@@ -18,9 +18,7 @@ export const UserConfigSection = () => {
     const { showToast } = useToast();
     const { currentUser } = useAuth();
 
-    // --- INICIO DE LA CORRECCIÓN ---
     const loadUsers = useCallback(async () => {
-        // Si no hay usuario (ej. al cerrar sesión), no hacer nada.
         if (!currentUser) {
             setUsers([]);
             setIsLoading(false);
@@ -30,7 +28,6 @@ export const UserConfigSection = () => {
         setIsLoading(true);
         try {
             const fetchedUsers = await getUsers(filter);
-            // Excluir al usuario actual de la lista para evitar que se desactive a sí mismo
             setUsers(fetchedUsers.filter(u => u.id !== currentUser.id));
         } catch (err) {
             setError('No se pudo cargar la lista de usuarios.');
@@ -38,12 +35,11 @@ export const UserConfigSection = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [showToast, filter, currentUser]); // Depender del objeto currentUser completo
+    }, [showToast, filter, currentUser]);
 
     useEffect(() => {
         loadUsers();
     }, [loadUsers]);
-    // --- FIN DE LA CORRECCIÓN ---
 
     const handleOpenModal = (user = null) => {
         setSelectedUser(user);
@@ -61,7 +57,6 @@ export const UserConfigSection = () => {
         } else {
             setUsers(prev => prev.map(u => u.id === savedUser.id ? savedUser : u));
         }
-        // Recargar si el filtro podría ocultar el cambio
         if (filter !== 'all') loadUsers();
     };
 
@@ -148,7 +143,9 @@ export const UserConfigSection = () => {
             </div>
 
             <UserModal isOpen={isModalOpen} onClose={handleCloseModal} user={selectedUser} onSave={handleSave} />
-            <ConfirmationModal isOpen={confirm.isOpen} title={confirm.title} message={confirm.message} onConfirm={() => { setConfirm({ isOpen: false }); confirm.onConfirm(); }} onCancel={() => setConfirm({ isOpen: false })} />
+            {/* --- INICIO DE LA CORRECCIÓN --- */}
+            <ConfirmationModal isOpen={confirm.isOpen} title={confirm.title} message={confirm.message} onConfirm={() => { setConfirm({ isOpen: false }); confirm.onConfirm(); }} onClose={() => setConfirm({ isOpen: false })} />
+            {/* --- FIN DE LA CORRECCIÓN --- */}
         </>
     );
 };
