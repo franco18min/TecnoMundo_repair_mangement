@@ -8,9 +8,7 @@ import traceback
 from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
 from app.models.user import User
-# --- INICIO DE LA CORRECCIÓN DE SEGURIDAD ---
 from app.api.v1 import dependencies as deps
-# --- FIN DE LA CORRECCIÓN DE SEGURIDAD ---
 
 router = APIRouter()
 
@@ -21,10 +19,6 @@ def read_repair_orders(
     skip: int = 0,
     limit: int = 100
 ):
-    """
-    Obtiene las órdenes de reparación filtradas por la sucursal del usuario.
-    Los administradores ven todas las órdenes.
-    """
     try:
         orders = crud_repair_order.get_repair_orders(db, user=current_user, skip=skip, limit=limit)
         return orders
@@ -127,3 +121,28 @@ def reopen_order_endpoint(
     if reopened_order is None:
         raise HTTPException(status_code=400, detail="La orden no se puede reabrir (puede que no esté completada).")
     return reopened_order
+
+@router.patch("/{order_id}/deliver", response_model=schemas_repair_order.RepairOrder)
+def deliver_order(
+    order_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_admin_or_receptionist)
+):
+    """
+    Marca una orden como 'Entregada'.
+    Solo accesible para Administradores y Recepcionistas.
+    La orden debe estar en estado 'Completado'.
+    """
+    try:
+        # --- INICIO DE LA CORRECCIÓN ---
+        delivered_order = crud_repair_order.mark_as_delivered(db=db, order_id=order_id, background_tasks=background_tasks, user_id=current_user.id)
+        # --- FIN DE LA CORRECCIÓN ---
+        return delivered_order
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        if "not found" in str(e).lower():
+             raise HTTPException(status_code=404, detail=str(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno al entregar la orden.")

@@ -14,9 +14,7 @@ export const usePermissions = (mode, order = null) => {
         const isReceptionist = role === 'Receptionist';
         const isTechnician = role === 'Technical';
 
-        // --- INICIO DE LA MODIFICACIÓN ADITIVA ---
         const canAccessConfig = isAdmin;
-        // --- FIN DE LA MODIFICACIÓN ADITIVA ---
 
         const canCreateOrders = isAdmin || isReceptionist;
         const canViewClients = isAdmin || isReceptionist;
@@ -44,6 +42,7 @@ export const usePermissions = (mode, order = null) => {
                 canModify: false,
                 canViewClients: canViewClients,
                 canAccessConfig: canAccessConfig,
+                canDeliverOrder: false, // No se puede entregar en modo creación
             };
         }
 
@@ -58,6 +57,10 @@ export const usePermissions = (mode, order = null) => {
 
         const canAdminOrRecepModify = (isAdmin || isReceptionist);
         const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
+
+        // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+        const canDeliverOrder = (isAdmin || isReceptionist) && isCompleted;
+        // --- FIN DE LA NUEVA FUNCIONALIDAD ---
 
         return {
             canEditInitialDetails: canAdminOrRecepModify,
@@ -74,6 +77,7 @@ export const usePermissions = (mode, order = null) => {
             isReadOnly: !canAdminOrRecepModify && !(isTechnician && isMyOrder && isInProcess),
             canViewClients: canViewClients,
             canAccessConfig: canAccessConfig,
+            canDeliverOrder: canDeliverOrder, // <-- Permiso añadido
         };
     }, [currentUser, mode, order]);
 

@@ -5,10 +5,11 @@ from jose import JWTError, jwt
 from typing import Optional
 
 # --- Configuración de Seguridad ---
-# Clave secreta para firmar los tokens JWT. ¡Cámbiala por una cadena aleatoria y segura!
 SECRET_KEY = "un-secreto-muy-seguro-y-dificil-de-adivinar"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 # El token expirará en 30 minutos
+# --- INICIO DE LA CORRECCIÓN ---
+ACCESS_TOKEN_EXPIRE_MINUTES = 240 # 4 horas (4 * 60 minutos)
+# --- FIN DE LA CORRECCIÓN ---
 
 # Contexto para el hash de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -27,6 +28,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
+        # Este es un fallback, pero la lógica de login principal usa ACCESS_TOKEN_EXPIRE_MINUTES
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

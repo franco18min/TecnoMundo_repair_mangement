@@ -4,9 +4,11 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader } from 'lucide-react';
 
+// --- INICIO DE LA NUEVA FUNCIONALIDAD ---
 import {
-    createRepairOrder, fetchRepairOrderById, takeRepairOrder, reopenRepairOrder, completeRepairOrder, updateOrderDetails
+    createRepairOrder, fetchRepairOrderById, takeRepairOrder, reopenRepairOrder, completeRepairOrder, updateOrderDetails, deliverRepairOrder
 } from '../../../api/repairOrdersApi';
+// --- FIN DE LA NUEVA FUNCIONALIDAD ---
 import { searchClients } from '../../../api/customerApi';
 import { fetchDeviceTypes } from '../../../api/deviceTypeApi';
 
@@ -41,6 +43,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [isTakeConfirmModalOpen, setIsTakeConfirmModalOpen] = useState(false);
     const [isUpdateConfirmModalOpen, setIsUpdateConfirmModalOpen] = useState(false);
     const [isReopenConfirmOpen, setIsReopenConfirmOpen] = useState(false);
+    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+    const [isDeliverConfirmModalOpen, setIsDeliverConfirmModalOpen] = useState(false);
+    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
     const [deviceTypes, setDeviceTypes] = useState([]);
     const [clientType, setClientType] = useState('nuevo');
     const [clientSearch, setClientSearch] = useState('');
@@ -110,7 +115,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
 
-    // --- INICIO DE LA RESTAURACIÓN ---
     const handleTakeOrder = async () => {
         if (!orderId) return;
         setIsTakeConfirmModalOpen(false);
@@ -145,6 +149,25 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         }
     };
 
+    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+    const handleDeliverOrder = async () => {
+        if (!orderId) return;
+        setIsDeliverConfirmModalOpen(false);
+        setIsSubmitting(true);
+        setError('');
+        try {
+            await deliverRepairOrder(orderId);
+            showToast('¡Orden entregada correctamente!', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo entregar la orden.");
+            showToast(err.message || "No se pudo entregar la orden.", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
+
     const handleConfirmUpdate = async () => {
         if (!orderId) return;
         setIsUpdateConfirmModalOpen(false);
@@ -176,7 +199,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             setIsSubmitting(false);
         }
     };
-    // --- FIN DE LA RESTAURACIÓN ---
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -256,6 +278,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     error={error}
                                     setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
                                     setIsReopenConfirmOpen={setIsReopenConfirmOpen}
+                                    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+                                    setIsDeliverConfirmModalOpen={setIsDeliverConfirmModalOpen}
+                                    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
                                     handlePrint={handleDirectPrint}
                                     setMode={setMode}
                                     currentUser={currentUser}
@@ -269,6 +294,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
             <ConfirmationModal isOpen={isReopenConfirmOpen} onClose={() => setIsReopenConfirmOpen(false)} onConfirm={handleReopenOrder} title="Confirmar Reapertura" message={`¿Estás seguro de que quieres reabrir la orden #${orderId} y pasarla al estado 'En Proceso'?`} confirmText="Sí, Reabrir" />
+            {/* --- INICIO DE LA NUEVA FUNCIONALIDAD --- */}
+            <ConfirmationModal isOpen={isDeliverConfirmModalOpen} onClose={() => setIsDeliverConfirmModalOpen(false)} onConfirm={handleDeliverOrder} title="Confirmar Entrega" message={`¿Confirmas que has entregado el equipo asociado a la orden #${orderId} al cliente?`} confirmText="Sí, Entregar" />
+            {/* --- FIN DE LA NUEVA FUNCIONALIDAD --- */}
         </>
     );
 }

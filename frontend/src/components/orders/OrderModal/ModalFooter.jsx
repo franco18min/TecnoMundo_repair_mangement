@@ -2,11 +2,16 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Loader, RotateCcw, Printer, Edit, CheckCircle, Wrench } from 'lucide-react';
+// --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+import { Loader, RotateCcw, Printer, Edit, CheckCircle, Wrench, Truck } from 'lucide-react';
+// --- FIN DE LA NUEVA FUNCIONALIDAD ---
 
 export function ModalFooter({
     mode, permissions, onClose, isSubmitting, error,
     setIsTakeConfirmModalOpen, setIsReopenConfirmOpen,
+    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+    setIsDeliverConfirmModalOpen,
+    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
     handlePrint,
     setMode
 }) {
@@ -29,8 +34,6 @@ export function ModalFooter({
 
             {/* Lado Derecho: Botones de Acción */}
             <div className="flex items-center gap-3">
-                {/* --- INICIO DE LA MODIFICACIÓN --- */}
-
                 {/* Botón "Tomar Orden" */}
                 {permissions.canTakeOrder && (
                     <motion.button type="button" onClick={() => setIsTakeConfirmModalOpen(true)} disabled={isSubmitting} className="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -45,14 +48,14 @@ export function ModalFooter({
                     </motion.button>
                 )}
 
-                {/* Botón "Completar Orden" (Técnico/Admin) y "Guardar Cambios" (Admin en modo 'edit') */}
+                {/* Botón "Completar Orden" */}
                 {permissions.canCompleteOrder && mode === 'view' && (
                      <motion.button type="submit" form="order-form" disabled={isSubmitting} className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><CheckCircle size={16} className="mr-2"/>Completar Orden</>}
                     </motion.button>
                 )}
 
-                {/* Botón "Guardar Orden" (Creación) y "Guardar Cambios" (Edición) */}
+                {/* Botón "Guardar Orden" y "Guardar Cambios" */}
                 {(mode === 'create' || mode === 'edit') && (
                     <motion.button type="submit" form="order-form" disabled={isSubmitting} className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         {isSubmitting ? <Loader size={20} className="animate-spin" /> : (mode === 'create' ? 'Guardar Orden' : 'Guardar Cambios')}
@@ -66,7 +69,13 @@ export function ModalFooter({
                     </motion.button>
                 )}
 
-                {/* --- FIN DE LA MODIFICACIÓN --- */}
+                {/* --- INICIO DE LA NUEVA FUNCIONALIDAD --- */}
+                {permissions.canDeliverOrder && (
+                    <motion.button type="button" onClick={() => setIsDeliverConfirmModalOpen(true)} disabled={isSubmitting} className="bg-teal-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-teal-700 disabled:bg-teal-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><Truck size={16} className="mr-2"/>Confirmar Entrega</>}
+                    </motion.button>
+                )}
+                {/* --- FIN DE LA NUEVA FUNCIONALIDAD --- */}
 
                 <motion.button type="button" onClick={() => onClose(false)} className="bg-gray-200 text-gray-800 font-semibold py-2 px-5 rounded-lg hover:bg-gray-300" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     {mode === 'view' && permissions.isReadOnly ? 'Cerrar' : 'Cancelar'}
