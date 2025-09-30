@@ -21,21 +21,49 @@ pwd_context = CryptContext(
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica si una contraseña en texto plano coincide con su hash."""
-    # Asegurar que la contraseña esté en bytes y truncada correctamente
-    if isinstance(plain_password, str):
-        plain_password = plain_password.encode('utf-8')
-    # Truncar a 72 bytes (no caracteres)
-    truncated_password = plain_password[:72].decode('utf-8', errors='ignore')
-    return pwd_context.verify(truncated_password, hashed_password)
+    try:
+        # Asegurar que la contraseña esté en bytes y truncada correctamente
+        if isinstance(plain_password, str):
+            password_bytes = plain_password.encode('utf-8')
+        else:
+            password_bytes = plain_password
+        
+        # Truncar a 72 bytes (no caracteres) para cumplir con el límite de bcrypt
+        truncated_bytes = password_bytes[:72]
+        
+        # Convertir de vuelta a string, manejando posibles errores de decodificación
+        truncated_password = truncated_bytes.decode('utf-8', errors='ignore')
+        
+        # Verificar con passlib
+        return pwd_context.verify(truncated_password, hashed_password)
+        
+    except Exception as e:
+        # Log del error para debugging
+        print(f"Error en verify_password: {e}")
+        return False
 
 def get_password_hash(password: str) -> str:
     """Genera el hash de una contraseña, truncándola si es necesario."""
-    # Asegurar que la contraseña esté en bytes y truncada correctamente
-    if isinstance(password, str):
-        password = password.encode('utf-8')
-    # Truncar a 72 bytes (no caracteres)
-    truncated_password = password[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(truncated_password)
+    try:
+        # Asegurar que la contraseña esté en bytes y truncada correctamente
+        if isinstance(password, str):
+            password_bytes = password.encode('utf-8')
+        else:
+            password_bytes = password
+        
+        # Truncar a 72 bytes (no caracteres) para cumplir con el límite de bcrypt
+        truncated_bytes = password_bytes[:72]
+        
+        # Convertir de vuelta a string, manejando posibles errores de decodificación
+        truncated_password = truncated_bytes.decode('utf-8', errors='ignore')
+        
+        # Generar hash con passlib
+        return pwd_context.hash(truncated_password)
+        
+    except Exception as e:
+        # Log del error para debugging
+        print(f"Error en get_password_hash: {e}")
+        raise e
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Crea un nuevo token de acceso JWT."""
