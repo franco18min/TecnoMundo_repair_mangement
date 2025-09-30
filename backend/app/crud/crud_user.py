@@ -93,4 +93,13 @@ def get_users_by_role_and_branch(db: Session, *, role_name: str, branch_id: int)
         Role.role_name == role_name,
         User.branch_id == branch_id
     ).all()
+
+def get_users_by_branch(db: Session, *, branch_id: int) -> List[User]:
+    """
+    Busca todos los usuarios activos que pertenecen a una sucursal específica.
+    """
+    return db.query(User).filter(
+        User.branch_id == branch_id,
+        User.is_active == True
+    ).all()
 # --- FIN DE LA CORRECCIÓN TÉCNICA ---

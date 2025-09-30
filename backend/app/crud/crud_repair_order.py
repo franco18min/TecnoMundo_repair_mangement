@@ -341,3 +341,80 @@ def mark_as_delivered(db: Session, order_id: int, background_tasks: BackgroundTa
     background_tasks.add_task(send_order_delivered_notification, order_id=db_order.id, actor_user_id=user_id)
 
     return db_order
+
+async def send_order_transferred_notification(order_id: int, target_branch_id: int, actor_user_id: int):
+    """Envía notificaciones a todos los usuarios de la sucursal destino sobre la transferencia."""
+    with SessionLocal() as db:
+        logging.info(f"\n--- [NOTIFICACIÓN DE TRANSFERENCIA] ---")
+        order = get_repair_order(db, order_id=order_id)
+        if not order:
+            logging.warning("-> Orden no encontrada. Abortando.")
+            return
+        
+        # Obtener todos los usuarios de la sucursal destino
+        target_users = crud_user.get_users_by_branch(db, branch_id=target_branch_id)
+        if not target_users:
+            logging.warning(f"-> No hay usuarios en la sucursal destino {target_branch_id}")
+            return
+        
+        message = f"Orden #{order.id} ({order.device_model}) ha sido transferida a su sucursal."
+        link = f"order:{order.id}"
+        
+        # Enviar notificación a todos los usuarios de la sucursal destino
+        for user in target_users:
+            if user.id != actor_user_id and user.is_active:
+                db_notification = crud_notification.create_notification(
+                    db, user_id=user.id, message=message, link_to=link
+                )
+                notification_event = {
+                    "event": "NEW_NOTIFICATION", 
+                    "payload": NotificationSchema.from_orm(db_notification).dict()
+                }
+                await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
+        
+        logging.info(f"-> Notificaciones enviadas a {len(target_users)} usuarios de la sucursal {target_branch_id}")
+
+def transfer_order(db: Session, order_id: int, target_branch_id: int, background_tasks: BackgroundTasks, user_id: int):
+    """
+    Transfiere una orden de reparación a otra sucursal.
+    Si la orden está en proceso (status_id=2), se resetea el técnico y se pone en pendiente (status_id=1).
+    """
+    # Verificar que la orden existe
+    db_order = get_repair_order(db, order_id=order_id)
+    if not db_order:
+        raise ValueError("Orden no encontrada.")
+    
+    # Verificar que la sucursal destino existe
+    from app.crud import crud_branch
+    target_branch = crud_branch.get_branch(db, branch_id=target_branch_id)
+    if not target_branch:
+        raise ValueError("Sucursal destino no encontrada.")
+    
+    # Verificar que no se esté transfiriendo a la misma sucursal
+    if db_order.branch_id == target_branch_id:
+        raise ValueError("No se puede transferir una orden a la misma sucursal.")
+    
+    # Si la orden está en proceso (status_id=2), resetear técnico y poner en pendiente
+    if db_order.status_id == 2:  # En proceso
+        db_order.technician_id = None
+        db_order.status_id = 1  # Pendiente
+    
+    # Actualizar la sucursal
+    db_order.branch_id = target_branch_id
+    db_order.updated_at = func.now()
+    
+    db.commit()
+    db.refresh(db_order)
+    
+    # Enviar notificación ORDER_UPDATED para actualizar la lista en tiempo real
+    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
+    
+    # Enviar notificaciones a la sucursal destino
+    background_tasks.add_task(
+        send_order_transferred_notification, 
+        order_id=db_order.id, 
+        target_branch_id=target_branch_id,
+        actor_user_id=user_id
+    )
+    
+    return db_order

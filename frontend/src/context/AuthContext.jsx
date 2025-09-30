@@ -42,23 +42,27 @@ export const AuthProvider = ({ children }) => {
     // --- FIN DE LA MODIFICACIÓN ---
 
     const loadInitialData = useCallback(async () => {
-        const user = await getCurrentUser();
-        setCurrentUser(user);
+        try {
+            const user = await getCurrentUser();
+            setCurrentUser(user);
 
-        const [initialOrders, initialNotifications, allBranches] = await Promise.all([
-            fetchRepairOrders(),
-            fetchNotifications(),
-            apiFetchBranches() // Se usa la función importada con alias
-        ]);
+            const [initialOrders, initialNotifications, allBranches] = await Promise.all([
+                fetchRepairOrders(),
+                fetchNotifications(),
+                apiFetchBranches()
+            ]);
 
-        setOrders(initialOrders);
-        setNotifications(initialNotifications);
-        setBranches(allBranches);
+            setOrders(initialOrders);
+            setNotifications(initialNotifications);
+            setBranches(allBranches);
 
-        if (user.role?.role_name !== 'Administrator' && user.branch) {
-            setSelectedBranchId(user.branch.id);
+            if (user.role?.role_name !== 'Administrator' && user.branch) {
+                setSelectedBranchId(user.branch.id);
+            }
+        } catch (error) {
+            console.error('Error cargando datos iniciales:', error);
         }
-    }, []); // Se eliminan dependencias que ya no son necesarias aquí
+    }, []);
 
     const validateToken = useCallback(async () => {
         const token = getAccessToken();

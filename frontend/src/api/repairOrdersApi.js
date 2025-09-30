@@ -17,6 +17,10 @@ const getAuthHeaders = () => {
 export const mapOrderData = (order) => ({
     id: order.id,
     branch_id: order.branch?.id,
+    branch: {
+        id: order.branch?.id,
+        branch_name: order.branch?.branch_name || 'Sucursal desconocida'
+    },
     customer: {
         name: `${order.customer?.first_name || ''} ${order.customer?.last_name || ''}`.trim()
     },
@@ -44,6 +48,8 @@ export const fetchRepairOrders = async () => {
         return [];
     }
 };
+
+
 
 export const createRepairOrder = async (orderData) => {
   try {
@@ -185,19 +191,43 @@ export const reopenRepairOrder = async (orderId) => {
 
 // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
 export const deliverRepairOrder = async (orderId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/deliver`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/deliver`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error al entregar la orden:", error);
+        throw error;
     }
-    return await response.json();
-  } catch (error) {
-    console.error(`No se pudo entregar la orden ${orderId}:`, error);
-    throw error;
-  }
+};
+
+export const transferRepairOrder = async (orderId, targetBranchId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/transfer`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                target_branch_id: targetBranchId
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error al transferir la orden:", error);
+        throw error;
+    }
 };
 // --- FIN DE LA NUEVA FUNCIONALIDAD ---

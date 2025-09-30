@@ -70,6 +70,12 @@ class RepairOrderUpdate(BaseModel):
     status_id: Optional[int] = Field(None, ge=1, le=6)
     checklist: Optional[List[DeviceConditionUpdate]] = None
 
+class RepairOrderTransfer(BaseModel):
+    target_branch_id: int = Field(..., description="ID de la sucursal destino")
+    
+    class Config:
+        from_attributes = True
+
 
 # Para que ADMIN/RECEPCIONISTA modifiquen detalles
 class RepairOrderDetailsUpdate(BaseModel):

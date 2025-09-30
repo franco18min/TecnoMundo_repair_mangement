@@ -11,6 +11,12 @@ def get(db: Session, id: int) -> Optional[Branch]:
     """
     return db.query(Branch).filter(Branch.id == id).first()
 
+def get_branch(db: Session, branch_id: int) -> Optional[Branch]:
+    """
+    Obtiene una sucursal por su ID (alias para compatibilidad).
+    """
+    return get(db, id=branch_id)
+
 def get_multi(db: Session, *, skip: int = 0, limit: int = 100) -> List[Branch]:
     """
     Obtiene una lista de sucursales.

@@ -146,3 +146,33 @@ def deliver_order(
              raise HTTPException(status_code=404, detail=str(e))
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error interno al entregar la orden.")
+
+@router.patch("/{order_id}/transfer", response_model=schemas_repair_order.RepairOrder)
+def transfer_order(
+    order_id: int,
+    transfer_data: schemas_repair_order.RepairOrderTransfer,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_admin)
+):
+    """
+    Transfiere una orden de reparación a otra sucursal.
+    Solo accesible para Administradores.
+    Si la orden está en proceso, se resetea el técnico y se pone en estado pendiente.
+    """
+    try:
+        transferred_order = crud_repair_order.transfer_order(
+            db=db, 
+            order_id=order_id, 
+            target_branch_id=transfer_data.target_branch_id,
+            background_tasks=background_tasks,
+            user_id=current_user.id
+        )
+        return transferred_order
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail=str(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno al transferir la orden.")

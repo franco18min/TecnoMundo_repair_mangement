@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BranchConfigSection } from './BranchConfigSection';
 import { UserConfigSection } from './UserConfigSection';
+import { OrderTransferSection } from './OrderTransferSection';
 
 const TabButton = ({ label, isActive, onClick }) => (
     <button
@@ -17,7 +18,7 @@ const TabButton = ({ label, isActive, onClick }) => (
 );
 
 export const ConfigurationPage = () => {
-    const [activeTab, setActiveTab] = useState('users'); // 'users' o 'branches'
+    const [activeTab, setActiveTab] = useState('users'); // 'users', 'branches' o 'orders'
 
     return (
         <motion.div
@@ -40,6 +41,11 @@ export const ConfigurationPage = () => {
                             isActive={activeTab === 'branches'}
                             onClick={() => setActiveTab('branches')}
                         />
+                        <TabButton
+                            label="Órdenes"
+                            isActive={activeTab === 'orders'}
+                            onClick={() => setActiveTab('orders')}
+                        />
                     </nav>
                 </div>
 
@@ -49,6 +55,9 @@ export const ConfigurationPage = () => {
                     )}
                     {activeTab === 'branches' && (
                         <BranchConfigSection />
+                    )}
+                    {activeTab === 'orders' && (
+                        <OrderTransferSection />
                     )}
                 </div>
             </div>
