@@ -11,12 +11,11 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 240 # 4 horas (4 * 60 minutos)
 # --- FIN DE LA CORRECCIÓN ---
 
-# Contexto para el hash de contraseñas con configuración robusta
+# Contexto para el hash de contraseñas con configuración simple y robusta
+# Configuración mínima para evitar problemas con el límite de 72 bytes
 pwd_context = CryptContext(
     schemes=["bcrypt"], 
-    deprecated="auto",
-    bcrypt__rounds=12,  # Configuración explícita de rounds
-    bcrypt__ident="2b"  # Usar identificador 2b para mejor compatibilidad
+    deprecated="auto"
 )
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
