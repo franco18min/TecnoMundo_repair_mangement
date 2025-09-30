@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from app.api.v1.dependencies import get_db
 from app.models.user import User
 from app.models.roles import Role
-from app.models.branches import Branch
+from app.models.branch import Branch
 from app.models.status_order import StatusOrder
 from app.models.device_type import DeviceType
 from app.core.security import get_password_hash
@@ -41,9 +41,9 @@ def initialize_production_data(db: Session = Depends(get_db)):
 
         # 2. Crear sucursales si no existen
         branches_data = [
-            {"id": 1, "name": "Sucursal Principal", "address": "Dirección Principal", "phone": "123-456-7890"},
-            {"id": 2, "name": "Sucursal Norte", "address": "Dirección Norte", "phone": "123-456-7891"},
-            {"id": 3, "name": "Sucursal Sur", "address": "Dirección Sur", "phone": "123-456-7892"}
+            {"id": 1, "branch_name": "Sucursal Principal"},
+            {"id": 2, "branch_name": "Sucursal Norte"},
+            {"id": 3, "branch_name": "Sucursal Sur"}
         ]
         
         for branch_data in branches_data:
