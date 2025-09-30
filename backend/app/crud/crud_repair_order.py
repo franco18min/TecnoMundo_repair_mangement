@@ -342,8 +342,8 @@ def mark_as_delivered(db: Session, order_id: int, background_tasks: BackgroundTa
 
     return db_order
 
-async def send_order_transferred_notification(order_id: int, target_branch_id: int, actor_user_id: int):
-    """Envía notificaciones a todos los usuarios de la sucursal destino sobre la transferencia."""
+async def send_order_transferred_notification(order_id: int, origin_branch_id: int, target_branch_id: int, actor_user_id: int):
+    """Envía notificaciones sobre la transferencia tanto a la sucursal origen como destino."""
     with SessionLocal() as db:
         logging.info(f"\n--- [NOTIFICACIÓN DE TRANSFERENCIA] ---")
         order = get_repair_order(db, order_id=order_id)
@@ -351,28 +351,57 @@ async def send_order_transferred_notification(order_id: int, target_branch_id: i
             logging.warning("-> Orden no encontrada. Abortando.")
             return
         
-        # Obtener todos los usuarios de la sucursal destino
+        # Obtener información del usuario que realizó la transferencia
+        actor_user = db.query(UserModel).filter(UserModel.id == actor_user_id).first()
+        actor_name = actor_user.username if actor_user else "un usuario"
+        
+        # Obtener información de las sucursales
+        from app.crud import crud_branch
+        origin_branch = crud_branch.get_branch(db, branch_id=origin_branch_id)
+        target_branch = crud_branch.get_branch(db, branch_id=target_branch_id)
+        
+        origin_branch_name = origin_branch.branch_name if origin_branch else "sucursal origen"
+        target_branch_name = target_branch.branch_name if target_branch else "sucursal destino"
+        
+        # 1. Notificar a usuarios de la sucursal DESTINO
         target_users = crud_user.get_users_by_branch(db, branch_id=target_branch_id)
-        if not target_users:
-            logging.warning(f"-> No hay usuarios en la sucursal destino {target_branch_id}")
-            return
+        if target_users:
+            target_message = f"Orden #{order.id} ({order.device_model}) ha sido transferida a su sucursal desde {origin_branch_name} por {actor_name}."
+            link = f"order:{order.id}"
+            
+            for user in target_users:
+                if user.id != actor_user_id and user.is_active:
+                    db_notification = crud_notification.create_notification(
+                        db, user_id=user.id, message=target_message, link_to=link
+                    )
+                    notification_event = {
+                        "event": "NEW_NOTIFICATION", 
+                        "payload": NotificationSchema.from_orm(db_notification).dict()
+                    }
+                    await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
+            
+            logging.info(f"-> Notificaciones enviadas a {len(target_users)} usuarios de la sucursal destino {target_branch_name}")
         
-        message = f"Orden #{order.id} ({order.device_model}) ha sido transferida a su sucursal."
-        link = f"order:{order.id}"
+        # 2. Notificar a usuarios de la sucursal ORIGEN (excluyendo al actor)
+        origin_users = crud_user.get_users_by_branch(db, branch_id=origin_branch_id)
+        if origin_users:
+            origin_message = f"Orden #{order.id} ({order.device_model}) ha sido transferida desde su sucursal hacia {target_branch_name} por {actor_name}."
+            link = f"order:{order.id}"
+            
+            for user in origin_users:
+                if user.id != actor_user_id and user.is_active:
+                    db_notification = crud_notification.create_notification(
+                        db, user_id=user.id, message=origin_message, link_to=link
+                    )
+                    notification_event = {
+                        "event": "NEW_NOTIFICATION", 
+                        "payload": NotificationSchema.from_orm(db_notification).dict()
+                    }
+                    await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
+            
+            logging.info(f"-> Notificaciones enviadas a {len(origin_users)} usuarios de la sucursal origen {origin_branch_name}")
         
-        # Enviar notificación a todos los usuarios de la sucursal destino
-        for user in target_users:
-            if user.id != actor_user_id and user.is_active:
-                db_notification = crud_notification.create_notification(
-                    db, user_id=user.id, message=message, link_to=link
-                )
-                notification_event = {
-                    "event": "NEW_NOTIFICATION", 
-                    "payload": NotificationSchema.from_orm(db_notification).dict()
-                }
-                await manager.send_to_user(json.dumps(notification_event, default=str), user.id)
-        
-        logging.info(f"-> Notificaciones enviadas a {len(target_users)} usuarios de la sucursal {target_branch_id}")
+        logging.info("--- [FIN DE NOTIFICACIÓN DE TRANSFERENCIA] ---\n")
 
 def transfer_order(db: Session, order_id: int, target_branch_id: int, background_tasks: BackgroundTasks, user_id: int):
     """
@@ -384,6 +413,9 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
     if not db_order:
         raise ValueError("Orden no encontrada.")
     
+    # Guardar la sucursal origen antes de actualizar
+    origin_branch_id = db_order.branch_id
+    
     # Verificar que la sucursal destino existe
     from app.crud import crud_branch
     target_branch = crud_branch.get_branch(db, branch_id=target_branch_id)
@@ -391,7 +423,7 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
         raise ValueError("Sucursal destino no encontrada.")
     
     # Verificar que no se esté transfiriendo a la misma sucursal
-    if db_order.branch_id == target_branch_id:
+    if origin_branch_id == target_branch_id:
         raise ValueError("No se puede transferir una orden a la misma sucursal.")
     
     # Si la orden está en proceso (status_id=2), resetear técnico y poner en pendiente
@@ -406,13 +438,15 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
     db.commit()
     db.refresh(db_order)
     
-    # Enviar notificación ORDER_UPDATED para actualizar la lista en tiempo real
-    background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
+    # Enviar evento WebSocket para actualizar la lista en tiempo real
+    event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(db_order).dict()}
+    background_tasks.add_task(manager.broadcast_to_all, json.dumps(event_payload, default=str))
     
-    # Enviar notificaciones a la sucursal destino
+    # Enviar notificaciones a ambas sucursales
     background_tasks.add_task(
         send_order_transferred_notification, 
         order_id=db_order.id, 
+        origin_branch_id=origin_branch_id,
         target_branch_id=target_branch_id,
         actor_user_id=user_id
     )

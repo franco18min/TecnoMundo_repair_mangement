@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- ICONOS INTERNOS (para mantener todo en un solo archivo) ---
@@ -108,8 +108,8 @@ export const TransferAnimation = ({ status, fromBranch = "Sucursal A", toBranch 
                     {/* Origen */}
                     <div className="flex flex-col items-center gap-2 relative">
                         <AnimatePresence>
-                            {/* Hoja aparece inicialmente en origen (idle) y desaparece al transferir */}
-                            {status === 'idle' && (
+                            {/* Hoja aparece inicialmente en origen (idle) y desaparece al comenzar transferencia */}
+                            {(status === 'idle') && (
                                 <motion.div 
                                     className="absolute top-[-38px]" 
                                     variants={itemVariants} 
@@ -122,15 +122,15 @@ export const TransferAnimation = ({ status, fromBranch = "Sucursal A", toBranch 
                             )}
                         </AnimatePresence>
                          <motion.div
-                            animate={status !== 'completed' ? 'active' : 'inactive'}
+                            animate={status === 'idle' ? 'active' : 'inactive'}
                             variants={branchColorVariants}
                             transition={{ duration: 0.4 }}
                          >
                             <BranchIcon className="h-16 w-16" isOrigin />
                          </motion.div>
-                        <motion.span
+                        <motion.span 
                             className="font-semibold"
-                            animate={status !== 'completed' ? 'active' : 'inactive'}
+                            animate={status === 'idle' ? 'active' : 'inactive'}
                             variants={branchColorVariants}
                             transition={{ duration: 0.4 }}
                         >
@@ -161,7 +161,7 @@ export const TransferAnimation = ({ status, fromBranch = "Sucursal A", toBranch 
                                 variants={branchColorVariants}
                                 transition={{ duration: 0.4, delay: 1.2 }}
                             >
-                                <BranchIcon className="h-16 w-16" isOrigin={false} />
+                                <BranchIcon className="h-16 w-16" />
                             </motion.div>
                             <AnimatePresence>
                                 {status === 'completed' && (
@@ -200,4 +200,51 @@ export const TransferAnimation = ({ status, fromBranch = "Sucursal A", toBranch 
         </div>
     );
 };
+
+
+// --- APLICACIÓN DE DEMOSTRACIÓN ---
+export default function App() {
+    const [status, setStatus] = useState('idle'); // 'idle', 'transferring', 'completed'
+
+    const handleTransfer = () => {
+        setStatus('transferring');
+        setTimeout(() => setStatus('completed'), 2000); // Simula el tiempo que toma la transferencia
+    };
+
+    const handleReset = () => {
+        setStatus('idle');
+    };
+
+    return (
+        <div className="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+             <div className="max-w-md w-full text-center mb-8">
+                <h1 className="text-2xl font-bold text-gray-800">Componente de Animación React</h1>
+                <p className="text-gray-600">Este componente se controla mediante el estado (`status`) y notifica cuando la animación ha finalizado.</p>
+            </div>
+            
+            <TransferAnimation 
+                status={status}
+                fromBranch="Jujuy Centro"
+                toBranch="Palpalá"
+                onCompleted={() => console.log("La animación ha finalizado. Puedes cerrar el modal o realizar otra acción.")}
+            />
+
+            <div className="flex gap-4 mt-8">
+                <button
+                    onClick={handleTransfer}
+                    disabled={status !== 'idle'}
+                    className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                    Iniciar Transferencia
+                </button>
+                 <button
+                    onClick={handleReset}
+                    className="bg-gray-200 text-gray-800 font-semibold py-2 px-5 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                >
+                    Reiniciar
+                </button>
+            </div>
+        </div>
+    );
+}
 
