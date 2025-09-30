@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useCallback, use
 import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from '../api/authApi';
 import { fetchRepairOrders, mapOrderData } from '../api/repairOrdersApi';
 import { fetchNotifications, markNotificationAsRead as apiMarkAsRead } from '../api/notificationsApi';
+import { API_CONFIG } from '../config/api.js';
 // --- INICIO DE LA MODIFICACIÓN ---
 import { fetchBranches as apiFetchBranches } from '../api/branchApi';
 import { Loader } from 'lucide-react';
@@ -83,8 +84,8 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (currentUser) {
             const token = getAccessToken();
-            const wsUrl = `ws://127.0.0.1:8001/api/v1/notifications/ws?token=${token}`;
-            websocketRef.current = new WebSocket(wsUrl);
+            const wsUrl = `${API_CONFIG.WS_URL}/api/v1/notifications/ws?token=${token}`;
+        websocketRef.current = new WebSocket(wsUrl);
 
             websocketRef.current.onopen = () => console.log("WebSocket conectado.");
             websocketRef.current.onclose = () => console.log("WebSocket desconectado.");

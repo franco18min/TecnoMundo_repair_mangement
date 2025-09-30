@@ -1,19 +1,7 @@
 // frontend/src/api/deviceTypeApi.js
+import { API_CONFIG, getAuthHeaders } from '../config/api.js';
 
-const API_BASE_URL = 'http://127.0.0.1:8001';
-
-// --- INICIO DE LA CORRECCIÓN ---
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-        console.warn("No se encontró token de acceso en localStorage.");
-    }
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-};
-// --- FIN DE LA CORRECCIÓN ---
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 /**
  * Obtiene todos los tipos de dispositivos desde el backend.

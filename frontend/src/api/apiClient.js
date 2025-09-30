@@ -1,5 +1,7 @@
 // frontend/src/api/apiClient.js
-const API_BASE_URL = 'http://127.0.0.1:8001/api/v1';
+import { API_CONFIG } from '../config/api.js';
+
+const API_BASE_URL = API_CONFIG.API_V1_URL;
 
 const getApiClient = (getAccessToken, logout) => {
     return async (endpoint, options = {}) => {

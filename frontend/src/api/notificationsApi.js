@@ -1,15 +1,6 @@
-const API_BASE_URL = 'http://127.0.0.1:8001';
+import { API_CONFIG, getAuthHeaders } from '../config/api.js';
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-        throw new Error("No se encontró token de acceso.");
-    }
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-};
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export const fetchNotifications = async () => {
     const response = await fetch(`${API_BASE_URL}/api/v1/notifications/`, {

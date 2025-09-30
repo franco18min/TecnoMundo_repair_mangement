@@ -1,17 +1,7 @@
 // frontend/src/api/repairOrdersApi.js
+import { API_CONFIG, getAuthHeaders } from '../config/api.js';
 
-const API_BASE_URL = 'http://127.0.0.1:8001';
-
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-        console.warn("No se encontró token de acceso en localStorage.");
-    }
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-};
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // 1. Creamos una función de mapeo reutilizable
 export const mapOrderData = (order) => ({

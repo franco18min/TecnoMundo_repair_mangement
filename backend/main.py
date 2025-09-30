@@ -19,7 +19,9 @@ app = FastAPI(title="Servicio Técnico Pro API", lifespan=lifespan)
 # --- CONFIGURACIÓN DE CORS DEFINITIVA ---
 # Lista explícita de orígenes permitidos
 origins = [
-    "http://localhost:5173",
+    "http://localhost:5173",  # Desarrollo local
+    "https://tecnomundo-repair-mangement.web.app",  # Firebase Hosting (dominio principal)
+    "https://tecnomundo-repair-mangement.firebaseapp.com",  # Firebase Hosting (dominio del proyecto)
 ]
 
 app.add_middleware(

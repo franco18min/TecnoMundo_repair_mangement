@@ -1,6 +1,7 @@
 // frontend/src/api/authApi.js
+import { API_CONFIG } from '../config/api.js';
 
-const API_BASE_URL = 'http://127.0.0.1:8001';
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 /**
  * Autentica a un usuario y guarda el token de acceso.

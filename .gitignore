@@ -1,22 +1,82 @@
-# Python / FastAPI
+# ===== BACKEND (Python/FastAPI) =====
 backend/__pycache__/
+backend/**/__pycache__/
 backend/venv/
+backend/env/
+backend/.venv/
 backend/.env
+backend/.env.local
+backend/.env.production
+backend/.env.staging
+backend/logs/
+backend/*.log
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+backend/instance/
+backend/.webassets-cache
 
-# Node.js / React
+# ===== FRONTEND (Node.js/React/Vite) =====
 frontend/node_modules/
 frontend/dist/
+frontend/build/
 frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.vite/
+frontend/.firebase/
+
+# ===== SISTEMA OPERATIVO =====
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
 
-# backend/create_user-py
+# ===== IDEs y EDITORES =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== BASES DE DATOS =====
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== CERTIFICADOS Y CLAVES =====
+*.pem
+*.key
+*.crt
+*.p12
+
+# ===== ARCHIVOS TEMPORALES =====
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# ===== ARCHIVOS DE CONFIGURACIÓN SENSIBLES =====
+config/production.json
+config/staging.json
+secrets/
+
+# ===== ARCHIVOS DE BACKUP =====
+*.bak
+*.backup
+*.old
+
+# ===== ARCHIVOS ESPECÍFICOS DEL PROYECTO =====
 backend/create_user.py
-
-# orchestrator
 orchestrator
-
-#rules
-.trae/ rules
-
-#animation
-C:\Users\magna\Desktop\TecnoMundo_repair_mangement\frontend\src\components\config\TransferAnimationOrig.jsx
+.trae/rules
