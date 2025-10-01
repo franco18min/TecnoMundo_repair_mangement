@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Ocultar barras de desplazamiento pero mantener funcionalidad de scroll */
+.scrollbar-hide {
+  /* WebKit browsers (Chrome, Safari, Edge) */
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Para navegadores que soportan scrollbar-width */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}

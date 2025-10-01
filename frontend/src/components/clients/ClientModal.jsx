@@ -82,7 +82,15 @@ export function ClientModal({ isOpen, onClose, client, mode, onClientUpdated, on
                     <div className="p-6 border-b flex justify-between items-center">
                         {/* El título ahora es dinámico */}
                         <h2 className="text-2xl font-bold text-gray-800">{mode === 'edit' ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
-                        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                        <motion.button 
+                            onClick={onClose} 
+                            className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
+                            whileHover={{ scale: 1.1, rotate: 90 }}
+                            whileTap={{ scale: 0.9 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                            <X size={24} />
+                        </motion.button>
                     </div>
                     {/* El 'id' del formulario es importante para que el botón de submit funcione desde el footer */}
                     <form id="client-form" onSubmit={handleSubmit} className="p-6 space-y-4">

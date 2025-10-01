@@ -66,7 +66,15 @@ export function ClientOrdersModal({ isOpen, onClose, client, onOrderSelect }) {
                 >
                     <div className="p-6 border-b flex justify-between items-center bg-indigo-600 rounded-t-xl">
                         <h2 className="text-2xl font-bold text-white">Órdenes de {client?.first_name} {client?.last_name}</h2>
-                        <button onClick={onClose} className="text-indigo-100 hover:text-white"><X size={24} /></button>
+                        <motion.button 
+                            onClick={onClose} 
+                            className="text-indigo-100 hover:text-white p-1 rounded-full"
+                            whileHover={{ scale: 1.1, rotate: 90 }}
+                            whileTap={{ scale: 0.9 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                            <X size={24} />
+                        </motion.button>
                     </div>
                     <div className="flex-1 p-6 overflow-y-auto">
                         {isLoading && (

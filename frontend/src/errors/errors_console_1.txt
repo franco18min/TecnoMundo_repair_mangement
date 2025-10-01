@@ -1,79 +1,104 @@
 react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
-127.0.0.1:8001/api/v1/users/me:1   Failed to load resource: the server responded with a status of 401 (Unauthorized)
-AuthContext.jsx:64  Error cargando datos iniciales: Error: No se pudo obtener la información del usuario.
-    at getCurrentUser (authApi.js:49:15)
-    at async AuthContext.jsx:47:26
-    at async AuthContext.jsx:71:19
-(anonymous) @ AuthContext.jsx:64
-127.0.0.1:8001/api/v1/users/me:1   Failed to load resource: the server responded with a status of 401 (Unauthorized)
-AuthContext.jsx:64  Error cargando datos iniciales: Error: No se pudo obtener la información del usuario.
-    at getCurrentUser (authApi.js:49:15)
-    at async AuthContext.jsx:47:26
-    at async AuthContext.jsx:71:19
-(anonymous) @ AuthContext.jsx:64
+AuthContext.jsx:115  WebSocket connection to 'ws://127.0.0.1:8001/api/v1/notifications/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc1OTM0MTQwNH0.n2WSx3W2zhsZdSRKizQ0lgd26hoFSvfHMBzAVU6Sie0' failed: WebSocket is closed before the connection is established.
+(anonymous) @ AuthContext.jsx:115
+safelyCallDestroy @ react-dom.development.js:22971
+commitHookEffectListUnmount @ react-dom.development.js:23139
+commitPassiveUnmountOnFiber @ react-dom.development.js:25070
+commitPassiveUnmountEffects_complete @ react-dom.development.js:25046
+commitPassiveUnmountEffects_begin @ react-dom.development.js:25035
+commitPassiveUnmountEffects @ react-dom.development.js:24980
+flushPassiveEffectsImpl @ react-dom.development.js:27077
+flushPassiveEffects @ react-dom.development.js:27023
+(anonymous) @ react-dom.development.js:26808
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+AuthContext.jsx:92  Error en WebSocket: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+websocketRef.current.onerror @ AuthContext.jsx:92
+AuthContext.jsx:91 WebSocket desconectado.
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
 AuthContext.jsx:90 WebSocket conectado.
-react-dom.development.js:86  Warning: React has detected a change in the order of Hooks called by BranchSwitcher. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
-
-   Previous render            Next render
-   ------------------------------------------------------
-1. useContext                 useContext
-2. useState                   useState
-3. useRef                     useRef
-4. undefined                  useEffect
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-    at BranchSwitcher (http://localhost:5173/src/components/shared/layout/BranchSwitcher.jsx?t=1759297820385:24:76)
-    at div
-    at MotionDOMComponent (http://localhost:5173/node_modules/.vite/deps/framer-motion.js?v=3cb347cb:5310:40)
-    at nav
-    at MotionDOMComponent (http://localhost:5173/node_modules/.vite/deps/framer-motion.js?v=3cb347cb:5310:40)
-    at aside
-    at Sidebar (http://localhost:5173/src/components/shared/layout/Sidebar.jsx?t=1759297820385:24:27)
-    at div
-    at DashboardPage (http://localhost:5173/src/pages/DashboardPage.jsx?t=1759297820385:31:33)
-    at ErrorBoundary (http://localhost:5173/src/components/shared/ErrorBoundary.jsx?t=1759294114367:8:5)
-    at PresenceChild (http://localhost:5173/node_modules/.vite/deps/framer-motion.js?v=3cb347cb:4288:24)
-    at AnimatePresence (http://localhost:5173/node_modules/.vite/deps/framer-motion.js?v=3cb347cb:4367:26)
-    at ErrorBoundary (http://localhost:5173/src/components/shared/ErrorBoundary.jsx?t=1759294114367:8:5)
-    at App (http://localhost:5173/src/App.jsx?t=1759297820385:27:34)
-    at AuthProvider (http://localhost:5173/src/context/AuthContext.jsx?t=1759296378359:29:32)
-    at ToastProvider (http://localhost:5173/src/context/ToastContext.jsx:31:33)
-printWarning @ react-dom.development.js:86
-useErrorCapture.js:35 Error global capturado y reportado: global-js-1759318163113-4tnw61f7j
-react-dom.development.js:15688  Uncaught Error: Rendered more hooks than during the previous render.
-    at updateWorkInProgressHook (react-dom.development.js:15688:13)
-    at updateEffectImpl (react-dom.development.js:16248:14)
-    at updateEffect (react-dom.development.js:16279:10)
-    at Object.useEffect (react-dom.development.js:17043:14)
-    at useEffect (react.development.js:1634:21)
-    at BranchSwitcher (BranchSwitcher.jsx:20:5)
+BranchSwitcher.jsx:15  Uncaught TypeError: Cannot destructure property 'expanded' of 'useContext(...)' as it is undefined.
+    at BranchSwitcher (BranchSwitcher.jsx:15:13)
     at renderWithHooks (react-dom.development.js:15486:18)
-    at updateFunctionComponent (react-dom.development.js:19617:20)
-    at beginWork (react-dom.development.js:21640:16)
+    at mountIndeterminateComponent (react-dom.development.js:20103:13)
+    at beginWork (react-dom.development.js:21626:16)
     at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
-useErrorCapture.js:35 Error global capturado y reportado: global-js-1759318163119-f7wj8q838
-react-dom.development.js:15688  Uncaught Error: Rendered more hooks than during the previous render.
-    at updateWorkInProgressHook (react-dom.development.js:15688:13)
-    at updateEffectImpl (react-dom.development.js:16248:14)
-    at updateEffect (react-dom.development.js:16279:10)
-    at Object.useEffect (react-dom.development.js:17043:14)
-    at useEffect (react.development.js:1634:21)
-    at BranchSwitcher (BranchSwitcher.jsx:20:5)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+BranchSwitcher @ BranchSwitcher.jsx:15
+renderWithHooks @ react-dom.development.js:15486
+mountIndeterminateComponent @ react-dom.development.js:20103
+beginWork @ react-dom.development.js:21626
+callCallback2 @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+beginWork$1 @ react-dom.development.js:27490
+performUnitOfWork @ react-dom.development.js:26596
+workLoopSync @ react-dom.development.js:26505
+renderRootSync @ react-dom.development.js:26473
+performConcurrentWorkOnRoot @ react-dom.development.js:25777
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+BranchSwitcher.jsx:15  Uncaught TypeError: Cannot destructure property 'expanded' of 'useContext(...)' as it is undefined.
+    at BranchSwitcher (BranchSwitcher.jsx:15:13)
     at renderWithHooks (react-dom.development.js:15486:18)
-    at updateFunctionComponent (react-dom.development.js:19617:20)
-    at beginWork (react-dom.development.js:21640:16)
+    at mountIndeterminateComponent (react-dom.development.js:20103:13)
+    at beginWork (react-dom.development.js:21626:16)
     at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+BranchSwitcher @ BranchSwitcher.jsx:15
+renderWithHooks @ react-dom.development.js:15486
+mountIndeterminateComponent @ react-dom.development.js:20103
+beginWork @ react-dom.development.js:21626
+callCallback2 @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+beginWork$1 @ react-dom.development.js:27490
+performUnitOfWork @ react-dom.development.js:26596
+workLoopSync @ react-dom.development.js:26505
+renderRootSync @ react-dom.development.js:26473
+recoverFromConcurrentError @ react-dom.development.js:25889
+performConcurrentWorkOnRoot @ react-dom.development.js:25789
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
 react-dom.development.js:18704  The above error occurred in the <ErrorBoundary> component:
 
-    at ErrorBoundary (http://localhost:5173/src/components/shared/ErrorBoundary.jsx?t=1759294114367:8:5)
-    at App (http://localhost:5173/src/App.jsx?t=1759297820385:27:34)
-    at AuthProvider (http://localhost:5173/src/context/AuthContext.jsx?t=1759296378359:29:32)
+    at ErrorBoundary (http://localhost:5173/src/components/shared/ErrorBoundary.jsx:8:5)
+    at App (http://localhost:5173/src/App.jsx?t=1759328366516:27:34)
+    at AuthProvider (http://localhost:5173/src/context/AuthContext.jsx:29:32)
     at ToastProvider (http://localhost:5173/src/context/ToastContext.jsx:31:33)
 
 Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
 logCapturedError @ react-dom.development.js:18704
-useErrorCapture.js:35 Error global capturado y reportado: global-js-1759318163125-d89jkzmce
+update.callback @ react-dom.development.js:18737
+callCallback @ react-dom.development.js:15036
+commitUpdateQueue @ react-dom.development.js:15057
+commitLayoutEffectOnFiber @ react-dom.development.js:23430
+commitLayoutMountEffects_complete @ react-dom.development.js:24727
+commitLayoutEffects_begin @ react-dom.development.js:24713
+commitLayoutEffects @ react-dom.development.js:24651
+commitRootImpl @ react-dom.development.js:26862
+commitRoot @ react-dom.development.js:26721
+finishConcurrentRender @ react-dom.development.js:25931
+performConcurrentWorkOnRoot @ react-dom.development.js:25848
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
 react-dom.development.js:26962  Uncaught TypeError: Cannot read properties of null (reading 'componentStack')
     at ErrorBoundary.render (ErrorBoundary.jsx:89:63)
     at finishClassComponent (react-dom.development.js:19781:31)
@@ -85,33 +110,17 @@ react-dom.development.js:26962  Uncaught TypeError: Cannot read properties of nu
     at renderRootSync (react-dom.development.js:26473:7)
     at recoverFromConcurrentError (react-dom.development.js:25889:20)
     at performConcurrentWorkOnRoot (react-dom.development.js:25789:22)
-127.0.0.1:8001/api/v1/errors/report:1   Failed to load resource: the server responded with a status of 422 (Unprocessable Content)
-errorsApi.js:28  Error al reportar error al backend: Error: Error al reportar: 422 Unprocessable Content
-    at reportError (errorsApi.js:23:19)
-reportError @ errorsApi.js:28
-errorsApi.js:38 Error guardado localmente para reintento posterior
-useErrorCapture.js:32  Error al reportar error global: Error: Error al reportar: 422 Unprocessable Content
-    at reportError (errorsApi.js:23:19)
-(anonymous) @ useErrorCapture.js:32
-127.0.0.1:8001/api/v1/errors/report:1   Failed to load resource: the server responded with a status of 422 (Unprocessable Content)
-errorsApi.js:28  Error al reportar error al backend: Error: Error al reportar: 422 Unprocessable Content
-    at reportError (errorsApi.js:23:19)
-reportError @ errorsApi.js:28
-errorsApi.js:38 Error guardado localmente para reintento posterior
-useErrorCapture.js:32  Error al reportar error global: Error: Error al reportar: 422 Unprocessable Content
-    at reportError (errorsApi.js:23:19)
-(anonymous) @ useErrorCapture.js:32
-127.0.0.1:8001/api/v1/errors/report:1   Failed to load resource: the server responded with a status of 422 (Unprocessable Content)
-errorsApi.js:28  Error al reportar error al backend: Error: Error al reportar: 422 Unprocessable Content
-    at reportError (errorsApi.js:23:19)
-reportError @ errorsApi.js:28
-errorsApi.js:38 Error guardado localmente para reintento posterior
-useErrorCapture.js:32  Error al reportar error global: Error: Error al reportar: 422 Unprocessable Content
-    at reportError (errorsApi.js:23:19)
-(anonymous) @ useErrorCapture.js:32
+render @ ErrorBoundary.jsx:89
+finishClassComponent @ react-dom.development.js:19781
+updateClassComponent @ react-dom.development.js:19727
+beginWork @ react-dom.development.js:21650
+beginWork$1 @ react-dom.development.js:27465
+performUnitOfWork @ react-dom.development.js:26596
+workLoopSync @ react-dom.development.js:26505
+renderRootSync @ react-dom.development.js:26473
+recoverFromConcurrentError @ react-dom.development.js:25889
+performConcurrentWorkOnRoot @ react-dom.development.js:25789
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
 AuthContext.jsx:91 WebSocket desconectado.
-[NEW] Explain Console errors by using Copilot in Edge: click
-         
-         to explain an error. 
-        Learn more
-        Don't show again

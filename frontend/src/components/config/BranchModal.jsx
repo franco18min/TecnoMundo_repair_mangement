@@ -75,7 +75,15 @@ export function BranchModal({ isOpen, onClose, branch, onSave }) {
                 >
                     <div className="p-6 border-b flex justify-between items-center">
                         <h2 className="text-2xl font-bold text-gray-800">{isEditing ? 'Editar Sucursal' : 'Nueva Sucursal'}</h2>
-                        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                        <motion.button 
+                            onClick={onClose} 
+                            className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
+                            whileHover={{ scale: 1.1, rotate: 90 }}
+                            whileTap={{ scale: 0.9 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                            <X size={24} />
+                        </motion.button>
                     </div>
                     <form id="branch-form" onSubmit={handleSubmit} className="p-6">
                         <FormField

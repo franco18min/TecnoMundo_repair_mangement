@@ -278,7 +278,7 @@ export const UserConfigSection = () => {
                             confirm.onConfirm();
                             setConfirm({ isOpen: false });
                         }}
-                        onCancel={() => setConfirm({ isOpen: false })}
+                        onClose={() => setConfirm({ isOpen: false })}
                     />
                 )}
             </AnimatePresence>

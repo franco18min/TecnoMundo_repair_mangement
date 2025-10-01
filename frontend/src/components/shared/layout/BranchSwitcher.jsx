@@ -1,14 +1,18 @@
 // frontend/src/components/layout/BranchSwitcher.jsx
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext'; // RUTA CORREGIDA
 import { Building, Globe, ChevronDown } from 'lucide-react';
+import { SidebarContext } from './Sidebar';
 
 export function BranchSwitcher() {
     const { currentUser, branches, selectedBranchId, setSelectedBranchId } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
     const dropdownRef = useRef(null);
+    const buttonRef = useRef(null);
+    const { expanded } = useContext(SidebarContext);
     
     // Cerrar dropdown al hacer clic fuera
     useEffect(() => {
@@ -38,6 +42,30 @@ export function BranchSwitcher() {
     };
 
     const toggleDropdown = () => {
+        if (!isOpen && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            
+            // Calcular posición y ancho del dropdown
+            let dropdownLeft = rect.left;
+            let dropdownWidth = expanded ? rect.width : 200; // Ancho fijo cuando está contraído
+            
+            // Si el sidebar está contraído, ajustar posición para que no se corte
+            if (!expanded) {
+                // Posicionar el dropdown a la derecha del botón
+                dropdownLeft = rect.right + 8;
+                
+                // Verificar si se sale de la pantalla por la derecha
+                if (dropdownLeft + dropdownWidth > window.innerWidth) {
+                    dropdownLeft = rect.left - dropdownWidth - 8; // Posicionar a la izquierda
+                }
+            }
+            
+            setDropdownPosition({
+                top: rect.bottom + 4,
+                left: dropdownLeft,
+                width: dropdownWidth
+            });
+        }
         setIsOpen(!isOpen);
     };
 
@@ -59,11 +87,14 @@ export function BranchSwitcher() {
             transition={{ duration: 0.2, ease: "easeOut" }}
         >
             <motion.label 
-                className="block text-xs font-medium text-gray-600 mb-1 cursor-pointer"
+                className="block text-xs font-medium text-gray-600 mb-1 cursor-pointer overflow-hidden"
                 animate={{ 
-                    color: isOpen ? "#4f46e5" : "#6b7280"
+                    color: isOpen ? "#4f46e5" : "#6b7280",
+                    opacity: expanded ? 1 : 0,
+                    height: expanded ? "auto" : 0,
+                    marginBottom: expanded ? 4 : 0
                 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 onClick={toggleDropdown}
             >
                 Sucursal ({dropdownOptions.length})
@@ -76,22 +107,39 @@ export function BranchSwitcher() {
                 >
                     {/* Botón principal del dropdown */}
                     <motion.button
+                        ref={buttonRef}
                         onClick={toggleDropdown}
-                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 pl-9 pr-8 text-sm font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-150 cursor-pointer hover:border-gray-300 hover:shadow-sm text-left"
+                        className={`w-full bg-white border border-gray-200 rounded-lg py-2.5 text-sm font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-150 cursor-pointer hover:border-gray-300 hover:shadow-sm ${expanded ? 'pl-9 pr-8 text-left' : 'px-2 text-center flex items-center justify-center'}`}
                         animate={{
                             borderColor: isOpen ? "#4f46e5" : "#e5e7eb",
                             boxShadow: isOpen ? "0 0 0 1px #4f46e5" : "none"
                         }}
                         transition={{ duration: 0.15 }}
                     >
-                        {selectedBranch.branch_name}
+                        {expanded ? (
+                            selectedBranch.branch_name
+                        ) : (
+                            <motion.div
+                                key={selectedBranchId}
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 600, damping: 35 }}
+                                className="flex items-center justify-center"
+                            >
+                                {selectedBranchId === 'all' ? 
+                                    <Globe size={16} className={isOpen ? "text-indigo-600" : "text-gray-600"} /> : 
+                                    <Building size={16} className={isOpen ? "text-indigo-600" : "text-gray-600"} />
+                                }
+                            </motion.div>
+                        )}
                     </motion.button>
 
-                    {/* Icono izquierdo */}
+                    {/* Icono izquierdo - Solo visible cuando está expandido */}
                     <motion.div 
-                        className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10"
+                        className="absolute inset-y-0 left-0 flex items-center pointer-events-none z-10 pl-3"
                         animate={{ 
-                            color: isOpen ? "#4f46e5" : "#9ca3af"
+                            color: isOpen ? "#4f46e5" : "#9ca3af",
+                            opacity: expanded ? 1 : 0
                         }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
                     >
@@ -108,12 +156,13 @@ export function BranchSwitcher() {
                         </motion.div>
                     </motion.div>
 
-                    {/* Flecha derecha */}
+                    {/* Flecha derecha - Solo visible cuando está expandido */}
                     <motion.div 
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none z-10"
+                        className="absolute inset-y-0 right-0 flex items-center pointer-events-none z-10 pr-3"
                         animate={{ 
                             rotate: isOpen ? 180 : 0,
-                            color: isOpen ? "#4f46e5" : "#9ca3af"
+                            color: isOpen ? "#4f46e5" : "#9ca3af",
+                            opacity: expanded ? 1 : 0
                         }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
                     >
@@ -121,17 +170,17 @@ export function BranchSwitcher() {
                     </motion.div>
                 </motion.div>
 
-                {/* Lista desplegable - Posicionada de forma absoluta para superponerse */}
+                {/* Lista desplegable - Position fixed para no afectar el layout */}
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
-                            className="absolute top-full left-3 right-3 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] overflow-hidden"
+                            className="bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden"
                             style={{ 
-                                position: 'absolute',
-                                top: '100%',
-                                left: '12px',
-                                right: '12px',
-                                marginTop: '4px'
+                                position: 'fixed',
+                                top: dropdownPosition.top,
+                                left: dropdownPosition.left,
+                                width: dropdownPosition.width,
+                                zIndex: 999999
                             }}
                             initial={{ opacity: 0, y: -10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -145,7 +194,11 @@ export function BranchSwitcher() {
                             }}
                         >
                             <motion.div
-                                className="max-h-60 overflow-y-auto"
+                                className="max-h-60 overflow-y-auto scrollbar-hide"
+                                style={{ 
+                                    scrollbarWidth: 'none', /* Firefox */
+                                    msOverflowStyle: 'none' /* IE and Edge */
+                                }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.1, duration: 0.15 }}

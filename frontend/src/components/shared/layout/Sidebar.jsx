@@ -7,6 +7,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { BranchSwitcher } from './BranchSwitcher';
 
 const SidebarContext = createContext();
+export { SidebarContext };
 
 export function Sidebar({ onLogout, children }) {
     const [expanded, setExpanded] = useState(true);
@@ -60,22 +61,22 @@ export function Sidebar({ onLogout, children }) {
                     </motion.button>
                 </div>
 
-                <motion.div 
-                    className="overflow-hidden"
-                    initial={false}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                >
-                    <BranchSwitcher />
-                    <motion.hr 
-                        className="my-2 border-gray-100" 
-                        initial={false}
-                        animate={{ scaleX: 1 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                    />
-                </motion.div>
-
                 <SidebarContext.Provider value={{ expanded }}>
+                    <motion.div 
+                        className="overflow-hidden"
+                        initial={false}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                    >
+                        <BranchSwitcher />
+                        <motion.hr 
+                            className="my-2 border-gray-100" 
+                            initial={false}
+                            animate={{ scaleX: 1 }}
+                            transition={{ duration: 0.3, delay: 0.2 }}
+                        />
+                    </motion.div>
+
                     <motion.ul 
                         className="flex-1 px-3"
                         initial={false}
@@ -143,9 +144,13 @@ export function Sidebar({ onLogout, children }) {
 
 export function SidebarItem({ icon, text, active, alert, onClick }) {
     const { expanded } = useContext(SidebarContext);
+    const [isHovered, setIsHovered] = useState(false);
+    
     return (
         <motion.li
             onClick={onClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer group transition-colors duration-200 ${!expanded && "justify-center"} ${
             active
                 ? "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm"
@@ -198,7 +203,7 @@ export function SidebarItem({ icon, text, active, alert, onClick }) {
             </AnimatePresence>
 
             <AnimatePresence>
-                {!expanded && (
+                {!expanded && isHovered && (
                     <motion.div 
                         className="absolute left-full rounded-lg px-3 py-2 ml-6 bg-gray-900 text-white text-xs z-50 whitespace-nowrap shadow-lg border border-gray-700"
                         initial={{ opacity: 0, x: -8, scale: 0.9 }}

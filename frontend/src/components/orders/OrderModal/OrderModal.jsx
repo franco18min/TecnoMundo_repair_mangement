@@ -260,7 +260,15 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             <AnimatePresence>
                 <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <motion.div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
-                        <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button></div>
+                        <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><motion.button 
+                                onClick={() => onClose(false)} 
+                                className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
+                                whileHover={{ scale: 1.1, rotate: 90 }}
+                                whileTap={{ scale: 0.9 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            >
+                                <X size={24} />
+                            </motion.button></div>
                         {isLoading ? (<div className="flex-1 flex justify-center items-center p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
                             <>
                                 <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">

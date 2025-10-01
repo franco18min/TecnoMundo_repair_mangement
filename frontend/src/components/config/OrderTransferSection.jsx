@@ -174,7 +174,13 @@ export const OrderTransferSection = () => {
                         </div>
 
                         {/* Lista de órdenes */}
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                        <div 
+                            className="space-y-2 max-h-96 overflow-y-auto overflow-x-hidden scrollbar-hide px-2 py-2"
+                            style={{ 
+                                scrollbarWidth: 'none', /* Firefox */
+                                msOverflowStyle: 'none' /* IE and Edge */
+                            }}
+                        >
                             {transferableOrders.length === 0 ? (
                                 <p className="text-gray-500 text-center py-8">
                                     {searchTerm ? 'No se encontraron órdenes' : 'No hay órdenes disponibles para transferir'}

@@ -41,9 +41,15 @@ export function NotificationPanel({ onClose, onNotificationClick }) {
             <button onClick={handleMarkAllAsRead} className="text-indigo-600 hover:text-indigo-800" title="Marcar todas como leídas">
                 <CheckCheck size={20} />
             </button>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <motion.button 
+                onClick={onClose} 
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
                 <X size={24} />
-            </button>
+            </motion.button>
         </div>
       </div>
 

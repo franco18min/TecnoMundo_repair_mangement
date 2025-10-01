@@ -336,7 +336,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                         title="Eliminar Orden"
                         message={`¿Estás seguro de que quieres eliminar la orden #${orderToDelete.id}? Esta acción no se puede deshacer.`}
                         onConfirm={handleConfirmDelete}
-                        onCancel={() => setOrderToDelete(null)}
+                        onClose={() => setOrderToDelete(null)}
                         isLoading={isLoading}
                     />
                 )}
