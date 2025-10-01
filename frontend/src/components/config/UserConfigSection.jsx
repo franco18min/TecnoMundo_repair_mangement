@@ -1,11 +1,47 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Edit, ToggleLeft, ToggleRight, Loader, UserX, UserCheck, Users } from 'lucide-react';
 import { getUsers, updateUser } from '../../api/userApi';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { UserModal } from './UserModal';
 import { ConfirmationModal } from '../shared/ConfirmationModal';
+
+// Variantes de animación para la tabla
+const tableVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const rowVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+        opacity: 1, 
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 24
+        }
+    },
+    exit: { 
+        opacity: 0, 
+        x: -100,
+        transition: {
+            duration: 0.2
+        }
+    }
+};
+
+const buttonVariants = {
+    hover: { scale: 1.05 },
+    tap: { scale: 0.95 }
+};
 
 export const UserConfigSection = () => {
     const [users, setUsers] = useState([]);
@@ -81,71 +117,171 @@ export const UserConfigSection = () => {
     };
 
     return (
-        <>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-800">Gestión de Usuarios</h2>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center p-1 bg-gray-100 rounded-lg">
-                        {['all', 'active', 'inactive'].map(status => (
-                            <button key={status} onClick={() => setFilter(status)} className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${filter === status ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}>
-                                {{'all': 'Todos', 'active': 'Activos', 'inactive': 'Inactivos'}[status]}
-                            </button>
-                        ))}
-                    </div>
-                    <motion.button onClick={() => handleOpenModal(null)} className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <PlusCircle size={20} />
-                        <span>Nuevo Usuario</span>
+                <motion.button 
+                    onClick={() => handleOpenModal(null)} 
+                    className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                >
+                    <PlusCircle size={20} />
+                    <span>Nuevo Usuario</span>
+                </motion.button>
+            </div>
+
+            <motion.div 
+                className="flex gap-2 mb-4"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+            >
+                {[
+                    { key: 'all', label: 'Todos', icon: Users },
+                    { key: 'active', label: 'Activos', icon: UserCheck },
+                    { key: 'inactive', label: 'Inactivos', icon: UserX }
+                ].map(({ key, label, icon: Icon }) => (
+                    <motion.button
+                        key={key}
+                        onClick={() => setFilter(key)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                            filter === key 
+                                ? 'bg-indigo-100 text-indigo-700 shadow-sm' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                        variants={buttonVariants}
+                        whileHover="hover"
+                        whileTap="tap"
+                    >
+                        <Icon size={16} />
+                        {label}
                     </motion.button>
-                </div>
-            </div>
+                ))}
+            </motion.div>
 
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                {isLoading && <div className="flex justify-center p-8"><Loader className="animate-spin text-indigo-600" size={32} /></div>}
-                {error && <p className="text-center text-red-500 p-4">{error}</p>}
-                {!isLoading && !error && (
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
-                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {users.map(user => (
-                                <tr key={user.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap"><div className="font-medium text-gray-900">{user.username}</div><div className="text-gray-500">{user.email}</div></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{user.role.role_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{user.branch.branch_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {user.is_active ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right flex items-center justify-end gap-2">
-                                        <button onClick={() => handleToggleStatus(user)} title={user.is_active ? 'Desactivar' : 'Activar'} className={`p-2 rounded-md transition-colors ${user.is_active ? 'text-gray-500 hover:bg-yellow-100 hover:text-yellow-700' : 'text-gray-500 hover:bg-green-100 hover:text-green-700'}`}>
-                                            {user.is_active ? <UserX size={18} /> : <UserCheck size={18} />}
-                                        </button>
-                                        <button onClick={() => handleOpenModal(user)} title="Editar" className="p-2 rounded-md text-gray-500 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">
-                                            <Edit size={18} />
-                                        </button>
-                                    </td>
+            <motion.div 
+                className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+            >
+                <AnimatePresence mode="wait">
+                    {isLoading && (
+                        <motion.div 
+                            className="flex justify-center p-8"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <Loader className="animate-spin text-indigo-600" size={32} />
+                        </motion.div>
+                    )}
+                    {error && (
+                        <motion.p 
+                            className="text-center text-red-500 p-4"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                        >
+                            {error}
+                        </motion.p>
+                    )}
+                    {!isLoading && !error && (
+                        <motion.table 
+                            className="w-full text-sm"
+                            variants={tableVariants}
+                            initial="hidden"
+                            animate="show"
+                        >
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                                    <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                                    <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
+                                    <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-                 {!isLoading && users.length === 0 && (
-                    <div className="text-center text-gray-500 p-8"><Users size={40} className="mx-auto text-gray-400 mb-2" />No hay usuarios para mostrar.</div>
-                )}
-            </div>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                <AnimatePresence>
+                                    {users.map(user => (
+                                        <motion.tr 
+                                            key={user.id}
+                                            variants={rowVariants}
+                                            layout
+                                            className="hover:bg-gray-50 transition-colors duration-150"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="font-medium text-gray-900">{user.username}</div>
+                                                <div className="text-gray-500">{user.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-700">{user.role?.role_name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-700">{user.branch?.branch_name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <motion.button
+                                                    onClick={() => handleToggleStatus(user)}
+                                                    className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
+                                                        user.is_active 
+                                                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                    }`}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                >
+                                                    {user.is_active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                                                    {user.is_active ? 'Activo' : 'Inactivo'}
+                                                </motion.button>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <motion.button
+                                                    onClick={() => handleOpenModal(user)}
+                                                    className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200"
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                >
+                                                    <Edit size={16} />
+                                                </motion.button>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
+                            </tbody>
+                        </motion.table>
+                    )}
+                </AnimatePresence>
+            </motion.div>
 
-            <UserModal isOpen={isModalOpen} onClose={handleCloseModal} user={selectedUser} onSave={handleSave} />
-            {/* --- INICIO DE LA CORRECCIÓN --- */}
-            <ConfirmationModal isOpen={confirm.isOpen} title={confirm.title} message={confirm.message} onConfirm={() => { setConfirm({ isOpen: false }); confirm.onConfirm(); }} onClose={() => setConfirm({ isOpen: false })} />
-            {/* --- FIN DE LA CORRECCIÓN --- */}
-        </>
+            <AnimatePresence>
+                {isModalOpen && (
+                    <UserModal
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        user={selectedUser}
+                        onSave={handleSave}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {confirm.isOpen && (
+                    <ConfirmationModal
+                        isOpen={confirm.isOpen}
+                        title={confirm.title}
+                        message={confirm.message}
+                        onConfirm={() => {
+                            confirm.onConfirm();
+                            setConfirm({ isOpen: false });
+                        }}
+                        onCancel={() => setConfirm({ isOpen: false })}
+                    />
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 };

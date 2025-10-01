@@ -19,27 +19,72 @@ const statusConfig = {
     'Default': { text: 'Desconocido', badge: 'bg-gray-100 text-gray-800', icon: <Archive size={14} className="text-gray-600" /> }
 };
 
+// Variantes de animación mejoradas
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+        opacity: 1, 
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 24
+        }
+    }
+};
+
+const tableRowVariants = {
+    hidden: { opacity: 0, x: -20 },
+    show: { 
+        opacity: 1, 
+        x: 0,
+        transition: {
+            type: "spring",
+            stiffness: 400,
+            damping: 25
+        }
+    },
+    exit: { 
+        opacity: 0, 
+        x: 100,
+        transition: {
+            duration: 0.2
+        }
+    }
+};
+
 const FilterInput = ({ label, name, value, onChange }) => (
-    <div>
+    <motion.div variants={itemVariants}>
         <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
         <input
             type="text"
             name={name}
             value={value}
             onChange={onChange}
-            className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
         />
-    </div>
+    </motion.div>
 );
 
 const FilterSelect = ({ label, name, value, onChange, options, className = '' }) => (
-    <div>
+    <motion.div variants={itemVariants}>
         <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
         <select
             name={name}
             value={value}
             onChange={onChange}
-            className={`w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 text-sm h-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300 ${className}`}
+            className={`w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 text-sm h-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 ${className}`}
         >
             {options.map(opt => (
                 <option key={opt.value} value={opt.value}>
@@ -47,7 +92,7 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
                 </option>
             ))}
         </select>
-    </div>
+    </motion.div>
 );
 
 export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
@@ -124,80 +169,178 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     }, [filters.status]);
 
     return (
-    <>
-      <div className="flex justify-between items-center mb-6">
-        <motion.h1 className="text-3xl font-bold text-gray-800" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          Gestión de Órdenes
-        </motion.h1>
-        {permissions.canCreateOrders && (
-            <motion.button onClick={onNewOrderClick} className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <PlusCircle size={20} /><span>Crear Nueva Orden</span>
-            </motion.button>
-        )}
-      </div>
+        <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            {/* Header con botón de nueva orden */}
+            <motion.div 
+                className="flex justify-between items-center"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+            >
+                <h1 className="text-3xl font-bold text-gray-800">Órdenes de Reparación</h1>
+                <motion.button
+                    onClick={onNewOrderClick}
+                    className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    <PlusCircle size={20} />
+                    <span>Nueva Orden</span>
+                </motion.button>
+            </motion.div>
 
-      <motion.div className="bg-white p-4 rounded-lg shadow-md mb-6 border border-gray-200" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 items-end">
-            <div className="xl:col-span-1"><FilterInput name="id" label="N° Orden" value={filters.id} onChange={handleFilterChange} /></div>
-            <div className="xl:col-span-2"><FilterInput name="client" label="Cliente" value={filters.client} onChange={handleFilterChange} /></div>
-            <div className="xl:col-span-1"><FilterSelect name="device_type" label="Tipo Disp." value={filters.device_type} onChange={handleFilterChange} options={uniqueDeviceTypes.map(d => ({value: d, text: d}))} /></div>
-            <div className="xl:col-span-1"><FilterSelect name="status" label="Estado" value={filters.status} onChange={handleFilterChange} options={uniqueStatusesOptions} className={selectedStatusClass} /></div>
-            <div className="xl:col-span-1"><FilterSelect name="technician" label="Técnico" value={filters.technician} onChange={handleFilterChange} options={uniqueTechnicians.map(t => ({value: t, text: t}))} /></div>
-            <div className="xl:col-span-1"><FilterInput name="parts_used" label="Repuesto" value={filters.parts_used} onChange={handleFilterChange} /></div>
-            <button onClick={clearFilters} className="flex items-center justify-center gap-2 bg-gray-200 text-gray-700 font-semibold py-2 px-3 rounded-lg hover:bg-gray-300 h-10">
-                <RotateCcw size={16} /> Limpiar
-            </button>
-        </div>
-      </motion.div>
+            {/* Filtros */}
+            <motion.div 
+                className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+            >
+                <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 items-end"
+                    variants={containerVariants}
+                >
+                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                        <FilterInput name="id" label="ID Orden" value={filters.id} onChange={handleFilterChange} />
+                    </motion.div>
+                    <motion.div className="xl:col-span-2" variants={itemVariants}>
+                        <FilterInput name="client" label="Cliente" value={filters.client} onChange={handleFilterChange} />
+                    </motion.div>
+                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                        <FilterSelect name="device_type" label="Tipo Disp." value={filters.device_type} onChange={handleFilterChange} options={uniqueDeviceTypes.map(d => ({value: d, text: d}))} />
+                    </motion.div>
+                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                        <FilterSelect name="status" label="Estado" value={filters.status} onChange={handleFilterChange} options={uniqueStatusesOptions} className={selectedStatusClass} />
+                    </motion.div>
+                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                        <FilterSelect name="technician" label="Técnico" value={filters.technician} onChange={handleFilterChange} options={uniqueTechnicians.map(t => ({value: t, text: t}))} />
+                    </motion.div>
+                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                        <FilterInput name="parts_used" label="Repuesto" value={filters.parts_used} onChange={handleFilterChange} />
+                    </motion.div>
+                    <motion.button 
+                        onClick={clearFilters} 
+                        className="flex items-center justify-center gap-2 bg-gray-200 text-gray-700 font-semibold py-2 px-3 rounded-lg hover:bg-gray-300 h-10 transition-colors duration-200"
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <RotateCcw size={16} /> Limpiar
+                    </motion.button>
+                </motion.div>
+            </motion.div>
 
-      <motion.div className="bg-white rounded-lg shadow-md overflow-x-auto" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}>
-        <table className="w-full min-w-[900px]">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">ID</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Cliente</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Dispositivo</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Repuesto</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Estado</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Técnico</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
+            {/* Tabla de órdenes */}
+            <motion.div 
+                className="bg-white rounded-lg shadow-md overflow-x-auto"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+            >
+                <table className="w-full min-w-[900px]">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dispositivo</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
+                            <th className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        <AnimatePresence>
+                            {filteredOrdersToDisplay.map((order, index) => {
+                                const status = statusConfig[order.status] || statusConfig['Default'];
+                                return (
+                                    <motion.tr
+                                        key={order.id}
+                                        variants={tableRowVariants}
+                                        initial="hidden"
+                                        animate="show"
+                                        exit="exit"
+                                        layout
+                                        custom={index}
+                                        className="hover:bg-gray-50 transition-colors duration-150"
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{order.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.badge}`}>
+                                                {status.icon}
+                                                {status.text}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.technician || 'No asignado'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.date}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.cost}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <motion.button
+                                                    onClick={() => onViewOrderClick(order.id)}
+                                                    className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200"
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    title="Ver orden"
+                                                >
+                                                    <Eye size={16} />
+                                                </motion.button>
+                                                {permissions.canDeleteOrders && (
+                                                    <motion.button
+                                                        onClick={() => setOrderToDelete(order)}
+                                                        className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                                                        whileHover={{ scale: 1.1 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        title="Eliminar orden"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </motion.button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                );
+                            })}
+                        </AnimatePresence>
+                    </tbody>
+                </table>
+
+                {/* Estado vacío */}
+                {filteredOrdersToDisplay.length === 0 && (
+                    <motion.div 
+                        className="text-center py-12"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <Archive className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No hay órdenes</h3>
+                        <p className="mt-1 text-sm text-gray-500">Comienza creando una nueva orden de reparación.</p>
+                    </motion.div>
+                )}
+            </motion.div>
+
+            {/* Modal de confirmación */}
             <AnimatePresence>
-            {(!ordersToDisplay || ordersToDisplay.length === 0) ? ( <tr><td colSpan="7" className="text-center p-8 text-gray-500">No hay órdenes para mostrar en esta sucursal.</td></tr> )
-            : filteredAndSortedOrders.length > 0 ? filteredAndSortedOrders.map((order) => {
-              const currentStatus = statusConfig[order.status] || statusConfig['Default'];
-              return (
-                <motion.tr key={order.id} className="border-b border-gray-200 hover:bg-indigo-50/50" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} layout>
-                  <td className="p-4 font-mono text-sm text-indigo-600">{order.id}</td>
-                  <td className="p-4 text-sm text-gray-800">{order.customer.name}</td>
-                  <td className="p-4 text-sm text-gray-600">{`${order.device.type} ${order.device.model}`}</td>
-                  <td className="p-4 text-sm text-gray-600">{order.parts_used}</td>
-                  <td className="p-4"><span className={`flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full ${currentStatus.badge}`}>{currentStatus.icon} {currentStatus.text}</span></td>
-                  <td className="p-4 text-sm text-gray-600">{order.assignedTechnician.name}</td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                        <button onClick={() => onViewOrderClick(order.id)} className="text-gray-500 hover:text-indigo-600" title="Ver / Editar Orden"><Eye size={18} /></button>
-                        {permissions.canDeleteOrders && (<button onClick={() => setOrderToDelete(order)} className="text-gray-500 hover:text-red-600" title="Eliminar Orden"><Trash2 size={18} /></button>)}
-                    </div>
-                  </td>
-                </motion.tr>
-              );
-            }) : ( <motion.tr><td colSpan="7" className="text-center p-8 text-gray-500"><p className="font-semibold">No se encontraron órdenes</p><p className="text-sm">Intenta ajustar tus filtros de búsqueda.</p></td></motion.tr> )}
+                {orderToDelete && (
+                    <ConfirmationModal
+                        isOpen={!!orderToDelete}
+                        title="Eliminar Orden"
+                        message={`¿Estás seguro de que quieres eliminar la orden #${orderToDelete.id}? Esta acción no se puede deshacer.`}
+                        onConfirm={handleConfirmDelete}
+                        onCancel={() => setOrderToDelete(null)}
+                        isLoading={isLoading}
+                    />
+                )}
             </AnimatePresence>
-          </tbody>
-        </table>
-      </motion.div>
-
-      <ConfirmationModal
-        isOpen={!!orderToDelete}
-        onClose={() => setOrderToDelete(null)}
-        onConfirm={handleConfirmDelete}
-        title="Confirmar Eliminación"
-        message={`¿Estás seguro de que quieres eliminar permanentemente la orden #${orderToDelete?.id}? Esta acción no se puede deshacer.`}
-        confirmText="Sí, Eliminar"
-      />
-    </>
-  );
+        </motion.div>
+    );
 }
