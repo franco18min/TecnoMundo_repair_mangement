@@ -1,7 +1,8 @@
 # backend/app/schemas/user.py
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
+import re
 from .branch import Branch
 from .role import Role
 
@@ -55,8 +56,30 @@ class UserCreateByAdmin(BaseModel):
     branch_id: Optional[int] = None
     is_active: bool = True
 
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('La contraseña debe tener al menos 8 caracteres')
+        if not re.search(r'[A-Za-z]', v):
+            raise ValueError('La contraseña debe contener al menos una letra')
+        if not re.search(r'\d', v):
+            raise ValueError('La contraseña debe contener al menos un número')
+        return v
+
 class UserUpdateByAdmin(BaseModel):
     email: Optional[str] = None
+    password: Optional[str] = None  # Campo para cambio de contraseña
     role_id: Optional[int] = None
     branch_id: Optional[int] = None
     is_active: Optional[bool] = None
+
+    @validator('password')
+    def validate_password(cls, v):
+        if v is not None and v.strip():  # Solo validar si se proporciona una contraseña
+            if len(v) < 8:
+                raise ValueError('La contraseña debe tener al menos 8 caracteres')
+            if not re.search(r'[A-Za-z]', v):
+                raise ValueError('La contraseña debe contener al menos una letra')
+            if not re.search(r'\d', v):
+                raise ValueError('La contraseña debe contener al menos un número')
+        return v

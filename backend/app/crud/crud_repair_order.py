@@ -273,9 +273,11 @@ def delete_repair_order(db: Session, order_id: int, background_tasks: Background
 def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
-    if db_order.status_id == 3:
-        db_order.status_id = 2
+    # Permitir reabrir órdenes completadas (3) o entregadas (5)
+    if db_order.status_id in [3, 5]:
+        db_order.status_id = 2  # Cambiar a "In Process"
         db_order.completed_at = None
+        db_order.delivered_at = None  # Limpiar fecha de entrega si existe
         note_prefix = "\n--- ORDEN REABIERTA ---"
         db_order.repair_notes = f"{db_order.repair_notes or ''}{note_prefix}"
         db.commit()

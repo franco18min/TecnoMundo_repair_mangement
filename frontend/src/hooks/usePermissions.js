@@ -54,6 +54,7 @@ export const usePermissions = (mode, order = null) => {
         const isPending = ['Pending', 'Waiting for parts'].includes(status);
         const isInProcess = status === 'In Process';
         const isCompleted = status === 'Completed';
+        const isDelivered = status === 'Delivered';
 
         const canAdminOrRecepModify = (isAdmin || isReceptionist);
         const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
@@ -61,6 +62,9 @@ export const usePermissions = (mode, order = null) => {
         // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
         const canDeliverOrder = (isAdmin || isReceptionist) && isCompleted;
         // --- FIN DE LA NUEVA FUNCIONALIDAD ---
+
+        // Lógica de modificación: Admin/Recepcionista pueden modificar órdenes Pending o In Process
+        const canModifyOrder = (isAdmin || isReceptionist) && (isPending || isInProcess);
 
         return {
             canEditInitialDetails: canAdminOrRecepModify,
@@ -70,11 +74,12 @@ export const usePermissions = (mode, order = null) => {
             canEditPartsUsed: canEditPartsUsed,
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
-            canReopenOrder: (isAdmin || isReceptionist) && isCompleted,
+            canReopenOrder: (isAdmin || isReceptionist) && (isCompleted || isDelivered),
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
+            canModifyOrder: canModifyOrder, // <-- Permiso añadido para el botón "Modificar Orden"
             canCompleteOrder: canComplete,
-            isReadOnly: !canAdminOrRecepModify && !(isTechnician && isMyOrder && isInProcess),
+            isReadOnly: !canModifyOrder && !canComplete,
             canViewClients: canViewClients,
             canAccessConfig: canAccessConfig,
             canDeliverOrder: canDeliverOrder, // <-- Permiso añadido

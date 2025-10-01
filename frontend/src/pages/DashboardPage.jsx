@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Wrench, Users, History, Settings } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, History, Settings, Bug } from 'lucide-react';
 import { Sidebar, SidebarItem } from '../components/shared/layout/Sidebar';
 import { DashboardHome } from '../components/dashboard/DashboardHome';
 import { OrdersPage } from '../components/orders/OrdersPage';
@@ -75,6 +75,14 @@ export function DashboardPage({ onLogout }) {
                         text="Configuración"
                         active={activePage === 'config'}
                         onClick={() => setActivePage('config')}
+                    />
+                )}
+                {import.meta.env.MODE === 'development' && (
+                    <SidebarItem
+                        icon={<Bug size={20} />}
+                        text="Pruebas de Errores"
+                        active={activePage === 'error-testing'}
+                        onClick={() => setActivePage('error-testing')}
                     />
                 )}
             </Sidebar>

@@ -252,12 +252,12 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
-                            <th className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         <AnimatePresence>
-                            {filteredOrdersToDisplay.map((order, index) => {
+                            {filteredAndSortedOrders.map((order, index) => {
                                 const status = statusConfig[order.status] || statusConfig['Default'];
                                 return (
                                     <motion.tr
@@ -271,8 +271,8 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                                         className="hover:bg-gray-50 transition-colors duration-150"
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{order.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer?.name || 'Cliente no especificado'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device?.type} {order.device?.model}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.badge}`}>
                                                 {status.icon}
@@ -314,7 +314,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 </table>
 
                 {/* Estado vacío */}
-                {filteredOrdersToDisplay.length === 0 && (
+                {filteredAndSortedOrders.length === 0 && (
                     <motion.div 
                         className="text-center py-12"
                         initial={{ opacity: 0, y: 20 }}

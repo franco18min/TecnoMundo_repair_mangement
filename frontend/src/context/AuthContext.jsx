@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (currentUser) {
             const token = getAccessToken();
-            const wsUrl = `${API_CONFIG.WS_URL}/api/v1/notifications/ws?token=${token}`;
+            const wsUrl = `${API_CONFIG.BASE_URL.replace('http', 'ws').replace('https', 'wss')}/api/v1/notifications/ws?token=${token}`;
         websocketRef.current = new WebSocket(wsUrl);
 
             websocketRef.current.onopen = () => console.log("WebSocket conectado.");

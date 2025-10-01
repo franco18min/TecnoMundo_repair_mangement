@@ -69,6 +69,8 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
                     )}
                 </AnimatePresence>
             </motion.div>
+
+
         </>
     );
 }

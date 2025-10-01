@@ -61,12 +61,19 @@ def create(db: Session, *, obj_in: UserCreateByAdmin) -> User:
 
 def update(db: Session, *, db_obj: User, obj_in: UserUpdateByAdmin, admin_user: User) -> User:
     """
-    Actualiza un usuario. Incluye lógica de auditoría para cambios de estado.
+    Actualiza un usuario. Incluye lógica de auditoría para cambios de estado y hash seguro de contraseñas.
     """
     update_data = obj_in.dict(exclude_unset=True)
 
+    # Auditoría para cambios de estado
     if 'is_active' in update_data and db_obj.is_active != update_data['is_active']:
         logging.info(f"Admin '{admin_user.username}' cambió el estado de is_active del usuario '{db_obj.username}' a '{update_data['is_active']}'")
+
+    # Auditoría para cambios de contraseña
+    if 'password' in update_data and update_data['password']:
+        logging.info(f"Admin '{admin_user.username}' cambió la contraseña del usuario '{db_obj.username}'")
+        # Hash seguro de la nueva contraseña
+        update_data['password'] = get_password_hash(update_data['password'])
 
     for field, value in update_data.items():
         setattr(db_obj, field, value)

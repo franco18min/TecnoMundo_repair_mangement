@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightLeft, Search, Building2, Package, AlertTriangle, CheckCircle, Clock, Wrench, XCircle, Truck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +25,11 @@ export const OrderTransferSection = () => {
     const [isTransferring, setIsTransferring] = useState(false);
     const [showAnimation, setShowAnimation] = useState(false);
 
+    // Resetear sucursal seleccionada cuando cambie la orden
+    useEffect(() => {
+        setSelectedBranch('');
+    }, [selectedOrder]);
+
 
 
     // Filtrar órdenes que se pueden transferir (completadas, pendientes, en proceso)
@@ -46,29 +51,36 @@ export const OrderTransferSection = () => {
         });
     }, [orders, searchTerm]);
 
-    // Obtener sucursales disponibles para transferir (excluyendo la actual del usuario)
+    // Obtener sucursales disponibles para transferir (excluyendo la sucursal actual de la orden)
     const availableBranches = useMemo(() => {
         if (!branches || branches.length === 0) {
             return [];
         }
         
-        if (!currentUser?.branch_id) {
+        // Si no hay orden seleccionada, mostrar todas las sucursales
+        if (!selectedOrder) {
             return branches;
         }
         
-        // Comparación robusta que maneja diferentes tipos de datos
+        // Excluir la sucursal actual de la orden seleccionada
         return branches.filter(branch => {
             const branchId = String(branch.id);
-            const userBranchId = String(currentUser.branch_id);
-            return branchId !== userBranchId;
+            const orderBranchId = String(selectedOrder.branch_id);
+            return branchId !== orderBranchId;
         });
-    }, [branches, currentUser]);
+    }, [branches, selectedOrder]);
 
 
 
     const handleTransferOrder = async () => {
         if (!selectedOrder || !selectedBranch) {
             showToast('Por favor selecciona una orden y una sucursal destino', 'error');
+            return;
+        }
+
+        // Validar que no se esté transfiriendo a la misma sucursal
+        if (String(selectedOrder.branch_id) === String(selectedBranch)) {
+            showToast('No se puede transferir una orden a la misma sucursal donde ya se encuentra', 'error');
             return;
         }
 
@@ -188,9 +200,9 @@ export const OrderTransferSection = () => {
                                                         {statusConfig[order.status]?.text || order.status}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-600">{order.device?.model}</p>
+                                                <p className="text-sm text-gray-600">{order.device?.type} {order.device?.model}</p>
                                                 <p className="text-sm text-gray-500">
-                                                    {order.customer?.name}
+                                                    {order.customer?.name || 'Cliente no especificado'}
                                                 </p>
                                             </div>
                                             <div className="text-right">
@@ -219,8 +231,8 @@ export const OrderTransferSection = () => {
                                     <h4 className="font-medium text-gray-800 mb-2">Orden Seleccionada</h4>
                                     <div className="space-y-1 text-sm">
                                         <p><span className="font-medium">ID:</span> #{selectedOrder.id}</p>
-                                        <p><span className="font-medium">Dispositivo:</span> {selectedOrder.device?.model}</p>
-                                        <p><span className="font-medium">Cliente:</span> {selectedOrder.customer?.name}</p>
+                                        <p><span className="font-medium">Dispositivo:</span> {selectedOrder.device?.type} {selectedOrder.device?.model}</p>
+                                        <p><span className="font-medium">Cliente:</span> {selectedOrder.customer?.name || 'Cliente no especificado'}</p>
                                         <p><span className="font-medium">Estado:</span> {statusConfig[selectedOrder.status]?.text}</p>
                                         <p><span className="font-medium">Sucursal actual:</span> {getOrderBranchName(selectedOrder)}</p>
                                         {selectedOrder.assignedTechnician && (

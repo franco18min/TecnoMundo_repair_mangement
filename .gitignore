@@ -8,6 +8,7 @@ backend/.env
 backend/.env.local
 backend/.env.production
 backend/.env.staging
+backend/.env.monitoring
 backend/logs/
 backend/*.log
 backend/.pytest_cache/
@@ -15,6 +16,8 @@ backend/htmlcov/
 backend/.coverage
 backend/instance/
 backend/.webassets-cache
+backend/errors/*.log
+backend/errors/*.json
 
 # ===== FRONTEND (Node.js/React/Vite) =====
 frontend/node_modules/
@@ -28,8 +31,21 @@ frontend/.env.production.local
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
 frontend/.vite/
 frontend/.firebase/
+frontend/dist-ssr/
+frontend/src/errors/*.log
+frontend/src/errors/*.json
+
+# ===== MONITOREO Y LOGS =====
+monitoring/logs/
+monitoring/alerts/
+*.log
+*.json.log
+error_*.json
+metrics_*.json
 
 # ===== SISTEMA OPERATIVO =====
 .DS_Store
@@ -41,13 +57,36 @@ ehthumbs.db
 Thumbs.db
 *.tmp
 *.temp
+desktop.ini
 
 # ===== IDEs y EDITORES =====
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ===== DEPLOYMENT Y SECRETS =====
+.env.backup
+*.pem
+*.key
+*.crt
+deployment-secrets/
+firebase-adminsdk-*.json
+
+# ===== CACHE Y TEMPORALES =====
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vercel/
+.netlify/
 
 # ===== BASES DE DATOS =====
 *.db
