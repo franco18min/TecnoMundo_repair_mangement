@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Edit3 } from 'lucide-react';
 import { ZoomableImage } from './ZoomableImage.jsx';
@@ -16,11 +16,27 @@ export const PhotoModal = ({
   onCancelPending,
   onEditingNoteChange,
 }) => {
+  // Estado para manejar marcadores
+  const [markers, setMarkers] = useState(selectedPhoto?.markers || []);
+
+  // Función para agregar un nuevo marcador
+  const handleAddMarker = (marker) => {
+    const newMarkers = [...markers, marker];
+    setMarkers(newMarkers);
+    // TODO: Aquí se guardará en la base de datos
+    console.log('Nuevo marcador agregado:', marker);
+  };
+
+  // Función para limpiar todos los marcadores
+  const handleClearMarkers = () => {
+    setMarkers([]);
+    console.log('Marcadores limpiados');
+  };
   if (!selectedPhoto) return null;
 
   return (
     <motion.div
-      className="relative bg-white max-w-2xl w-full rounded-xl shadow-2xl p-6"
+      className="relative bg-white max-w-6xl w-full max-h-[90vh] rounded-xl shadow-2xl p-8 overflow-y-auto m-4"
       onClick={(e) => e.stopPropagation()}
       initial={{ scale: 0.9, y: -20, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -30,18 +46,22 @@ export const PhotoModal = ({
       <motion.button
         type="button"
         onClick={onClose}
-        className="absolute -top-3 -right-3 bg-red-500 text-white w-9 h-9 rounded-full text-xl font-bold shadow-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center justify-center"
+        className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full text-xl font-bold shadow-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center justify-center z-50"
         aria-label="Cerrar"
         whileHover={{ scale: 1.1, rotate: 90 }}
         whileTap={{ scale: 0.9 }}
       >
-        <X size={20} />
+        <X size={16} />
       </motion.button>
 
       <ZoomableImage
         src={selectedPhoto.photo}
         alt={selectedPhoto.note || 'Foto de diagnóstico'}
-        className="w-full h-64 rounded-lg mb-4 bg-gray-50"
+        className="w-full h-96 rounded-lg mb-6 bg-gray-50"
+        markers={markers}
+        onAddMarker={handleAddMarker}
+        onClearMarkers={handleClearMarkers}
+        canEdit={canEdit}
       />
 
       <div className="flex items-center justify-between mb-2">
