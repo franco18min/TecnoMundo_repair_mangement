@@ -12,7 +12,7 @@ from app.models.repair_order import RepairOrder as RepairOrderModel
 from app.models.device_condition import DeviceCondition as DeviceConditionModel
 from app.models.user import User as UserModel
 from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, RepairOrder as RepairOrderSchema, \
-    RepairOrderDetailsUpdate
+    RepairOrderDetailsUpdate, RepairOrderDiagnosisUpdate
 from app.schemas.notification import Notification as NotificationSchema
 from app.db.session import SessionLocal
 
@@ -196,6 +196,29 @@ def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks:
         db.commit()
         db.refresh(db_order)
     background_tasks.add_task(send_technician_notifications, order_id=db_order.id)
+    return db_order
+
+
+def update_order_diagnosis(db: Session, order_id: int, diagnosis_update, background_tasks: BackgroundTasks, user_id: int):
+    """Actualizar solo los campos de diagnóstico y notas de reparación"""
+    db_order = get_repair_order(db, order_id)
+    if not db_order:
+        return None
+    
+    # Actualizar solo los campos de diagnóstico
+    if diagnosis_update.technician_diagnosis is not None:
+        db_order.technician_diagnosis = diagnosis_update.technician_diagnosis
+    
+    if diagnosis_update.repair_notes is not None:
+        db_order.repair_notes = diagnosis_update.repair_notes
+    
+    db_order.updated_at = func.now()
+    db.commit()
+    db.refresh(db_order)
+    
+    # Enviar notificación de actualización
+    background_tasks.add_task(send_order_details_updated_notification, order_id=db_order.id, actor_user_id=user_id)
+    
     return db_order
 
 def complete_technician_work(db: Session, order_id: int, order_update: RepairOrderUpdate,

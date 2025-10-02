@@ -176,3 +176,26 @@ def transfer_order(
             raise HTTPException(status_code=404, detail=str(e))
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error interno al transferir la orden.")
+
+@router.patch("/{order_id}/diagnosis", response_model=schemas_repair_order.RepairOrder)
+def update_order_diagnosis(
+    order_id: int,
+    diagnosis_update: schemas_repair_order.RepairOrderDiagnosisUpdate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_technician_or_admin)
+):
+    """
+    Actualizar solo los campos de diagnóstico y notas de reparación.
+    Accesible para técnicos y administradores.
+    """
+    updated_order = crud_repair_order.update_order_diagnosis(
+        db=db,
+        order_id=order_id,
+        diagnosis_update=diagnosis_update,
+        background_tasks=background_tasks,
+        user_id=current_user.id
+    )
+    if updated_order is None:
+        raise HTTPException(status_code=404, detail="Orden no encontrada para actualizar.")
+    return updated_order

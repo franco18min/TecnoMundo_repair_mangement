@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Photo Upload - TecnoMundo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .logs {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Subida de Fotos - TecnoMundo</h1>
+        
+        <div class="form-group">
+            <label for="username">Usuario:</label>
+            <input type="text" id="username" value="admin" placeholder="Ingrese usuario">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" value="admin123" placeholder="Ingrese contraseña">
+        </div>
+        
+        <button onclick="testLogin()">🔐 Probar Login</button>
+        
+        <div class="form-group">
+            <label for="orderId">ID de Orden:</label>
+            <input type="number" id="orderId" value="105" placeholder="Ingrese ID de orden">
+        </div>
+        
+        <div class="form-group">
+            <label for="photoFile">Archivo de Foto:</label>
+            <input type="file" id="photoFile" accept="image/*">
+        </div>
+        
+        <div class="form-group">
+            <label for="note">Nota (opcional):</label>
+            <input type="text" id="note" placeholder="Ingrese una nota opcional">
+        </div>
+        
+        <button onclick="testPhotoUpload()">📸 Probar Subida de Foto</button>
+        <button onclick="clearLogs()">🧹 Limpiar Logs</button>
+        
+        <div class="logs" id="logs"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8001';
+        let authToken = null;
+
+        function logMessage(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logs.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            logMessage('🔐 Iniciando prueba de login...', 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    logMessage(`✅ Login exitoso! Token: ${authToken.substring(0, 20)}...`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    logMessage(`❌ Error en login: ${response.status} - ${JSON.stringify(errorData)}`, 'error');
+                }
+            } catch (error) {
+                logMessage(`❌ Error de conexión en login: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPhotoUpload() {
+            if (!authToken) {
+                logMessage('❌ Primero debe hacer login para obtener el token', 'error');
+                return;
+            }
+            
+            const orderId = document.getElementById('orderId').value;
+            const photoFile = document.getElementById('photoFile').files[0];
+            const note = document.getElementById('note').value || '';
+            
+            if (!photoFile) {
+                logMessage('❌ Debe seleccionar un archivo de foto', 'error');
+                return;
+            }
+            
+            logMessage('📸 Iniciando prueba de subida de foto...', 'info');
+            logMessage(`📋 Datos: order_id=${orderId}, note="${note}", file=${photoFile.name} (${photoFile.size} bytes)`, 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('order_id', orderId);
+                formData.append('note', note);
+                formData.append('file', photoFile);
+                
+                // Log FormData contents
+                logMessage('📦 Contenido de FormData:', 'info');
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        logMessage(`   ${key}: ${value.name} (${value.size} bytes, ${value.type})`, 'info');
+                    } else {
+                        logMessage(`   ${key}: "${value}"`, 'info');
+                    }
+                }
+                
+                // Headers sin Content-Type (corregido)
+                const headers = {
+                    'Authorization': `Bearer ${authToken}`
+                    // Sin Content-Type para FormData
+                };
+                
+                logMessage('📡 Enviando petición POST...', 'info');
+                const response = await fetch(`${API_BASE_URL}/api/v1/repair-order-photos/`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+                
+                logMessage(`📨 Respuesta recibida: ${response.status} ${response.statusText}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    logMessage(`✅ ¡Subida exitosa! ID: ${data.id}, Order: ${data.order_id}`, 'success');
+                    logMessage(`📊 Datos de respuesta: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    logMessage(`❌ Error en subida: ${response.status} - ${JSON.stringify(errorData, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                logMessage(`❌ Error de conexión en subida: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+
+        // Auto-login al cargar la página
+        window.addEventListener('load', () => {
+            logMessage('🚀 Página cargada. Listo para pruebas.', 'info');
+        });
+    </script>
+</body>
+</html>

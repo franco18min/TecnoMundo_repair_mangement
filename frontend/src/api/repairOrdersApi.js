@@ -224,4 +224,26 @@ export const transferRepairOrder = async (orderId, targetBranchId) => {
         throw error;
     }
 };
+
+// Función para actualizar solo campos de diagnóstico
+export const updateOrderDiagnosis = async (orderId, diagnosisData) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/repair-orders/${orderId}/diagnosis`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(diagnosisData),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error al actualizar diagnóstico:", error);
+        throw error;
+    }
+};
+
 // --- FIN DE LA NUEVA FUNCIONALIDAD ---

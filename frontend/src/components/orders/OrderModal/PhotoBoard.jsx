@@ -25,12 +25,13 @@ const Photo = ({ photo, onSelect, onDelete, position, pinColor, canEdit }) => {
       onClick={() => onSelect(photo)}
       whileHover={{ scale: 1.05, zIndex: 20, rotate: position.rotation - 2 }}
     >
-      <div className="relative w-48 md:w-56 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-200">
+      <div className="relative w-44 md:w-52 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-200">
         <Pin color={pinColor} />
         
         {/* Botón de eliminar */}
         {canEdit && (
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(id);
@@ -65,6 +66,9 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [pendingPhoto, setPendingPhoto] = useState(null); // Foto temporal antes de guardar
+  const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, photoId: null });
   const fileInputRef = useRef(null);
 
   const memoizedPhotos = useMemo(() => {
@@ -78,14 +82,30 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
       { top: '53%', left: '75%', rotation: 2 },
     ];
 
-    return photos.map((photo, index) => ({
+    const photoList = photos || [];
+    // Agregar foto temporal si existe
+    if (pendingPhoto) {
+      return [...photoList, pendingPhoto].map((photo, index) => ({
+        ...photo,
+        position: positions[index % positions.length],
+        pinColor: pinColors[index % pinColors.length],
+      }));
+    }
+    
+    return photoList.map((photo, index) => ({
       ...photo,
       position: positions[index % positions.length],
       pinColor: pinColors[index % pinColors.length],
     }));
-  }, [photos]);
+  }, [photos, pendingPhoto]);
 
   const handleCloseModal = () => {
+    // Si hay una foto temporal, cancelarla
+    if (selectedPhoto?.isTemporary) {
+      handleCancelPendingPhoto();
+      return;
+    }
+    
     setSelectedPhoto(null);
     setIsEditingNote(false);
     setEditingNote('');
@@ -113,16 +133,30 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
       return;
     }
     
-    if (onAddPhoto) {
-      setIsUploading(true);
-      try {
-        await onAddPhoto(file);
+    // Crear una vista previa de la imagen sin guardarla
+    setIsUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const tempPhoto = {
+          id: 'temp-' + Date.now(),
+          photo: e.target.result,
+          note: '',
+          file: file, // Guardar el archivo para subirlo después
+          isTemporary: true
+        };
+        
+        setPendingPhoto(tempPhoto);
+        setSelectedPhoto(tempPhoto);
+        setIsEditingNote(true);
+        setEditingNote('');
         setUploadError('');
-      } catch (error) {
-        setUploadError(error.message || 'Error al subir la foto');
-      } finally {
         setIsUploading(false);
-      }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      setUploadError('Error al procesar la imagen');
+      setIsUploading(false);
     }
     
     // Reset input
@@ -134,12 +168,81 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
     setIsEditingNote(true);
   };
 
-  const handleSaveNote = () => {
-    if (selectedPhoto && onUpdatePhoto) {
-      onUpdatePhoto(selectedPhoto.id, editingNote);
-      setSelectedPhoto({ ...selectedPhoto, note: editingNote });
+  const handleSaveNote = async () => {
+    if (!selectedPhoto) return;
+    
+    // Si es una foto temporal, guardarla primero
+    if (selectedPhoto.isTemporary && pendingPhoto) {
+      await handleSavePendingPhoto();
+      return;
     }
+    
+    // Si es una foto existente, solo actualizar la nota
+    if (onUpdatePhoto) {
+      try {
+        await onUpdatePhoto(selectedPhoto.id, editingNote);
+        setSelectedPhoto(prev => ({ ...prev, note: editingNote }));
+        setIsEditingNote(false);
+      } catch (error) {
+        console.error('Error al guardar nota:', error);
+      }
+    }
+  };
+
+  const handleSavePendingPhoto = async () => {
+    if (!pendingPhoto || !onAddPhoto) return;
+    
+    setIsSaving(true);
+    try {
+      const newPhoto = await onAddPhoto(pendingPhoto.file, editingNote);
+      
+      // Limpiar estado temporal
+      setPendingPhoto(null);
+      setSelectedPhoto(null);
+      setIsEditingNote(false);
+      setEditingNote('');
+      
+    } catch (error) {
+      console.error('Error al guardar foto:', error);
+      setUploadError(error.message || 'Error al guardar la foto');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelPendingPhoto = () => {
+    setPendingPhoto(null);
+    setSelectedPhoto(null);
     setIsEditingNote(false);
+    setEditingNote('');
+    setUploadError('');
+  };
+
+  const handleDeletePhoto = (photoId) => {
+    setDeleteConfirmModal({ isOpen: true, photoId });
+  };
+
+  const handleConfirmDelete = async () => {
+    const { photoId } = deleteConfirmModal;
+    if (!photoId || !onDeletePhoto) return;
+
+    try {
+      await onDeletePhoto(photoId);
+      setDeleteConfirmModal({ isOpen: false, photoId: null });
+      
+      // Si la foto eliminada era la seleccionada, cerrar el modal
+      if (selectedPhoto?.id === photoId) {
+        setSelectedPhoto(null);
+        setIsEditingNote(false);
+        setEditingNote('');
+      }
+    } catch (error) {
+      console.error('Error al eliminar foto:', error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmModal({ isOpen: false, photoId: null });
   };
 
   const handleAddPhoto = useCallback(() => {
@@ -169,14 +272,8 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
     }, 100);
   }, [isUploading, canEdit]);
 
-  const handleDeletePhoto = (photoId) => {
-    if (onDeletePhoto) {
-      onDeletePhoto(photoId);
-    }
-  };
-
   return (
-    <div className="relative w-full h-[40vh] bg-gradient-to-br from-slate-100 to-slate-200 shadow-inner rounded-lg border-2 border-slate-300 overflow-hidden p-4">
+    <div className="relative w-full h-[50vh] bg-gradient-to-br from-slate-100 to-slate-200 shadow-inner rounded-lg border-2 border-slate-300 overflow-hidden p-4">
       {/* Textura de fondo sutil */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
       
@@ -244,7 +341,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
 
       {/* Área de fotos */}
       <motion.div
-        className="absolute inset-0 mt-16"
+        className="absolute inset-0 mt-12"
         variants={{ show: { transition: { staggerChildren: 0.1 } } }}
         initial="hidden"
         animate="show"
@@ -300,6 +397,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
               <motion.button 
+                type="button"
                 onClick={handleCloseModal}
                 className="absolute -top-3 -right-3 bg-red-500 text-white w-9 h-9 rounded-full text-xl font-bold shadow-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center justify-center"
                 aria-label="Cerrar"
@@ -319,6 +417,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
                 <h3 className="text-lg font-bold text-gray-800 font-sans">Nota de la Foto:</h3>
                 {canEdit && !isEditingNote && (
                   <button
+                    type="button"
                     onClick={handleEditNote}
                     className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition-colors"
                   >
@@ -338,14 +437,25 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
                   />
                   <div className="flex gap-2">
                     <button
+                      type="button"
                       onClick={handleSaveNote}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      disabled={isSaving}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      Guardar
+                      {isSaving ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Guardando...
+                        </>
+                      ) : (
+                        selectedPhoto?.isTemporary ? 'Guardar Foto' : 'Guardar'
+                      )}
                     </button>
                     <button
-                      onClick={() => setIsEditingNote(false)}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      type="button"
+                      onClick={selectedPhoto?.isTemporary ? handleCancelPendingPhoto : () => setIsEditingNote(false)}
+                      disabled={isSaving}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancelar
                     </button>
@@ -360,6 +470,56 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modal de confirmación para borrar foto */}
+      <AnimatePresence>
+        {deleteConfirmModal.isOpen && (
+          <motion.div 
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="relative bg-white max-w-md w-full rounded-xl shadow-2xl p-6"
+              initial={{ scale: 0.9, y: -20, opacity: 0 }} 
+              animate={{ scale: 1, y: 0, opacity: 1 }} 
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Confirmar Eliminación
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  ¿Estás seguro de que quieres eliminar esta foto? Esta acción no se puede deshacer.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    type="button"
+                    onClick={handleCancelDelete}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
+export default PhotoBoard;

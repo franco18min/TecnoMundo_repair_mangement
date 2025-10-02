@@ -94,3 +94,11 @@ class RepairOrderDetailsUpdate(BaseModel):
     parts_used: Optional[str] = None
     status_id: Optional[int] = Field(None, ge=1, le=6)
     checklist: Optional[List[DeviceConditionUpdate]] = None
+
+# Schema para actualizar solo campos de diagnóstico
+class RepairOrderDiagnosisUpdate(BaseModel):
+    technician_diagnosis: Optional[str] = None
+    repair_notes: Optional[str] = None
+    
+    class Config:
+        from_attributes = True

@@ -29,6 +29,17 @@ export const getAuthHeaders = () => {
   };
 };
 
+// Función helper para obtener headers de autenticación sin Content-Type (para FormData)
+export const getAuthHeadersWithoutContentType = () => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    console.warn("No se encontró token de acceso en localStorage.");
+  }
+  return {
+    'Authorization': `Bearer ${token}`
+  };
+};
+
 // Función helper para verificar si estamos en producción
 export const isProduction = () => API_CONFIG.ENVIRONMENT === 'production';
 

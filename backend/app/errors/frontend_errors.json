@@ -52,5 +52,137 @@
     "component": "debug",
     "environment": "debug",
     "received_at": "2025-10-01T20:38:34.285204"
+  },
+  {
+    "timestamp": "2025-10-02T04:53:45.079Z",
+    "errorId": "global-js-1759380825080-acnii1kos",
+    "category": "frontend",
+    "severity": "error",
+    "errorType": "TypeError",
+    "errorMessage": "Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.",
+    "stack": "TypeError: Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.\n    at App (http://localhost:5173/src/App.jsx?t=1759378187285:27:11)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:11594:26)\n    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:14972:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:15960:22)\n    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3678:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3703:24)\n    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3737:39)\n    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19816:15)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19249:20)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19188:13)",
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36",
+      "url": "http://localhost:5173/?ide_webview_request_time=1759378254929",
+      "viewport": "654x358",
+      "filename": "http://localhost:5173/src/App.jsx?t=1759378187285",
+      "lineno": 27,
+      "colno": 11,
+      "capturedAt": "2025-10-02T04:53:45.080Z"
+    },
+    "userId": "anonymous",
+    "component": "Global JavaScript",
+    "environment": "development",
+    "received_at": "2025-10-02T01:53:45.215868"
+  },
+  {
+    "timestamp": "2025-10-02T04:53:45.097Z",
+    "errorId": "global-js-1759380825097-v51pr1g0l",
+    "category": "frontend",
+    "severity": "error",
+    "errorType": "TypeError",
+    "errorMessage": "Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.",
+    "stack": "TypeError: Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.\n    at App (http://localhost:5173/src/App.jsx?t=1759378187285:27:11)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:11594:26)\n    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:14972:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:15960:22)\n    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3678:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3703:24)\n    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3737:39)\n    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19816:15)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19249:20)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19188:13)",
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36",
+      "url": "http://localhost:5173/?ide_webview_request_time=1759378254929",
+      "viewport": "654x358",
+      "filename": "http://localhost:5173/src/App.jsx?t=1759378187285",
+      "lineno": 27,
+      "colno": 11,
+      "capturedAt": "2025-10-02T04:53:45.097Z"
+    },
+    "userId": "anonymous",
+    "component": "Global JavaScript",
+    "environment": "development",
+    "received_at": "2025-10-02T01:53:45.261059"
+  },
+  {
+    "timestamp": "2025-10-02T04:53:46.627Z",
+    "errorId": "global-js-1759380826627-miid7l9gs",
+    "category": "frontend",
+    "severity": "error",
+    "errorType": "TypeError",
+    "errorMessage": "Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.",
+    "stack": "TypeError: Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.\n    at App (http://localhost:5173/src/App.jsx?t=1759378187285:27:11)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:11594:26)\n    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:14972:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:15960:22)\n    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3678:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3703:24)\n    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3737:39)\n    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19816:15)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19249:20)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19188:13)",
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+      "url": "http://localhost:5173/",
+      "viewport": "721x674",
+      "filename": "http://localhost:5173/src/App.jsx?t=1759378187285",
+      "lineno": 27,
+      "colno": 11,
+      "capturedAt": "2025-10-02T04:53:46.627Z"
+    },
+    "userId": "anonymous",
+    "component": "Global JavaScript",
+    "environment": "development",
+    "received_at": "2025-10-02T01:53:46.657951"
+  },
+  {
+    "timestamp": "2025-10-02T04:53:46.628Z",
+    "errorId": "global-js-1759380826660-j87o6vlop",
+    "category": "frontend",
+    "severity": "error",
+    "errorType": "TypeError",
+    "errorMessage": "Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.",
+    "stack": "TypeError: Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.\n    at App (http://localhost:5173/src/App.jsx?t=1759378187285:27:11)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:11594:26)\n    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:14972:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:15960:22)\n    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3678:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3703:24)\n    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3737:39)\n    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19816:15)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19249:20)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19188:13)",
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+      "url": "http://localhost:5173/",
+      "viewport": "1272x674",
+      "filename": "http://localhost:5173/src/App.jsx?t=1759378187285",
+      "lineno": 27,
+      "colno": 11,
+      "capturedAt": "2025-10-02T04:53:46.670Z"
+    },
+    "userId": "anonymous",
+    "component": "Global JavaScript",
+    "environment": "development",
+    "received_at": "2025-10-02T01:53:46.692719"
+  },
+  {
+    "timestamp": "2025-10-02T04:53:46.719Z",
+    "errorId": "global-js-1759380826719-1yemzslrr",
+    "category": "frontend",
+    "severity": "error",
+    "errorType": "TypeError",
+    "errorMessage": "Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.",
+    "stack": "TypeError: Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.\n    at App (http://localhost:5173/src/App.jsx?t=1759378187285:27:11)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:11594:26)\n    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:14972:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:15960:22)\n    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3678:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3703:24)\n    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3737:39)\n    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19816:15)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19249:20)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19188:13)",
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+      "url": "http://localhost:5173/",
+      "viewport": "721x674",
+      "filename": "http://localhost:5173/src/App.jsx?t=1759378187285",
+      "lineno": 27,
+      "colno": 11,
+      "capturedAt": "2025-10-02T04:53:46.719Z"
+    },
+    "userId": "anonymous",
+    "component": "Global JavaScript",
+    "environment": "development",
+    "received_at": "2025-10-02T01:53:46.720953"
+  },
+  {
+    "timestamp": "2025-10-02T04:53:46.719Z",
+    "errorId": "global-js-1759380826719-cp15jimkb",
+    "category": "frontend",
+    "severity": "error",
+    "errorType": "TypeError",
+    "errorMessage": "Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.",
+    "stack": "TypeError: Cannot destructure property 'isLoggedIn' of 'useAuth(...)' as it is null.\n    at App (http://localhost:5173/src/App.jsx?t=1759378187285:27:11)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:11594:26)\n    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:14972:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:15960:22)\n    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3678:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3703:24)\n    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:3737:39)\n    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19816:15)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19249:20)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-SVG7M4VJ.js?v=3cb347cb:19188:13)",
+    "context": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+      "url": "http://localhost:5173/",
+      "viewport": "1272x674",
+      "filename": "http://localhost:5173/src/App.jsx?t=1759378187285",
+      "lineno": 27,
+      "colno": 11,
+      "capturedAt": "2025-10-02T04:53:46.719Z"
+    },
+    "userId": "anonymous",
+    "component": "Global JavaScript",
+    "environment": "development",
+    "received_at": "2025-10-02T01:53:46.727278"
   }
 ]
