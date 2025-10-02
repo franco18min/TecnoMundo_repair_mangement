@@ -206,7 +206,7 @@ export const OrderTransferSection = () => {
                                                         {statusConfig[order.status]?.text || order.status}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-600">{order.device?.type} {order.device?.model}</p>
+                                                <p className="text-sm text-gray-600">{order.device_type?.type_name || 'N/A'} {order.device_model || ''}</p>
                                                 <p className="text-sm text-gray-500">
                                                     {order.customer?.name || 'Cliente no especificado'}
                                                 </p>
@@ -237,7 +237,7 @@ export const OrderTransferSection = () => {
                                     <h4 className="font-medium text-gray-800 mb-2">Orden Seleccionada</h4>
                                     <div className="space-y-1 text-sm">
                                         <p><span className="font-medium">ID:</span> #{selectedOrder.id}</p>
-                                        <p><span className="font-medium">Dispositivo:</span> {selectedOrder.device?.type} {selectedOrder.device?.model}</p>
+                                        <p><span className="font-medium">Dispositivo:</span> {selectedOrder.device_type?.type_name || 'N/A'} {selectedOrder.device_model || ''}</p>
                                         <p><span className="font-medium">Cliente:</span> {selectedOrder.customer?.name || 'Cliente no especificado'}</p>
                                         <p><span className="font-medium">Estado:</span> {statusConfig[selectedOrder.status]?.text}</p>
                                         <p><span className="font-medium">Sucursal actual:</span> {getOrderBranchName(selectedOrder)}</p>

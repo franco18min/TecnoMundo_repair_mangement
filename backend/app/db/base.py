@@ -8,6 +8,7 @@ from app.models.user import User
 from app.models.roles import Role
 from app.models.customer import Customer
 from app.models.repair_order import RepairOrder
+from app.models.repair_order_photo import RepairOrderPhoto
 from app.models.status_order import StatusOrder
 from app.models.device_type import DeviceType # ¡Importa el nuevo modelo!
 from app.models.notification import Notification

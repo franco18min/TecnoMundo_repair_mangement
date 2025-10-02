@@ -9,6 +9,7 @@ from .user import User
 from .status_order import StatusOrder
 from .device_type import DeviceType
 from .device_condition import DeviceCondition, DeviceConditionCreate, DeviceConditionUpdate
+from .repair_order_photo import RepairOrderPhoto
 from .branch import Branch # <-- IMPORTAMOS EL NUEVO ESQUEMA
 
 
@@ -34,6 +35,7 @@ class RepairOrder(BaseModel):
     technician_diagnosis: Optional[str] = None
     repair_notes: Optional[str] = None
     device_conditions: List[DeviceCondition] = []
+    photos: List[RepairOrderPhoto] = []
 
     class Config:
         from_attributes = True

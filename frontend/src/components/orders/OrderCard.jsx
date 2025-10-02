@@ -20,7 +20,7 @@ export function OrderCard({ order, onClick }) {
   }), [order.status]);
 
   const currentStatus = statusStyles[order.status] || statusStyles['Default'];
-  const deviceName = `${order.device.type} ${order.device.model}`;
+  const deviceName = `${order.device_type?.type_name || 'N/A'} ${order.device_model || ''}`.trim();
 
   return (
     // --- INICIO DE LA MODIFICACIÓN ---

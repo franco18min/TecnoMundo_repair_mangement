@@ -12,17 +12,17 @@ router = APIRouter()
 
 # Modelos Pydantic para validar los datos de entrada
 class ErrorReport(BaseModel):
-    timestamp: str
+    timestamp: Optional[str] = None
     errorId: str
     category: str
     severity: str
     errorType: str
     errorMessage: str
     stack: Optional[str] = None
-    context: Dict[str, Any]
+    context: Dict[str, Any] = {}
     userId: Optional[str] = None
     component: Optional[str] = None
-    environment: str
+    environment: str = "development"
 
 class EventReport(BaseModel):
     timestamp: str
@@ -41,7 +41,9 @@ class ErrorResponse(BaseModel):
     errorId: Optional[str] = None
 
 # Configuración de rutas de archivos
-ERRORS_DIR = Path("errors")
+# Obtener el directorio del backend (4 niveles arriba desde este archivo)
+BACKEND_DIR = Path(__file__).parent.parent.parent.parent
+ERRORS_DIR = BACKEND_DIR / "errors"
 ERRORS_DIR.mkdir(exist_ok=True)
 
 FRONTEND_ERRORS_FILE = ERRORS_DIR / "frontend_errors.json"
@@ -84,6 +86,10 @@ async def report_error(error_data: ErrorReport):
         # Convertir a diccionario para guardar
         error_dict = error_data.dict()
         error_dict["received_at"] = datetime.now().isoformat()
+        
+        # Si no hay timestamp, usar el actual
+        if not error_dict.get("timestamp"):
+            error_dict["timestamp"] = datetime.now().isoformat()
         
         # Guardar en archivo
         success = save_to_file(error_dict, FRONTEND_ERRORS_FILE)

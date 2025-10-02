@@ -16,7 +16,7 @@ const statusConfig = {
 
 export function OrderListItem({ order, onClick }) {
     const currentStatus = useMemo(() => statusConfig[order.status] || statusConfig['Default'], [order.status]);
-    const deviceName = `${order.device.type} ${order.device.model}`;
+    const deviceName = `${order.device_type?.type_name || 'N/A'} ${order.device_model || ''}`.trim();
     const formattedDate = new Date(order.dateReceived).toLocaleDateString();
 
     return (

@@ -63,12 +63,16 @@ export const usePermissions = (mode, order = null) => {
         const canDeliverOrder = (isAdmin || isReceptionist) && isCompleted;
         // --- FIN DE LA NUEVA FUNCIONALIDAD ---
 
+        // Permiso específico para agregar fotos: técnicos solo en órdenes asignadas en estado 'In Process'
+        const canAddPhotos = (isAdmin || isReceptionist) || (isTechnician && isMyOrder && isInProcess);
+
         // Lógica de modificación: Admin/Recepcionista pueden modificar órdenes Pending o In Process
         const canModifyOrder = (isAdmin || isReceptionist) && (isPending || isInProcess);
 
         return {
             canEditInitialDetails: canAdminOrRecepModify,
             canEditDiagnosisPanel: canComplete,
+            canAddPhotos: canAddPhotos, // <-- Nuevo permiso específico para fotos
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canEditCosts: canEditCosts,
             canEditPartsUsed: canEditPartsUsed,

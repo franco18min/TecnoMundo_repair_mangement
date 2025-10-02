@@ -1,0 +1,56 @@
+[
+  {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "errorId": "test-789",
+    "category": "test",
+    "severity": "high",
+    "errorType": "manual",
+    "errorMessage": "Test error final",
+    "stack": "test stack",
+    "context": {
+      "userAgent": "test",
+      "url": "test",
+      "viewport": "test"
+    },
+    "userId": "test",
+    "component": "test",
+    "environment": "test",
+    "received_at": "2025-10-01T20:37:30.604271"
+  },
+  {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "errorId": "debug-test",
+    "category": "debug",
+    "severity": "info",
+    "errorType": "manual",
+    "errorMessage": "Debug test",
+    "stack": "debug stack",
+    "context": {
+      "userAgent": "debug",
+      "url": "debug",
+      "viewport": "debug"
+    },
+    "userId": "debug",
+    "component": "debug",
+    "environment": "debug",
+    "received_at": "2025-10-01T20:38:04.802071"
+  },
+  {
+    "timestamp": "2025-01-01T00:00:00Z",
+    "errorId": "final-debug",
+    "category": "debug",
+    "severity": "info",
+    "errorType": "manual",
+    "errorMessage": "Final debug test",
+    "stack": "debug stack",
+    "context": {
+      "userAgent": "debug",
+      "url": "debug",
+      "viewport": "debug"
+    },
+    "userId": "debug",
+    "component": "debug",
+    "environment": "debug",
+    "received_at": "2025-10-01T20:38:34.285204"
+  }
+]

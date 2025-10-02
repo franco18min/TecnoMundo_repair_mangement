@@ -146,6 +146,7 @@ def get_repair_orders(db: Session, user: UserModel, skip: int = 0, limit: int = 
         joinedload(RepairOrderModel.status),
         joinedload(RepairOrderModel.device_type),
         joinedload(RepairOrderModel.device_conditions),
+        joinedload(RepairOrderModel.photos),
         joinedload(RepairOrderModel.branch)
     )
     if user.role.role_name != "Administrator" and user.branch_id:
@@ -159,6 +160,7 @@ def get_repair_order(db: Session, order_id: int):
         joinedload(RepairOrderModel.status),
         joinedload(RepairOrderModel.device_type),
         joinedload(RepairOrderModel.device_conditions),
+        joinedload(RepairOrderModel.photos),
         joinedload(RepairOrderModel.branch)
     ).filter(RepairOrderModel.id == order_id).first()
 

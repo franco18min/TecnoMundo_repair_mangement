@@ -43,6 +43,7 @@ class RepairOrder(Base):
     status = relationship("StatusOrder", back_populates="repair_orders")
     device_type = relationship("DeviceType", back_populates="repair_orders")
     device_conditions = relationship("DeviceCondition", back_populates="order", cascade="all, delete-orphan")
+    photos = relationship("RepairOrderPhoto", back_populates="repair_order", cascade="all, delete-orphan")
 
     # --- INICIO DE LA MODIFICACIÓN ---
     branch = relationship("Branch", back_populates="repair_orders")

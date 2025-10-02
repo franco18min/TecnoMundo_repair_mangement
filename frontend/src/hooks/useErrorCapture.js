@@ -8,6 +8,7 @@ export const useErrorCapture = () => {
         // Capturar errores globales de JavaScript
         const handleGlobalError = (event) => {
             const errorData = {
+                timestamp: new Date().toISOString(),
                 errorId: `global-js-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 category: 'frontend',
                 severity: 'error',
@@ -21,7 +22,7 @@ export const useErrorCapture = () => {
                     filename: event.filename,
                     lineno: event.lineno,
                     colno: event.colno,
-                    timestamp: new Date().toISOString()
+                    capturedAt: new Date().toISOString()
                 },
                 userId: localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')).id : 'anonymous',
                 component: 'Global JavaScript',
@@ -38,6 +39,7 @@ export const useErrorCapture = () => {
         // Capturar promesas rechazadas no manejadas
         const handleUnhandledRejection = (event) => {
             const errorData = {
+                timestamp: new Date().toISOString(),
                 errorId: `unhandled-promise-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 category: 'frontend',
                 severity: 'error',
@@ -49,7 +51,7 @@ export const useErrorCapture = () => {
                     url: window.location.href,
                     viewport: `${window.innerWidth}x${window.innerHeight}`,
                     reason: typeof event.reason === 'object' ? JSON.stringify(event.reason) : event.reason,
-                    timestamp: new Date().toISOString()
+                    capturedAt: new Date().toISOString()
                 },
                 userId: localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')).id : 'anonymous',
                 component: 'Promise Handler',
@@ -78,6 +80,7 @@ export const useErrorCapture = () => {
     const reportManualError = async (error, context = {}) => {
         try {
             const errorData = {
+                timestamp: new Date().toISOString(),
                 errorId: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 category: 'frontend',
                 severity: context.severity || 'error',
@@ -88,7 +91,7 @@ export const useErrorCapture = () => {
                     userAgent: navigator.userAgent,
                     url: window.location.href,
                     viewport: `${window.innerWidth}x${window.innerHeight}`,
-                    timestamp: new Date().toISOString(),
+                    capturedAt: new Date().toISOString(),
                     ...context
                 },
                 userId: localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')).id : 'anonymous',

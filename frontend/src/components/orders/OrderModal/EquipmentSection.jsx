@@ -32,7 +32,7 @@ const itemVariants = {
 const buttonVariants = {
     inactive: { 
         scale: 1,
-        backgroundColor: "transparent"
+        backgroundColor: "rgba(0, 0, 0, 0)"
     },
     active: { 
         scale: 1.02,
