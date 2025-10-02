@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DisplayField, TextAreaField } from './shared';
-import { PhotoBoard } from './PhotoBoard';
+import { PhotoBoard } from './PhotoBoard/index.js';
 import { 
     getRepairOrderPhotos, 
     uploadRepairOrderPhoto, 
