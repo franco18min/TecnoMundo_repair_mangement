@@ -186,6 +186,22 @@ def update_repair_order_photo(
     return photo
 
 
+@router.patch("/{photo_id}/annotations", response_model=schemas_photo.RepairOrderPhoto)
+def update_photo_annotations(
+    photo_id: int,
+    annotations: schemas_photo.RepairOrderPhotoUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Actualizar marcadores y dibujos de una foto"""
+    photo = crud_repair_order_photo.update_repair_order_photo(
+        db=db, photo_id=photo_id, photo_update=annotations
+    )
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto no encontrada")
+    return photo
+
+
 @router.delete("/{photo_id}")
 def delete_repair_order_photo(
     photo_id: int,

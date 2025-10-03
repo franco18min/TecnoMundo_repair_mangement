@@ -96,6 +96,103 @@ export const updateRepairOrderPhoto = async (photoId, note) => {
 };
 
 /**
+ * Actualizar las anotaciones (marcadores y dibujos) de una foto
+ */
+export const updatePhotoAnnotations = async (photoId, annotations) => {
+  try {
+    console.log('🔍 updatePhotoAnnotations called with:');
+    console.log('🔍 photoId:', photoId);
+    console.log('🔍 annotations:', annotations);
+
+    // Validar y formatear los datos según el esquema del backend
+    const formattedAnnotations = {
+      markers: annotations.markers || [],
+      drawings: annotations.drawings || []
+    };
+
+    // Validar estructura de marcadores
+    if (formattedAnnotations.markers.length > 0) {
+      formattedAnnotations.markers = formattedAnnotations.markers.map(marker => ({
+        x: parseFloat(marker.x) || 0,
+        y: parseFloat(marker.y) || 0,
+        color: marker.color || '#ff0000'
+      }));
+    }
+
+    // Validar estructura de dibujos
+    if (formattedAnnotations.drawings.length > 0) {
+      formattedAnnotations.drawings = formattedAnnotations.drawings.map(drawing => {
+        // Convertir array de coordenadas a string SVG path
+        let pathString = '';
+        if (Array.isArray(drawing.path) && drawing.path.length > 0) {
+          // Crear path SVG: M x1,y1 L x2,y2 L x3,y3 ...
+          pathString = `M ${drawing.path.map(point => `${point.x},${point.y}`).join(' L ')}`;
+        } else if (typeof drawing.path === 'string') {
+          // Si ya es string, mantenerlo
+          pathString = drawing.path;
+        }
+        
+        return {
+          path: pathString,
+          color: drawing.color || '#000000',
+          strokeWidth: parseFloat(drawing.strokeWidth) || 2.0
+        };
+      });
+    }
+
+    console.log('🔍 Formatted annotations:', formattedAnnotations);
+    console.log('🔍 Formatted annotations JSON:', JSON.stringify(formattedAnnotations, null, 2));
+    console.log('🔍 Markers count:', formattedAnnotations.markers.length);
+    console.log('🔍 Drawings count:', formattedAnnotations.drawings.length);
+    
+    // Log específico para verificar la conversión de paths
+    if (formattedAnnotations.drawings.length > 0) {
+      formattedAnnotations.drawings.forEach((drawing, index) => {
+        console.log(`🔍 Drawing ${index + 1} path type:`, typeof drawing.path);
+        console.log(`🔍 Drawing ${index + 1} path value:`, drawing.path);
+      });
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/repair-order-photos/${photoId}/annotations`, {
+      method: 'PATCH',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formattedAnnotations),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Error detallado del servidor:', errorData);
+      console.error('❌ Status:', response.status);
+      console.error('❌ StatusText:', response.statusText);
+      
+      // Manejar errores de validación específicos
+      if (response.status === 422) {
+        console.error('❌ Error de validación 422:', JSON.stringify(errorData, null, 2));
+        if (errorData.detail && Array.isArray(errorData.detail)) {
+          const validationErrors = errorData.detail.map(err => 
+            `Campo: ${err.loc?.join('.')} - ${err.msg} (Valor recibido: ${err.input})`
+          ).join('\n');
+          throw new Error(`Error de validación:\n${validationErrors}`);
+        }
+      }
+      
+      const errorMessage = errorData.detail || errorData.message || `Error ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    console.log('✅ Annotations updated successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Error al actualizar anotaciones:', error);
+    throw error;
+  }
+};
+
+/**
  * Eliminar una foto
  */
 export const deleteRepairOrderPhoto = async (photoId) => {

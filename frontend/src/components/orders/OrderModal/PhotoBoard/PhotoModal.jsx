@@ -15,22 +15,47 @@ export const PhotoModal = ({
   onCancelEdit,
   onCancelPending,
   onEditingNoteChange,
+  onSaveAnnotations, // Nueva prop para guardar marcadores y dibujos
 }) => {
-  // Estado para manejar marcadores
+  // Estado para manejar marcadores y dibujos
   const [markers, setMarkers] = useState(selectedPhoto?.markers || []);
+  const [drawings, setDrawings] = useState(selectedPhoto?.drawings || []);
+  const [isSavingAnnotations, setIsSavingAnnotations] = useState(false);
 
   // Función para agregar un nuevo marcador
   const handleAddMarker = (marker) => {
     const newMarkers = [...markers, marker];
     setMarkers(newMarkers);
-    // TODO: Aquí se guardará en la base de datos
-    console.log('Nuevo marcador agregado:', marker);
   };
 
   // Función para limpiar todos los marcadores
   const handleClearMarkers = () => {
     setMarkers([]);
-    console.log('Marcadores limpiados');
+  };
+
+  // Función para agregar un nuevo dibujo
+  const handleAddDrawing = (drawing) => {
+    const newDrawings = [...drawings, drawing];
+    setDrawings(newDrawings);
+  };
+
+  // Función para limpiar todos los dibujos
+  const handleClearDrawings = () => {
+    setDrawings([]);
+  };
+
+  // Función para guardar marcadores y dibujos
+  const handleSaveAnnotations = async () => {
+    if (!onSaveAnnotations) return;
+    
+    setIsSavingAnnotations(true);
+    try {
+      await onSaveAnnotations(selectedPhoto.id, { markers, drawings });
+    } catch (error) {
+      console.error('Error al guardar anotaciones:', error);
+    } finally {
+      setIsSavingAnnotations(false);
+    }
   };
   if (!selectedPhoto) return null;
 
@@ -59,8 +84,13 @@ export const PhotoModal = ({
         alt={selectedPhoto.note || 'Foto de diagnóstico'}
         className="w-full h-96 rounded-lg mb-6 bg-gray-50"
         markers={markers}
+        drawings={drawings}
         onAddMarker={handleAddMarker}
         onClearMarkers={handleClearMarkers}
+        onAddDrawing={handleAddDrawing}
+        onClearDrawings={handleClearDrawings}
+        onSaveAnnotations={handleSaveAnnotations}
+        isSavingAnnotations={isSavingAnnotations}
         canEdit={canEdit}
       />
 

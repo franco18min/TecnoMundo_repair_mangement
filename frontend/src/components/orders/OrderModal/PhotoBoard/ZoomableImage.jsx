@@ -2,7 +2,20 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ZoomIn, ZoomOut, MapPin, Palette, Pencil, Save, Trash2 } from 'lucide-react';
 
-export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, onClearMarkers, canEdit = false }) => {
+export const ZoomableImage = ({ 
+  src, 
+  alt, 
+  className, 
+  markers = [], 
+  drawings = [],
+  onAddMarker, 
+  onClearMarkers, 
+  onAddDrawing,
+  onClearDrawings,
+  onSaveAnnotations,
+  isSavingAnnotations = false,
+  canEdit = false 
+}) => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   // Pan manual con click+arrastre
@@ -21,7 +34,7 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
   const [isDrawMode, setIsDrawMode] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState([]);
-  const [drawings, setDrawings] = useState([]);
+  const [localDrawings, setLocalDrawings] = useState(drawings);
   
   // Colores predefinidos (más opciones)
   const availableColors = [
@@ -35,26 +48,26 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
     // Si estamos en modo marcador, colocar marcador
     if (isMarkerMode && canEdit) {
       const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      // Mejorar precisión usando clientX/Y directamente
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
       
-      // Convertir a coordenadas de la imagen original (sin zoom ni pan)
-      const originalX = (clickX - (pan.x * rect.width / 100)) / zoomLevel;
-      const originalY = (clickY - (pan.y * rect.height / 100)) / zoomLevel;
+      // Calcular las coordenadas relativas al contenedor con mayor precisión
+      const containerX = Math.round((clickX / rect.width) * 10000) / 100; // Precisión de 2 decimales
+      const containerY = Math.round((clickY / rect.height) * 10000) / 100;
       
-      // Convertir a porcentajes de la imagen original
-      const x = (originalX / rect.width) * 100;
-      const y = (originalY / rect.height) * 100;
+      // Las coordenadas se guardan directamente como porcentajes del contenedor
+      const originalX = Math.max(0, Math.min(100, containerX));
+      const originalY = Math.max(0, Math.min(100, containerY));
       
       if (onAddMarker) {
         const newMarker = {
-          x,
-          y,
+          x: originalX,
+          y: originalY,
           color: selectedColor,
           id: `marker-${Date.now()}-${Math.random()}`,
-          originalX: x,
-          originalY: y,
-          zoomLevel: zoomLevel,
         };
         onAddMarker(newMarker);
       }
@@ -62,14 +75,19 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
     }
 
     if (isDrawMode && canEdit) {
-      // Iniciar dibujo libre
+      // Iniciar dibujo libre con mayor precisión
       const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
       
-      // Convertir a coordenadas relativas de la imagen original
-      const originalX = (clickX - (pan.x * rect.width / 100)) / zoomLevel;
-      const originalY = (clickY - (pan.y * rect.height / 100)) / zoomLevel;
+      // Calcular coordenadas con mayor precisión
+      const containerX = Math.round((clickX / rect.width) * 10000) / 100;
+      const containerY = Math.round((clickY / rect.height) * 10000) / 100;
+      
+      const originalX = Math.max(0, Math.min(100, containerX));
+      const originalY = Math.max(0, Math.min(100, containerY));
       
       setIsDrawing(true);
       setCurrentPath([{ x: originalX, y: originalY }]);
@@ -89,14 +107,20 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
 
   const onMouseMove = useCallback((e) => {
     if (isDrawing && isDrawMode && canEdit) {
-      // Continuar dibujo libre
+      // Continuar dibujo libre con mayor precisión
       const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
       
-      // Convertir a coordenadas relativas de la imagen original
-      const originalX = (clickX - (pan.x * rect.width / 100)) / zoomLevel;
-      const originalY = (clickY - (pan.y * rect.height / 100)) / zoomLevel;
+      // Calcular las coordenadas relativas al contenedor con mayor precisión
+      const containerX = Math.round((clickX / rect.width) * 10000) / 100;
+      const containerY = Math.round((clickY / rect.height) * 10000) / 100;
+      
+      // Las coordenadas se guardan directamente como porcentajes del contenedor
+      const originalX = Math.max(0, Math.min(100, containerX));
+      const originalY = Math.max(0, Math.min(100, containerY));
       
       setCurrentPath(prev => [...prev, { x: originalX, y: originalY }]);
       return;
@@ -119,7 +143,7 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
     const nextY = Math.max(-maxMove, Math.min(maxMove, panStart.y + moveYPercent));
 
     setPan({ x: nextX, y: nextY });
-  }, [isDragging, zoomLevel, isDrawing, isDrawMode, canEdit, pan]);
+  }, [isDragging, zoomLevel, isDrawing, isDrawMode, canEdit]);
 
   const onMouseUpOrLeave = useCallback(() => {
     if (isDrawing && isDrawMode && currentPath.length > 1) {
@@ -130,22 +154,30 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
         color: selectedColor,
         strokeWidth: 2,
       };
-      setDrawings(prev => [...prev, newDrawing]);
+      setLocalDrawings(prev => [...prev, newDrawing]);
+      if (onAddDrawing) {
+        onAddDrawing(newDrawing);
+      }
       setCurrentPath([]);
     }
     
     setIsDrawing(false);
     if (isDragging) setIsDragging(false);
-  }, [isDragging, isDrawing, isDrawMode, currentPath, selectedColor]);
+  }, [isDragging, isDrawing, isDrawMode, currentPath, selectedColor, onAddDrawing]);
 
   const handleMouseEnter = () => {
-    setIsZoomed(true);
+    // Removido el zoom automático para evitar interferencia con herramientas
   };
 
   const handleMouseLeave = () => {
-    setIsZoomed(false);
-    setZoomLevel(1);
-    setPan({ x: 0, y: 0 });
+    // Solo resetear el zoom si se sale completamente del contenedor
+    // y no hay herramientas activas
+    if (!isMarkerMode && !isDrawMode) {
+      // Opcional: mantener el zoom incluso al salir del mouse
+      // setIsZoomed(false);
+      // setZoomLevel(1);
+      // setPan({ x: 0, y: 0 });
+    }
   };
 
   // Escucha manual del evento 'wheel' con passive: false para permitir preventDefault
@@ -166,6 +198,11 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
       el.removeEventListener('wheel', onWheelHandler);
     };
   }, [isZoomed]);
+
+  // Sincronizar dibujos cuando cambien los props
+  useEffect(() => {
+    setLocalDrawings(drawings);
+  }, [drawings]);
 
   // Controles explícitos de zoom
   const handleZoomIn = useCallback(() => {
@@ -195,11 +232,20 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
     }
   };
 
+  // Función para determinar el cursor apropiado
+  const getCursorStyle = () => {
+    if (isMarkerMode && canEdit) return 'crosshair';
+    if (isDrawMode && canEdit) return 'url("data:image/svg+xml;charset=utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 20 20\'%3E%3Ccircle cx=\'10\' cy=\'10\' r=\'2\' fill=\'%23000\'/%3E%3C/svg%3E") 10 10, crosshair';
+    if (isZoomed) return isDragging ? 'grabbing' : 'grab';
+    return 'zoom-in';
+  };
+
   return (
     <div className="relative group">
       <div
         ref={containerRef}
-        className={`relative overflow-hidden ${isZoomed ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-zoom-in'} touch-none overscroll-contain select-none ${className}`}
+        className={`relative overflow-hidden touch-none overscroll-contain select-none ${className}`}
+        style={{ cursor: getCursorStyle() }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onMouseDown={onMouseDown}
@@ -222,21 +268,24 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
         {/* SVG para dibujos libres */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-20"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
           style={{
             transform: `scale(${isZoomed ? zoomLevel : 1}) translate(${pan.x}%, ${pan.y}%)`,
             transformOrigin: 'center center',
           }}
         >
           {/* Dibujos completados */}
-          {drawings.map((drawing) => (
+          {localDrawings.map((drawing) => (
             <path
               key={drawing.id}
               d={`M ${drawing.path.map(point => `${point.x},${point.y}`).join(' L ')}`}
               stroke={drawing.color}
-              strokeWidth={drawing.strokeWidth / zoomLevel}
+              strokeWidth={drawing.strokeWidth / (isZoomed ? zoomLevel : 1)}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
             />
           ))}
           
@@ -245,41 +294,46 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
             <path
               d={`M ${currentPath.map(point => `${point.x},${point.y}`).join(' L ')}`}
               stroke={selectedColor}
-              strokeWidth={2 / zoomLevel}
+              strokeWidth={2 / (isZoomed ? zoomLevel : 1)}
               fill="none"
               strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
             />
           )}
         </svg>
 
         {/* Marcadores */}
-        {markers.map((marker) => {
-          // Calcular la posición del marcador considerando zoom y pan
-          const markerX = (marker.originalX || marker.x) * zoomLevel + pan.x;
-          const markerY = (marker.originalY || marker.y) * zoomLevel + pan.y;
-          
-          return (
-            <motion.div
-              key={marker.id}
-              className="absolute pointer-events-none z-30"
-              style={{
-                left: `${markerX}%`,
-                top: `${markerY}%`,
-                transform: `translate(-50%, -50%)`,
-              }}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              <MapPin
-                size={Math.max(16, 20 / zoomLevel)}
-                style={{ color: marker.color }}
-                className="drop-shadow-lg"
-              />
-            </motion.div>
-          );
-        })}
+        <div
+          className="absolute inset-0 w-full h-full pointer-events-none z-30"
+          style={{
+            transform: `scale(${isZoomed ? zoomLevel : 1}) translate(${pan.x}%, ${pan.y}%)`,
+            transformOrigin: 'center center',
+          }}
+        >
+          {markers.map((marker) => {
+            return (
+              <motion.div
+                key={marker.id}
+                className="absolute pointer-events-none"
+                style={{
+                  left: `${marker.x}%`,
+                  top: `${marker.y}%`,
+                  transform: `translate(-50%, -50%)`,
+                }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                <MapPin
+                  size={Math.max(16, 20 / (isZoomed ? zoomLevel : 1))}
+                  style={{ color: marker.color }}
+                  className="drop-shadow-lg"
+                />
+              </motion.div>
+            );
+          })}
+        </div>
 
         <motion.div
           className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
@@ -382,12 +436,18 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
               <motion.button
                 type="button"
                 onClick={() => {
-                  // TODO: Implementar guardar
-                  console.log('Guardar marcadores y dibujos');
+                  if (onSaveAnnotations) {
+                    onSaveAnnotations();
+                  }
                 }}
-                className="bg-white/80 backdrop-blur-sm hover:bg-white/90 text-gray-700 w-8 h-8 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                disabled={isSavingAnnotations}
+                className={`w-8 h-8 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center ${
+                  isSavingAnnotations 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-white/80 backdrop-blur-sm hover:bg-white/90 text-gray-700'
+                }`}
+                whileHover={!isSavingAnnotations ? { scale: 1.1 } : {}}
+                whileTap={!isSavingAnnotations ? { scale: 0.9 } : {}}
                 aria-label="Guardar Cambios"
               >
                 <Save size={16} />
@@ -395,11 +455,13 @@ export const ZoomableImage = ({ src, alt, className, markers = [], onAddMarker, 
               <motion.button
                  type="button"
                  onClick={() => {
-                   setDrawings([]);
+                   setLocalDrawings([]);
+                   if (onClearDrawings) {
+                     onClearDrawings();
+                   }
                    if (onClearMarkers) {
                      onClearMarkers();
                    }
-                   console.log('Limpiar todas las ediciones');
                  }}
                 className="bg-white/80 backdrop-blur-sm hover:bg-white/90 text-red-600 w-8 h-8 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center"
                 whileHover={{ scale: 1.1 }}

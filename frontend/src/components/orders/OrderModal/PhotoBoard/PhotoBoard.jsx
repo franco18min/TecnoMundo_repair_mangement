@@ -5,6 +5,7 @@ import { PhotoModal } from './PhotoModal.jsx';
 import { DeleteConfirmModal } from './DeleteConfirmModal.jsx';
 import { PhotoGrid } from './PhotoGrid.jsx';
 import { UploadControls } from './UploadControls.jsx';
+import { uploadRepairOrderPhoto, updateRepairOrderPhoto, deleteRepairOrderPhoto, updatePhotoAnnotations } from '../../../../api/repairOrderPhotosApi.js';
 
 export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePhoto, canEdit = false }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -52,6 +53,9 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
     setSelectedPhoto(null);
     setIsEditingNote(false);
     setEditingNote('');
+    
+    // Resetear zoom al cerrar modal
+    // Este evento se puede capturar en ZoomableImage si es necesario
   };
 
   const handleFileSelect = async (event) => {
@@ -176,6 +180,15 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
     setDeleteConfirmModal({ isOpen: false, photoId: null });
   };
 
+  const handleSaveAnnotations = async (photoId, annotations) => {
+    try {
+      await updatePhotoAnnotations(photoId, annotations);
+    } catch (error) {
+      console.error('Error al guardar anotaciones:', error);
+      throw error;
+    }
+  };
+
   const handleAddPhoto = useCallback(() => {
     if (isUploading || !canEdit) return;
     setTimeout(() => {
@@ -240,6 +253,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
               onClose={handleCloseModal}
               onEditNote={handleEditNote}
               onSaveNote={handleSaveNote}
+              onSaveAnnotations={handleSaveAnnotations}
               onCancelEdit={() => setIsEditingNote(false)}
               onCancelPending={handleCancelPendingPhoto}
               onEditingNoteChange={setEditingNote}
