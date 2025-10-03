@@ -34,7 +34,80 @@ export const ZoomableImage = ({
   const [isDrawMode, setIsDrawMode] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState([]);
-  const [localDrawings, setLocalDrawings] = useState(drawings);
+
+  // Procesar dibujos cuando cambien (convertir path string a array si es necesario)
+  const processedDrawings = React.useMemo(() => {
+    if (!drawings) {
+      return [];
+    }
+
+    return drawings.map(drawing => {
+      // Validación inicial del objeto drawing
+      if (!drawing || typeof drawing !== 'object') {
+        console.warn('Invalid drawing object:', drawing);
+        return null;
+      }
+
+      // Si path es string, convertirlo a array de coordenadas
+      if (typeof drawing.path === 'string' && drawing.path.trim()) {
+        try {
+          // Parsear path SVG: "M x1,y1 L x2,y2 L x3,y3" -> [{x: x1, y: y1}, {x: x2, y: y2}, ...]
+          const pathString = drawing.path.trim();
+          const coordinates = [];
+          
+          // Remover 'M ' del inicio y dividir por ' L '
+          const pathParts = pathString.replace(/^M\s*/, '').split(/\s*L\s*/);
+          
+          pathParts.forEach(part => {
+            if (part.trim()) {
+              const [x, y] = part.split(',').map(coord => parseFloat(coord.trim()));
+              if (!isNaN(x) && !isNaN(y)) {
+                coordinates.push({ x, y });
+              }
+            }
+          });
+          
+          return {
+            ...drawing,
+            path: coordinates,
+            id: drawing.id || `drawing-${Date.now()}-${Math.random()}`,
+            color: drawing.color || '#ff0000',
+            strokeWidth: drawing.strokeWidth || 2
+          };
+        } catch (error) {
+          console.warn('Error parsing drawing path:', drawing.path, error);
+          return {
+            ...drawing,
+            path: [],
+            id: drawing.id || `drawing-${Date.now()}-${Math.random()}`,
+            color: drawing.color || '#ff0000',
+            strokeWidth: drawing.strokeWidth || 2
+          };
+        }
+      }
+      
+      // Si path ya es array, validarlo y mantenerlo
+      if (Array.isArray(drawing.path)) {
+        return {
+          ...drawing,
+          path: drawing.path,
+          id: drawing.id || `drawing-${Date.now()}-${Math.random()}`,
+          color: drawing.color || '#ff0000',
+          strokeWidth: drawing.strokeWidth || 2
+        };
+      }
+
+      // Si path no es válido, crear un dibujo vacío
+      console.warn('Invalid drawing path:', drawing.path);
+      return {
+        ...drawing,
+        path: [],
+        id: drawing.id || `drawing-${Date.now()}-${Math.random()}`,
+        color: drawing.color || '#ff0000',
+        strokeWidth: drawing.strokeWidth || 2
+      };
+    }).filter(Boolean); // Filtrar elementos null
+  }, [drawings]);
   
   // Colores predefinidos (más opciones)
   const availableColors = [
@@ -44,28 +117,60 @@ export const ZoomableImage = ({
     '#32cd32', '#87ceeb', '#dda0dd', '#f0e68c'
   ];
 
+  // Función auxiliar para convertir coordenadas de pantalla a coordenadas de imagen
+  const screenToImageCoordinates = useCallback((clientX, clientY) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    
+    // Coordenadas relativas al contenedor
+    const clickX = clientX - rect.left;
+    const clickY = clientY - rect.top;
+    
+    // Si estamos en zoom, necesitamos ajustar por la transformación
+    if (isZoomed && zoomLevel > 1) {
+      // Calcular el centro del contenedor
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      // Ajustar por el pan (desplazamiento) - convertir porcentajes a píxeles
+      const panOffsetX = (pan.x / 100) * rect.width;
+      const panOffsetY = (pan.y / 100) * rect.height;
+      
+      // Convertir coordenadas considerando zoom y pan con mayor precisión
+      // Primero, ajustamos por el pan
+      const adjustedX = (clickX - centerX - panOffsetX) / zoomLevel + centerX;
+      const adjustedY = (clickY - centerY - panOffsetY) / zoomLevel + centerY;
+      
+      // Convertir a porcentajes con máxima precisión (6 decimales)
+      const imageX = Math.round((adjustedX / rect.width) * 1000000) / 10000;
+      const imageY = Math.round((adjustedY / rect.height) * 1000000) / 10000;
+      
+      return {
+        x: Math.max(0, Math.min(100, imageX)),
+        y: Math.max(0, Math.min(100, imageY))
+      };
+    } else {
+      // Sin zoom, cálculo directo con máxima precisión
+      const imageX = Math.round((clickX / rect.width) * 1000000) / 10000;
+      const imageY = Math.round((clickY / rect.height) * 1000000) / 10000;
+      
+      return {
+        x: Math.max(0, Math.min(100, imageX)),
+        y: Math.max(0, Math.min(100, imageY))
+      };
+    }
+  }, [isZoomed, zoomLevel, pan]);
+
   const onMouseDown = useCallback((e) => {
     // Si estamos en modo marcador, colocar marcador
     if (isMarkerMode && canEdit) {
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      
-      // Mejorar precisión usando clientX/Y directamente
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      
-      // Calcular las coordenadas relativas al contenedor con mayor precisión
-      const containerX = Math.round((clickX / rect.width) * 10000) / 100; // Precisión de 2 decimales
-      const containerY = Math.round((clickY / rect.height) * 10000) / 100;
-      
-      // Las coordenadas se guardan directamente como porcentajes del contenedor
-      const originalX = Math.max(0, Math.min(100, containerX));
-      const originalY = Math.max(0, Math.min(100, containerY));
+      const coordinates = screenToImageCoordinates(e.clientX, e.clientY);
+      if (!coordinates) return;
       
       if (onAddMarker) {
         const newMarker = {
-          x: originalX,
-          y: originalY,
+          x: coordinates.x,
+          y: coordinates.y,
           color: selectedColor,
           id: `marker-${Date.now()}-${Math.random()}`,
         };
@@ -76,21 +181,11 @@ export const ZoomableImage = ({
 
     if (isDrawMode && canEdit) {
       // Iniciar dibujo libre con mayor precisión
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      
-      // Calcular coordenadas con mayor precisión
-      const containerX = Math.round((clickX / rect.width) * 10000) / 100;
-      const containerY = Math.round((clickY / rect.height) * 10000) / 100;
-      
-      const originalX = Math.max(0, Math.min(100, containerX));
-      const originalY = Math.max(0, Math.min(100, containerY));
+      const coordinates = screenToImageCoordinates(e.clientX, e.clientY);
+      if (!coordinates) return;
       
       setIsDrawing(true);
-      setCurrentPath([{ x: originalX, y: originalY }]);
+      setCurrentPath([{ x: coordinates.x, y: coordinates.y }]);
       return;
     }
     
@@ -106,44 +201,30 @@ export const ZoomableImage = ({
   }, [isZoomed, pan, isMarkerMode, canEdit, selectedColor, onAddMarker, zoomLevel, isDrawMode]);
 
   const onMouseMove = useCallback((e) => {
-    if (isDrawing && isDrawMode && canEdit) {
-      // Continuar dibujo libre con mayor precisión
+    if (isDragging && isZoomed) {
       const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      
-      // Calcular las coordenadas relativas al contenedor con mayor precisión
-      const containerX = Math.round((clickX / rect.width) * 10000) / 100;
-      const containerY = Math.round((clickY / rect.height) * 10000) / 100;
-      
-      // Las coordenadas se guardan directamente como porcentajes del contenedor
-      const originalX = Math.max(0, Math.min(100, containerX));
-      const originalY = Math.max(0, Math.min(100, containerY));
-      
-      setCurrentPath(prev => [...prev, { x: originalX, y: originalY }]);
-      return;
+      if (!rect || !dragStartRef.current) return;
+
+      const deltaX = e.clientX - dragStartRef.current.startX;
+      const deltaY = e.clientY - dragStartRef.current.startY;
+
+      const panDeltaX = (deltaX / rect.width) * 100;
+      const panDeltaY = (deltaY / rect.height) * 100;
+
+      setPan({
+        x: Math.max(-50, Math.min(50, dragStartRef.current.panStart.x + panDeltaX)),
+        y: Math.max(-50, Math.min(50, dragStartRef.current.panStart.y + panDeltaY)),
+      });
     }
 
-    if (!isDragging || !dragStartRef.current) return;
-    const { startX, startY, panStart, rect } = dragStartRef.current;
-    if (!rect) return;
-    const deltaX = e.clientX - startX;
-    const deltaY = e.clientY - startY;
-
-    // Convertir deltas a porcentaje del contenedor
-    const moveXPercent = (deltaX / rect.width) * 100;
-    const moveYPercent = (deltaY / rect.height) * 100;
-
-    // Límite de movimiento según nivel de zoom (aprox.)
-    const maxMove = (zoomLevel - 1) * 30; // a 8x => 210%
-
-    const nextX = Math.max(-maxMove, Math.min(maxMove, panStart.x + moveXPercent));
-    const nextY = Math.max(-maxMove, Math.min(maxMove, panStart.y + moveYPercent));
-
-    setPan({ x: nextX, y: nextY });
-  }, [isDragging, zoomLevel, isDrawing, isDrawMode, canEdit]);
+    if (isDrawing && isDrawMode && canEdit) {
+      // Mejorar precisión del dibujo con las mismas coordenadas que los marcadores
+      const coordinates = screenToImageCoordinates(e.clientX, e.clientY);
+      if (!coordinates) return;
+      
+      setCurrentPath(prev => [...prev, { x: coordinates.x, y: coordinates.y }]);
+    }
+  }, [isDragging, isZoomed, isDrawing, isDrawMode, canEdit, screenToImageCoordinates]);
 
   const onMouseUpOrLeave = useCallback(() => {
     if (isDrawing && isDrawMode && currentPath.length > 1) {
@@ -154,7 +235,6 @@ export const ZoomableImage = ({
         color: selectedColor,
         strokeWidth: 2,
       };
-      setLocalDrawings(prev => [...prev, newDrawing]);
       if (onAddDrawing) {
         onAddDrawing(newDrawing);
       }
@@ -186,28 +266,36 @@ export const ZoomableImage = ({
     if (!el) return;
 
     const onWheelHandler = (e) => {
-      if (!isZoomed) return;
       // Evita el scroll por defecto mientras hacemos zoom manual
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.3 : 0.3;
-      setZoomLevel(prev => Math.max(1, Math.min(8, prev + delta)));
+      
+      setZoomLevel(prev => {
+        const newZoom = Math.max(1, Math.min(6, prev + delta));
+        
+        // Si el zoom es mayor a 1, activar modo zoom
+        if (newZoom > 1) {
+          setIsZoomed(true);
+        } else {
+          // Si volvemos a zoom 1, desactivar modo zoom
+          setIsZoomed(false);
+          setPan({ x: 0, y: 0 });
+        }
+        
+        return newZoom;
+      });
     };
 
     el.addEventListener('wheel', onWheelHandler, { passive: false });
     return () => {
       el.removeEventListener('wheel', onWheelHandler);
     };
-  }, [isZoomed]);
-
-  // Sincronizar dibujos cuando cambien los props
-  useEffect(() => {
-    setLocalDrawings(drawings);
-  }, [drawings]);
+  }, []); // Removido isZoomed de las dependencias para que funcione en todos los modos
 
   // Controles explícitos de zoom
   const handleZoomIn = useCallback(() => {
     setIsZoomed(true);
-    setZoomLevel(prev => Math.min(8, prev + 0.3));
+    setZoomLevel(prev => Math.min(6, prev + 0.3));
   }, []);
 
   const handleZoomOut = useCallback(() => {
@@ -237,7 +325,7 @@ export const ZoomableImage = ({
     if (isMarkerMode && canEdit) return 'crosshair';
     if (isDrawMode && canEdit) return 'url("data:image/svg+xml;charset=utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 20 20\'%3E%3Ccircle cx=\'10\' cy=\'10\' r=\'2\' fill=\'%23000\'/%3E%3C/svg%3E") 10 10, crosshair';
     if (isZoomed) return isDragging ? 'grabbing' : 'grab';
-    return 'zoom-in';
+    return 'default'; // Cambiado de 'zoom-in' a 'default'
   };
 
   return (
@@ -276,18 +364,26 @@ export const ZoomableImage = ({
           }}
         >
           {/* Dibujos completados */}
-          {localDrawings.map((drawing) => (
-            <path
-              key={drawing.id}
-              d={`M ${drawing.path.map(point => `${point.x},${point.y}`).join(' L ')}`}
-              stroke={drawing.color}
-              strokeWidth={drawing.strokeWidth / (isZoomed ? zoomLevel : 1)}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
+          {processedDrawings.map((drawing) => {
+            // Validación adicional para asegurar que path sea un array
+            const pathArray = Array.isArray(drawing.path) ? drawing.path : [];
+            
+            // Solo renderizar si hay al menos 2 puntos para formar una línea
+            if (pathArray.length < 2) return null;
+            
+            return (
+              <path
+                key={drawing.id}
+                d={`M ${pathArray.map(point => `${point.x},${point.y}`).join(' L ')}`}
+                stroke={drawing.color}
+                strokeWidth={drawing.strokeWidth / (isZoomed ? zoomLevel : 1)}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })}
           
           {/* Dibujo actual en progreso */}
           {isDrawing && currentPath.length > 1 && (
@@ -312,6 +408,9 @@ export const ZoomableImage = ({
           }}
         >
           {markers.map((marker) => {
+            // Calcular el tamaño del marcador basado en el zoom para mantener visibilidad
+            const markerSize = Math.max(16, Math.min(32, 20 / (isZoomed ? Math.sqrt(zoomLevel) : 1)));
+            
             return (
               <motion.div
                 key={marker.id}
@@ -320,16 +419,39 @@ export const ZoomableImage = ({
                   left: `${marker.x}%`,
                   top: `${marker.y}%`,
                   transform: `translate(-50%, -50%)`,
+                  zIndex: 1000,
                 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                <MapPin
-                  size={Math.max(16, 20 / (isZoomed ? zoomLevel : 1))}
-                  style={{ color: marker.color }}
-                  className="drop-shadow-lg"
-                />
+                <div
+                  className="relative flex items-center justify-center"
+                  style={{
+                    width: `${markerSize}px`,
+                    height: `${markerSize}px`,
+                  }}
+                >
+                  <MapPin
+                    size={markerSize}
+                    style={{ 
+                      color: marker.color,
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                    }}
+                  />
+                  {/* Punto central para mayor precisión visual */}
+                  <div
+                    className="absolute rounded-full bg-white border border-gray-300"
+                    style={{
+                      width: '3px',
+                      height: '3px',
+                      top: '20%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                    }}
+                  />
+                </div>
               </motion.div>
             );
           })}
@@ -455,7 +577,6 @@ export const ZoomableImage = ({
               <motion.button
                  type="button"
                  onClick={() => {
-                   setLocalDrawings([]);
                    if (onClearDrawings) {
                      onClearDrawings();
                    }

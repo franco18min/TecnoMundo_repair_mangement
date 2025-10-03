@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Edit3 } from 'lucide-react';
-import { ZoomableImage } from './ZoomableImage.jsx';
+import ZoomableImage from './ZoomableImage';
 
 export const PhotoModal = ({
   selectedPhoto,
@@ -17,10 +17,17 @@ export const PhotoModal = ({
   onEditingNoteChange,
   onSaveAnnotations, // Nueva prop para guardar marcadores y dibujos
 }) => {
-  // Estado para manejar marcadores y dibujos
-  const [markers, setMarkers] = useState(selectedPhoto?.markers || []);
-  const [drawings, setDrawings] = useState(selectedPhoto?.drawings || []);
+  const [markers, setMarkers] = useState([]);
+  const [drawings, setDrawings] = useState([]);
   const [isSavingAnnotations, setIsSavingAnnotations] = useState(false);
+
+  // Cargar marcadores y dibujos cuando cambia la foto seleccionada
+  useEffect(() => {
+    if (selectedPhoto) {
+      setMarkers(selectedPhoto.markers || []);
+      setDrawings(selectedPhoto.drawings || []);
+    }
+  }, [selectedPhoto]);
 
   // Función para agregar un nuevo marcador
   const handleAddMarker = (marker) => {
@@ -44,7 +51,7 @@ export const PhotoModal = ({
     setDrawings([]);
   };
 
-  // Función para guardar marcadores y dibujos
+  // Función para guardar marcadores y dibujos manualmente
   const handleSaveAnnotations = async () => {
     if (!onSaveAnnotations) return;
     
@@ -93,6 +100,8 @@ export const PhotoModal = ({
         isSavingAnnotations={isSavingAnnotations}
         canEdit={canEdit}
       />
+
+
 
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-bold text-gray-800 font-sans">Nota de la Foto:</h3>

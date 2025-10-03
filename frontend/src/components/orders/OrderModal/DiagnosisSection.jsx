@@ -76,6 +76,17 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
         }
     };
 
+    const handleUpdatePhotoAnnotations = async (photoId, annotations) => {
+        // Actualizar el estado local inmediatamente después del guardado exitoso
+        setPhotos(prev => prev.map(photo => 
+            photo.id === photoId ? { 
+                ...photo, 
+                markers: annotations.markers || [],
+                drawings: annotations.drawings || []
+            } : photo
+        ));
+    };
+
     // Función para guardar automáticamente los campos de diagnóstico
     const saveDiagnosisData = useCallback(async (diagnosisData) => {
         if (!orderId || isSavingDiagnosis) return;
@@ -175,6 +186,7 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
                             onAddPhoto={handleAddPhoto}
                             onUpdatePhoto={handleUpdatePhoto}
                             onDeletePhoto={handleDeletePhoto}
+                            onUpdatePhotoAnnotations={handleUpdatePhotoAnnotations}
                             canEdit={permissions.canAddPhotos}
                         />
                     )}

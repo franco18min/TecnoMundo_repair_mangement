@@ -7,7 +7,7 @@ import { PhotoGrid } from './PhotoGrid.jsx';
 import { UploadControls } from './UploadControls.jsx';
 import { uploadRepairOrderPhoto, updateRepairOrderPhoto, deleteRepairOrderPhoto, updatePhotoAnnotations } from '../../../../api/repairOrderPhotosApi.js';
 
-export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePhoto, canEdit = false }) {
+export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePhoto, onUpdatePhotoAnnotations, canEdit = false }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [editingNote, setEditingNote] = useState('');
   const [isEditingNote, setIsEditingNote] = useState(false);
@@ -21,12 +21,12 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   const memoizedPhotos = useMemo(() => {
     const pinColors = ['bg-indigo-500', 'bg-pink-500', 'bg-green-500', 'bg-yellow-500', 'bg-sky-500', 'bg-teal-500'];
     const positions = [
-      { top: '25%', left: '5%', rotation: -4 },
-      { top: '30%', left: '38%', rotation: 3 },
-      { top: '22%', left: '65%', rotation: -2 },
-      { top: '55%', left: '15%', rotation: 5 },
-      { top: '60%', left: '55%', rotation: -3 },
-      { top: '53%', left: '75%', rotation: 2 },
+      { top: '15%', left: '5%', rotation: -4 },
+      { top: '20%', left: '35%', rotation: 3 },
+      { top: '12%', left: '60%', rotation: -2 },
+      { top: '45%', left: '10%', rotation: 5 },
+      { top: '50%', left: '45%', rotation: -3 },
+      { top: '43%', left: '65%', rotation: 2 },
     ];
 
     const photoList = photos || [];
@@ -183,6 +183,20 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   const handleSaveAnnotations = async (photoId, annotations) => {
     try {
       await updatePhotoAnnotations(photoId, annotations);
+      
+      // Actualizar el estado local inmediatamente después del guardado exitoso
+      if (onUpdatePhotoAnnotations) {
+        onUpdatePhotoAnnotations(photoId, annotations);
+      }
+      
+      // También actualizar selectedPhoto si es la foto que se está editando
+      if (selectedPhoto && selectedPhoto.id === photoId) {
+        setSelectedPhoto(prev => ({
+          ...prev,
+          markers: annotations.markers || [],
+          drawings: annotations.drawings || []
+        }));
+      }
     } catch (error) {
       console.error('Error al guardar anotaciones:', error);
       throw error;
@@ -207,7 +221,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   }, [isUploading, canEdit]);
 
   return (
-    <div className="relative w-full h-[50vh] bg-gradient-to-br from-slate-100 to-slate-200 shadow-inner rounded-lg border-2 border-slate-300 overflow-hidden p-4">
+    <div className="relative w-full h-[60vh] bg-gradient-to-br from-slate-100 to-slate-200 shadow-inner rounded-lg border-2 border-slate-300 overflow-hidden p-4">
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
 
       <div className="flex justify-between items-center mb-4">

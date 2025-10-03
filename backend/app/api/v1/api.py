@@ -1,7 +1,7 @@
 # backend/app/api/v1/api.py
 
 from fastapi import APIRouter
-from .endpoints import repair_orders, repair_order_photos, auth, customers, device_types, users, notifications, branches, roles, init, debug, errors
+from .endpoints import repair_orders, repair_order_photos, auth, customers, device_types, users, notifications, branches, roles, init, debug
 
 api_router = APIRouter()
 
@@ -16,4 +16,3 @@ api_router.include_router(repair_order_photos.router, prefix="/repair-order-phot
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 api_router.include_router(init.router, prefix="/init", tags=["initialization"])
 api_router.include_router(debug.router, prefix="/debug", tags=["debug"])
-api_router.include_router(errors.router, prefix="/errors", tags=["errors"])
