@@ -6,6 +6,7 @@ import { DeleteConfirmModal } from './DeleteConfirmModal.jsx';
 import { PhotoGrid } from './PhotoGrid.jsx';
 import { UploadControls } from './UploadControls.jsx';
 import { uploadRepairOrderPhoto, updateRepairOrderPhoto, deleteRepairOrderPhoto, updatePhotoAnnotations } from '../../../../api/repairOrderPhotosApi.js';
+import { useToast } from '../../../../context/ToastContext';
 
 export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePhoto, onUpdatePhotoAnnotations, canEdit = false }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -17,6 +18,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, photoId: null });
   const fileInputRef = useRef(null);
+  const { showToast } = useToast();
 
   const memoizedPhotos = useMemo(() => {
     const pinColors = ['bg-indigo-500', 'bg-pink-500', 'bg-green-500', 'bg-yellow-500', 'bg-sky-500', 'bg-teal-500'];
@@ -197,8 +199,12 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
           drawings: annotations.drawings || []
         }));
       }
+      
+      // Mostrar toast de éxito
+      showToast('Anotaciones guardadas con éxito', 'success');
     } catch (error) {
       console.error('Error al guardar anotaciones:', error);
+      showToast('Error al guardar las anotaciones', 'error');
       throw error;
     }
   };

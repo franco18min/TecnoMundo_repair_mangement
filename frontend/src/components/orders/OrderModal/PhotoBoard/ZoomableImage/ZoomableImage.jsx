@@ -118,48 +118,69 @@ export const ZoomableImage = ({
   ];
 
   // Función auxiliar para convertir coordenadas de pantalla a coordenadas de imagen
+  // Optimizada para precisión perfecta en todos los modos de zoom y pan
   const screenToImageCoordinates = useCallback((clientX, clientY) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return null;
     
-    // Coordenadas relativas al contenedor
+    // Coordenadas relativas al contenedor con precisión de subpíxel
     const clickX = clientX - rect.left;
     const clickY = clientY - rect.top;
     
-    // Si estamos en zoom, necesitamos ajustar por la transformación
+    // Si estamos en zoom, necesitamos aplicar la transformación inversa exacta
     if (isZoomed && zoomLevel > 1) {
-      // Calcular el centro del contenedor
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
+      // Calcular el centro exacto del contenedor
+      const centerX = rect.width * 0.5;
+      const centerY = rect.height * 0.5;
       
-      // Ajustar por el pan (desplazamiento) - convertir porcentajes a píxeles
-      const panOffsetX = (pan.x / 100) * rect.width;
-      const panOffsetY = (pan.y / 100) * rect.height;
+      // CORRECCIÓN CRÍTICA: La transformación CSS es translate() scale()
+      // En CSS las transformaciones se aplican de derecha a izquierda:
+      // 1. Primero scale(zoomLevel)
+      // 2. Después translate(pan.x%, pan.y%)
       
-      // Convertir coordenadas considerando zoom y pan con mayor precisión
-      // Primero, ajustamos por el pan
-      const adjustedX = (clickX - centerX - panOffsetX) / zoomLevel + centerX;
-      const adjustedY = (clickY - centerY - panOffsetY) / zoomLevel + centerY;
+      // Para la transformación inversa, debemos deshacer en orden inverso:
+      // 1. Primero deshacer translate (restar pan)
+      // 2. Después deshacer scale (dividir por zoomLevel)
       
-      // Convertir a porcentajes con máxima precisión (6 decimales)
-      const imageX = Math.round((adjustedX / rect.width) * 1000000) / 10000;
-      const imageY = Math.round((adjustedY / rect.height) * 1000000) / 10000;
+      // Paso 1: Deshacer translate - el pan se aplica después del scale
+      // El pan está en porcentajes de la imagen original, pero se aplica después del scale
+      const panOffsetX = (pan.x * rect.width) / 100;
+      const panOffsetY = (pan.y * rect.height) / 100;
       
+      const untranslatedX = clickX - panOffsetX;
+      const untranslatedY = clickY - panOffsetY;
+      
+      // Paso 2: Deshacer scale - mover al centro, escalar, y volver
+      const centeredX = untranslatedX - centerX;
+      const centeredY = untranslatedY - centerY;
+      
+      const unscaledX = centeredX / zoomLevel;
+      const unscaledY = centeredY / zoomLevel;
+      
+      // Volver al sistema de coordenadas original
+      const originalX = unscaledX + centerX;
+      const originalY = unscaledY + centerY;
+      
+      // Convertir a porcentajes con máxima precisión
+      const imageX = (originalX / rect.width) * 100;
+      const imageY = (originalY / rect.height) * 100;
+      
+      // Aplicar límites con precisión completa
       return {
         x: Math.max(0, Math.min(100, imageX)),
         y: Math.max(0, Math.min(100, imageY))
       };
     } else {
       // Sin zoom, cálculo directo con máxima precisión
-      const imageX = Math.round((clickX / rect.width) * 1000000) / 10000;
-      const imageY = Math.round((clickY / rect.height) * 1000000) / 10000;
+      const imageX = (clickX / rect.width) * 100;
+      const imageY = (clickY / rect.height) * 100;
       
       return {
         x: Math.max(0, Math.min(100, imageX)),
         y: Math.max(0, Math.min(100, imageY))
       };
     }
-  }, [isZoomed, zoomLevel, pan]);
+  }, [isZoomed, zoomLevel, pan])
 
   const onMouseDown = useCallback((e) => {
     // Si estamos en modo marcador, colocar marcador
@@ -201,6 +222,9 @@ export const ZoomableImage = ({
   }, [isZoomed, pan, isMarkerMode, canEdit, selectedColor, onAddMarker, zoomLevel, isDrawMode]);
 
   const onMouseMove = useCallback((e) => {
+    // Prevenir comportamiento por defecto para mejor control
+    e.preventDefault();
+    
     if (isDragging && isZoomed) {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect || !dragStartRef.current) return;
@@ -218,11 +242,27 @@ export const ZoomableImage = ({
     }
 
     if (isDrawing && isDrawMode && canEdit) {
-      // Mejorar precisión del dibujo con las mismas coordenadas que los marcadores
+      // Optimizar precisión del dibujo con coordenadas exactas
       const coordinates = screenToImageCoordinates(e.clientX, e.clientY);
       if (!coordinates) return;
       
-      setCurrentPath(prev => [...prev, { x: coordinates.x, y: coordinates.y }]);
+      // Evitar puntos duplicados muy cercanos para suavizar el trazo
+      setCurrentPath(prev => {
+        if (prev.length === 0) return [{ x: coordinates.x, y: coordinates.y }];
+        
+        const lastPoint = prev[prev.length - 1];
+        const distance = Math.sqrt(
+          Math.pow(coordinates.x - lastPoint.x, 2) + 
+          Math.pow(coordinates.y - lastPoint.y, 2)
+        );
+        
+        // Solo agregar punto si está suficientemente lejos del anterior (0.1% de la imagen)
+        if (distance > 0.1) {
+          return [...prev, { x: coordinates.x, y: coordinates.y }];
+        }
+        
+        return prev;
+      });
     }
   }, [isDragging, isZoomed, isDrawing, isDrawMode, canEdit, screenToImageCoordinates]);
 
@@ -333,12 +373,27 @@ export const ZoomableImage = ({
       <div
         ref={containerRef}
         className={`relative overflow-hidden touch-none overscroll-contain select-none ${className}`}
-        style={{ cursor: getCursorStyle() }}
+        style={{ 
+          cursor: getCursorStyle(),
+          // Optimizar para mejor captura de eventos del mouse
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+          // Mejorar responsividad táctil
+          touchAction: 'none',
+          // Asegurar que el contenedor capture todos los eventos
+          pointerEvents: 'auto'
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUpOrLeave}
+        // Agregar eventos adicionales para mejor precisión
+        onContextMenu={(e) => e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
+        onSelectStart={(e) => e.preventDefault()}
       >
         <motion.img
           ref={imageRef}
@@ -347,7 +402,7 @@ export const ZoomableImage = ({
           className="w-full h-full object-contain transition-transform duration-100 ease-out"
           style={{
             transformOrigin: 'center center',
-            transform: `scale(${isZoomed ? zoomLevel : 1}) translate(${pan.x}%, ${pan.y}%)`,
+            transform: `translate(${pan.x}%, ${pan.y}%) scale(${isZoomed ? zoomLevel : 1})`,
           }}
           draggable={false}
           onDragStart={(e) => e.preventDefault()}
@@ -359,7 +414,7 @@ export const ZoomableImage = ({
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           style={{
-            transform: `scale(${isZoomed ? zoomLevel : 1}) translate(${pan.x}%, ${pan.y}%)`,
+            transform: `translate(${pan.x}%, ${pan.y}%) scale(${isZoomed ? zoomLevel : 1})`,
             transformOrigin: 'center center',
           }}
         >
@@ -376,11 +431,15 @@ export const ZoomableImage = ({
                 key={drawing.id}
                 d={`M ${pathArray.map(point => `${point.x},${point.y}`).join(' L ')}`}
                 stroke={drawing.color}
-                strokeWidth={drawing.strokeWidth / (isZoomed ? zoomLevel : 1)}
+                strokeWidth={drawing.strokeWidth || 2}
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 vectorEffect="non-scaling-stroke"
+                style={{
+                  // Asegurar que el trazo mantenga su grosor visual independiente del zoom
+                  strokeWidth: `${(drawing.strokeWidth || 2) / (isZoomed ? zoomLevel : 1)}px`
+                }}
               />
             );
           })}
@@ -390,72 +449,148 @@ export const ZoomableImage = ({
             <path
               d={`M ${currentPath.map(point => `${point.x},${point.y}`).join(' L ')}`}
               stroke={selectedColor}
-              strokeWidth={2 / (isZoomed ? zoomLevel : 1)}
+              strokeWidth={2}
               fill="none"
               strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+              style={{
+                // Mantener grosor visual consistente durante el dibujo
+                strokeWidth: `${2 / (isZoomed ? zoomLevel : 1)}px`
+              }}
             />
           )}
-        </svg>
-
-        {/* Marcadores */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none z-30"
-          style={{
-            transform: `scale(${isZoomed ? zoomLevel : 1}) translate(${pan.x}%, ${pan.y}%)`,
-            transformOrigin: 'center center',
-          }}
-        >
+          
+          {/* Marcadores en el mismo sistema de coordenadas que los dibujos */}
           {markers.map((marker) => {
             // Calcular el tamaño del marcador basado en el zoom para mantener visibilidad
-            const markerSize = Math.max(16, Math.min(32, 20 / (isZoomed ? Math.sqrt(zoomLevel) : 1)));
+            const markerSize = Math.max(1.8, Math.min(3.5, 2.5 / (isZoomed ? Math.sqrt(zoomLevel) : 1)));
+            
+            // El punto exacto donde se hizo clic (la punta del marcador)
+            const pointX = marker.x;
+            const pointY = marker.y;
+            
+            // El centro del círculo del marcador (arriba del punto)
+            const centerX = pointX;
+            const centerY = pointY - markerSize * 0.8;
             
             return (
-              <motion.div
-                key={marker.id}
-                className="absolute pointer-events-none"
-                style={{
-                  left: `${marker.x}%`,
-                  top: `${marker.y}%`,
-                  transform: `translate(-50%, -50%)`,
-                  zIndex: 1000,
-                }}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <div
-                  className="relative flex items-center justify-center"
+              <g key={marker.id}>
+                {/* Sombra del marcador con color TecnoMundo */}
+                <g transform={`translate(0.2, 0.2)`}>
+                  {/* Sombra del círculo */}
+                  <circle
+                    cx={centerX}
+                    cy={centerY}
+                    r={markerSize * 0.5}
+                    fill="rgba(79, 70, 229, 0.15)"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ filter: 'blur(2px)' }}
+                  />
+                  {/* Sombra de la punta */}
+                  <path
+                    d={`M ${centerX} ${centerY + markerSize * 0.3} 
+                        L ${pointX - markerSize * 0.15} ${pointY - markerSize * 0.1} 
+                        L ${pointX + markerSize * 0.15} ${pointY - markerSize * 0.1} 
+                        Z`}
+                    fill="rgba(79, 70, 229, 0.15)"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </g>
+                
+                {/* Cuerpo principal del marcador - TecnoMundo indigo */}
+                {/* Círculo superior */}
+                <circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={markerSize * 0.5}
+                  fill="#4f46e5"
+                  stroke="#FFFFFF"
+                  strokeWidth={markerSize * 0.08}
+                  vectorEffect="non-scaling-stroke"
                   style={{
-                    width: `${markerSize}px`,
-                    height: `${markerSize}px`,
+                    strokeWidth: `${(markerSize * 0.08) / (isZoomed ? zoomLevel : 1)}px`,
+                    filter: 'drop-shadow(0 4px 8px rgba(79, 70, 229, 0.25))'
                   }}
-                >
-                  <MapPin
-                    size={markerSize}
-                    style={{ 
-                      color: marker.color,
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                    }}
-                  />
-                  {/* Punto central para mayor precisión visual */}
-                  <div
-                    className="absolute rounded-full bg-white border border-gray-300"
-                    style={{
-                      width: '3px',
-                      height: '3px',
-                      top: '20%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                    }}
-                  />
-                </div>
-              </motion.div>
+                />
+                
+                {/* Punta que apunta al punto exacto */}
+                <path
+                  d={`M ${centerX} ${centerY + markerSize * 0.3} 
+                      L ${pointX - markerSize * 0.15} ${pointY - markerSize * 0.1} 
+                      L ${pointX} ${pointY} 
+                      L ${pointX + markerSize * 0.15} ${pointY - markerSize * 0.1} 
+                      Z`}
+                  fill="#4f46e5"
+                  stroke="#FFFFFF"
+                  strokeWidth={markerSize * 0.06}
+                  vectorEffect="non-scaling-stroke"
+                  style={{
+                    strokeWidth: `${(markerSize * 0.06) / (isZoomed ? zoomLevel : 1)}px`
+                  }}
+                />
+                
+                {/* Anillo exterior para profundidad */}
+                <circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={markerSize * 0.32}
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.8)"
+                  strokeWidth={markerSize * 0.04}
+                  vectorEffect="non-scaling-stroke"
+                  style={{
+                    strokeWidth: `${(markerSize * 0.04) / (isZoomed ? zoomLevel : 1)}px`
+                  }}
+                />
+                
+                {/* Círculo interior blanco */}
+                <circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={markerSize * 0.28}
+                  fill="#FFFFFF"
+                  vectorEffect="non-scaling-stroke"
+                />
+                
+                {/* Círculo de marca TecnoMundo */}
+                <circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={markerSize * 0.18}
+                  fill="#4f46e5"
+                  vectorEffect="non-scaling-stroke"
+                />
+                
+                {/* Punto central para precisión */}
+                <circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={markerSize * 0.08}
+                  fill="#FFFFFF"
+                  vectorEffect="non-scaling-stroke"
+                />
+                
+                {/* Efecto de brillo sutil */}
+                <circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={markerSize * 0.6}
+                  fill="none"
+                  stroke="rgba(79, 70, 229, 0.1)"
+                  strokeWidth={markerSize * 0.16}
+                  vectorEffect="non-scaling-stroke"
+                  style={{
+                    strokeWidth: `${(markerSize * 0.16) / (isZoomed ? zoomLevel : 1)}px`,
+                    filter: 'blur(1px)'
+                  }}
+                />
+              </g>
             );
           })}
-        </div>
+        </svg>
+
+
 
         <motion.div
           className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
