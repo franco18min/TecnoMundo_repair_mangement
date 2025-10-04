@@ -1,4 +1,5 @@
 import React from 'react';
+import { FormField } from '../../shared/FormField';
 
 export const DisplayField = ({ label, value, fullWidth = false, isCurrency = false }) => {
   const hasValue = value !== null && value !== undefined && String(value).trim() !== '';
@@ -12,19 +13,8 @@ export const DisplayField = ({ label, value, fullWidth = false, isCurrency = fal
   );
 };
 
-export const FormField = ({ label, id, isCurrency = false, children, ...props }) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <div className="relative">
-            {isCurrency && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>}
-            {props.as === 'select' ?
-              <select id={id} {...props} className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">{children}</select>
-              :
-              <input id={id} {...props} className={`w-full bg-gray-50 border border-gray-300 rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isCurrency ? 'pl-7 pr-3' : 'px-3'}`} />
-            }
-        </div>
-    </div>
-);
+// Re-exportamos FormField del shared para mantener compatibilidad
+export { FormField };
 
 export const TextAreaField = ({ label, id, ...props }) => (
     <div>

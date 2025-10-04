@@ -5,13 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader, User, Phone, Fingerprint } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { updateCustomer, createCustomer } from '../../api/customerApi'; // Importar createCustomer
-
-const FormField = ({ icon, ...props }) => (
-    <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>
-        <input {...props} className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-    </div>
-);
+import { FormField } from '../shared/FormField';
 
 export function ClientModal({ isOpen, onClose, client, mode, onClientUpdated, onClientAdded }) {
     const [formData, setFormData] = useState({ first_name: '', last_name: '', phone_number: '', dni: '' });

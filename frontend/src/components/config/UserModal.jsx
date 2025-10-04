@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader, User, Mail, Lock, Briefcase, Building2 } from 'lucide-react';
-import { useToast } from '../../context/ToastContext';
+import { X, User, Mail, Lock, Shield, Building2, Eye, EyeOff, Briefcase } from 'lucide-react';
 import { createUser, updateUser } from '../../api/userApi';
 import { getRoles } from '../../api/rolesApi';
 import { fetchBranches } from '../../api/branchApi';
+import { useToast } from '../../context/ToastContext';
+import { FormField } from '../shared/FormField';
 
 // Variantes de animación
 const containerVariants = {
@@ -31,26 +32,7 @@ const itemVariants = {
     }
 };
 
-// Replicando y extendiendo los campos de formulario de ClientModal
-const FormField = ({ icon, as = 'input', children, ...props }) => {
-    const Component = as;
-    return (
-        <motion.div 
-            className="relative"
-            variants={itemVariants}
-            whileHover={{ scale: 1.02 }}
-            whileFocus={{ scale: 1.02 }}
-        >
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>
-            <Component 
-                {...props} 
-                className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-            >
-                {children}
-            </Component>
-        </motion.div>
-    );
-};
+
 
 const ToggleSwitch = ({ label, enabled, setEnabled }) => (
     <motion.div 

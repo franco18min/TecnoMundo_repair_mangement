@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { Camera, Upload, X, Trash2, Edit3, Save, RotateCcw, ZoomIn, Download, Plus } from 'lucide-react';
 import { PhotoModal } from './PhotoModal.jsx';
-import { DeleteConfirmModal } from './DeleteConfirmModal.jsx';
+import { ConfirmationModal } from '../../../shared/ConfirmationModal';
 import { PhotoGrid } from './PhotoGrid.jsx';
 import { UploadControls } from './UploadControls.jsx';
 import { uploadRepairOrderPhoto, updateRepairOrderPhoto, deleteRepairOrderPhoto, updatePhotoAnnotations } from '../../../../api/repairOrderPhotosApi.js';
@@ -282,19 +282,16 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {deleteConfirmModal.isOpen && (
-          <motion.div 
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleCancelDelete}
-          >
-            <DeleteConfirmModal onCancel={handleCancelDelete} onConfirm={handleConfirmDelete} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ConfirmationModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Foto"
+        message="¿Estás seguro de que quieres eliminar esta foto? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="delete"
+      />
     </div>
   );
 }

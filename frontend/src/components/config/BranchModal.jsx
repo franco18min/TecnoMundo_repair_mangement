@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader, Building2 } from 'lucide-react';
+import { X, Building2, MapPin, Phone, Mail } from 'lucide-react';
+import { FormField } from '../shared/FormField';
 import { useToast } from '../../context/ToastContext';
 import { createBranch, updateBranch } from '../../api/branchApi';
-
-// Replicando el FormField de ClientModal para consistencia visual
-const FormField = ({ icon, ...props }) => (
-    <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>
-        <input {...props} className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-    </div>
-);
 
 export function BranchModal({ isOpen, onClose, branch, onSave }) {
     const [branchName, setBranchName] = useState('');
