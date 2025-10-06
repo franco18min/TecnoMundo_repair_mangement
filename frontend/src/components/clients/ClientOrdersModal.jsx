@@ -36,8 +36,6 @@ export function ClientOrdersModal({ isOpen, onClose, client, onOrderSelect }) {
         }
     }, [isOpen, client, showToast]);
 
-    if (!isOpen) return null;
-
     const modalVariants = {
         hidden: { opacity: 0, y: "100vh" },
         visible: { opacity: 1, y: "0", transition: { type: "spring", damping: 20, stiffness: 100 } },
@@ -51,19 +49,21 @@ export function ClientOrdersModal({ isOpen, onClose, client, onOrderSelect }) {
 
     return (
         <AnimatePresence>
-            <motion.div
-                className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-            >
+            {isOpen && (
                 <motion.div
-                    className="bg-white rounded-xl shadow-2xl w-full max-w-2xl h-3/4 flex flex-col"
-                    variants={modalVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
+                    className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                 >
+                    <motion.div
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl h-3/4 flex flex-col"
+                        variants={modalVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                    >
                     <div className="p-6 border-b flex justify-between items-center bg-indigo-600 rounded-t-xl">
                         <h2 className="text-2xl font-bold text-white">Órdenes de {client?.first_name} {client?.last_name}</h2>
                         <motion.button 
@@ -117,8 +117,9 @@ export function ClientOrdersModal({ isOpen, onClose, client, onOrderSelect }) {
                             Cerrar
                         </motion.button>
                     </div>
+                    </motion.div>
                 </motion.div>
-            </motion.div>
+            )}
         </AnimatePresence>
     );
 }

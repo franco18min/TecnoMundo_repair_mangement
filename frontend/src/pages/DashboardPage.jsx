@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Wrench, Users, History, Settings, Bug } from 'lucide-react';
 import { Sidebar, SidebarItem } from '../components/shared/layout/Sidebar';
 import { DashboardHome } from '../components/dashboard/DashboardHome';
@@ -94,16 +93,14 @@ export function DashboardPage({ onLogout }) {
             <NotificationToast onNotificationClick={handleNotificationClick} />
             <NotificationBell onNotificationClick={handleNotificationClick} />
 
-            <AnimatePresence>
-                {isModalOpen && currentUser && (
-                    <OrderModal
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        orderId={selectedOrderId}
-                        currentUser={currentUser}
-                    />
-                )}
-            </AnimatePresence>
+            {currentUser && (
+                <OrderModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    orderId={selectedOrderId}
+                    currentUser={currentUser}
+                />
+            )}
         </div>
     );
 }
