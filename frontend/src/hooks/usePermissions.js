@@ -69,13 +69,15 @@ export const usePermissions = (mode, order = null) => {
         // Lógica de modificación: Admin/Recepcionista pueden modificar órdenes Pending o In Process
         const canModifyOrder = (isAdmin || isReceptionist) && (isPending || isInProcess);
 
+        const canModifyInEditMode = canAdminOrRecepModify && mode === 'edit';
+
         return {
-            canEditInitialDetails: canAdminOrRecepModify,
+            canEditInitialDetails: canModifyInEditMode,
             canEditDiagnosisPanel: canComplete,
             canAddPhotos: canAddPhotos, // <-- Nuevo permiso específico para fotos
-            canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
-            canEditCosts: canEditCosts,
-            canEditPartsUsed: canEditPartsUsed,
+            canInteractWithTechnicianChecklist: canModifyInEditMode || (isTechnician && isMyOrder && isInProcess),
+            canEditCosts: canModifyInEditMode,
+            canEditPartsUsed: isAdmin && mode === 'edit',
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
             canReopenOrder: (isAdmin || isReceptionist) && (isCompleted || isDelivered),
@@ -83,7 +85,7 @@ export const usePermissions = (mode, order = null) => {
             canModify: canAdminOrRecepModify,
             canModifyOrder: canModifyOrder, // <-- Permiso añadido para el botón "Modificar Orden"
             canCompleteOrder: canComplete,
-            isReadOnly: !canModifyOrder && !canComplete,
+            isReadOnly: mode === 'view' || (!canModifyOrder && !canComplete),
             canViewClients: canViewClients,
             canAccessConfig: canAccessConfig,
             canDeliverOrder: canDeliverOrder, // <-- Permiso añadido
