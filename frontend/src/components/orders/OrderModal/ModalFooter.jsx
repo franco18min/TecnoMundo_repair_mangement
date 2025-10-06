@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
-import { Loader, RotateCcw, Printer, Edit, CheckCircle, Wrench, Truck } from 'lucide-react';
+import { Loader, RotateCcw, Printer, Edit, CheckCircle, Wrench, Truck, Eye } from 'lucide-react';
 // --- FIN DE LA NUEVA FUNCIONALIDAD ---
 
 export function ModalFooter({
@@ -16,7 +16,7 @@ export function ModalFooter({
     setMode
 }) {
     const handleModifyClick = () => {
-        setMode('edit');
+        setMode(mode === 'view' ? 'edit' : 'view');
     };
 
     return (
@@ -41,10 +41,14 @@ export function ModalFooter({
                     </motion.button>
                 )}
 
-                {/* Botón "Modificar Orden" */}
+                {/* Botón "Modificar Orden" / "Ver Orden" */}
                 {permissions.canModifyOrder && (
                     <motion.button type="button" onClick={handleModifyClick} className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Edit size={16} className="mr-2"/> Modificar Orden
+                        {mode === 'view' ? (
+                            <><Edit size={16} className="mr-2"/> Modificar Orden</>
+                        ) : (
+                            <><Eye size={16} className="mr-2"/> Atrás</>
+                        )}
                     </motion.button>
                 )}
 

@@ -20,6 +20,7 @@ app = FastAPI(title="Servicio Técnico Pro API", lifespan=lifespan)
 # Lista explícita de orígenes permitidos
 origins = [
     "http://localhost:5173",  # Desarrollo local
+    "http://localhost:5174",  # Desarrollo local (puerto alternativo)
     "https://tecnomundo-repair-mangement.web.app",  # Firebase Hosting (dominio principal)
     "https://tecnomundo-repair-mangement.firebaseapp.com",  # Firebase Hosting (dominio del proyecto)
 ]
