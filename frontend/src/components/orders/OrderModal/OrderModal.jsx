@@ -114,6 +114,22 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         e.target.value = '';
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
+    
+    const handleLoadDefaultQuestions = (defaultQuestions) => {
+        // Agregar solo las preguntas que no están ya en el checklist
+        const newQuestions = defaultQuestions.filter(defaultQ => 
+            !checklistItems.find(item => item.check_description === defaultQ.question)
+        ).map(defaultQ => ({
+            check_description: defaultQ.question,
+            client_answer: null,
+            technician_finding: null,
+            technician_notes: ''
+        }));
+        
+        if (newQuestions.length > 0) {
+            setChecklistItems([...checklistItems, ...newQuestions]);
+        }
+    };
 
     const handleTakeOrder = async () => {
         if (!orderId) return;
@@ -288,7 +304,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
                                     <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                     <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
-                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
+                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} onLoadDefaultQuestions={handleLoadDefaultQuestions} />
                                 </form>
                                 <ModalFooter
                                     mode={mode}

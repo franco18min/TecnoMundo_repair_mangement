@@ -124,4 +124,4 @@ device_condition: Un checklist asociado a cada repair_order (id, order_id, check
 
 Este desglose sirve como mi base de conocimiento inicial. Sin embargo, la Regla #1 (El Código Proporcionado es la Verdad Absoluta) siempre tiene prioridad sobre esta descripción.
 
-Nota: Como tienes acceso al MCP de mi base de datos en Supabase , es recomendable revisar la estructura .
+Nota: Como tienes acceso al MCP de mi base de datos en Supabase , es recomendable revisar la estructura. .

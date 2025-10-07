@@ -10,3 +10,4 @@ from .notification import Notification
 from .repair_order import RepairOrder
 from .status_order import StatusOrder
 from .device_condition import DeviceCondition
+from .predefined_checklist_item import PredefinedChecklistItem

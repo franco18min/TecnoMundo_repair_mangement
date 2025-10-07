@@ -1,18 +1,9 @@
-//frontend/src/components/OrderModal/ChecklistSection.jsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { X, ThumbsUp, ThumbsDown, Plus } from 'lucide-react';
+import { checklistService } from '../../../services/checklistService';
+import { useAuth } from '../../../context/AuthContext';
 
-const PREDEFINED_QUESTIONS = [
-    "¿El equipo enciende?",
-    "¿La pantalla está rota?",
-    "¿El equipo tiene daños por líquido?",
-    "¿Se entrega con cargador?",
-    "¿Se conoce la contraseña de desbloqueo?",
-];
-
-// Variantes de animación
 const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -37,9 +28,13 @@ const itemVariants = {
     },
     exit: {
         opacity: 0,
-        x: -100,
+        y: -20,
+        scale: 0.95,
         transition: {
-            duration: 0.2
+            type: "spring",
+            stiffness: 300,
+            damping: 24,
+            duration: 0.3
         }
     }
 };
@@ -67,7 +62,40 @@ const buttonVariants = {
     }
 };
 
-export function ChecklistSection({ mode, permissions, checklistItems, handleAddQuestion, handleRemoveQuestion, handleChecklistChange }) {
+export function ChecklistSection({ mode, permissions, checklistItems, handleAddQuestion, handleRemoveQuestion, handleChecklistChange, onLoadDefaultQuestions }) {
+    const { currentUser } = useAuth();
+    const [predefinedQuestions, setPredefinedQuestions] = useState([]);
+    const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+
+    useEffect(() => {
+        loadPredefinedQuestions();
+    }, []);
+
+    const loadPredefinedQuestions = async () => {
+        try {
+            setIsLoadingQuestions(true);
+            const token = localStorage.getItem('accessToken');
+            const questions = await checklistService.getAllQuestions(token);
+            setPredefinedQuestions(questions);
+        } catch (error) {
+            console.error('Error al cargar preguntas predefinidas:', error);
+        } finally {
+            setIsLoadingQuestions(false);
+        }
+    };
+
+    const handleLoadDefaultQuestions = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            const defaultQuestions = await checklistService.getDefaultQuestions(token);
+            if (onLoadDefaultQuestions) {
+                onLoadDefaultQuestions(defaultQuestions);
+            }
+        } catch (error) {
+            console.error('Error al cargar preguntas por defecto:', error);
+        }
+    };
+
     return (
         <motion.section
             variants={containerVariants}
@@ -81,16 +109,20 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                 Checklist de Recepción
             </motion.h3>
             
+            {/* 1. Botón para cargar preguntas por defecto - PRIMERA OPCIÓN */}
             {permissions.canEditInitialDetails && (
-                <motion.select 
-                    onChange={handleAddQuestion} 
-                    className="w-full bg-gray-50 border rounded-lg py-2 px-3 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-                    variants={itemVariants}
-                    whileFocus={{ scale: 1.02 }}
-                >
-                    <option value="">Añadir pregunta predeterminada...</option>
-                    {PREDEFINED_QUESTIONS.map(q => <option key={q} value={q}>{q}</option>)}
-                </motion.select>
+                <motion.div className="mb-4" variants={itemVariants}>
+                    <motion.button
+                        type="button"
+                        onClick={handleLoadDefaultQuestions}
+                        className="w-full bg-blue-50 border border-blue-200 text-blue-700 rounded-lg py-3 px-4 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <Plus size={18} />
+                        Cargar preguntas por defecto
+                    </motion.button>
+                </motion.div>
             )}
             
             <motion.div 
@@ -143,7 +175,7 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                             <motion.button 
                                                 type="button" 
                                                 onClick={() => handleChecklistChange(index, 'client_answer', true)} 
-                                                className={`p-1.5 rounded-full ${item.client_answer === true ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-green-200'}`}
+                                                className={`p-1.5 rounded-full transition-all duration-200 ${item.client_answer === true ? 'bg-green-700 text-white shadow-lg ring-2 ring-green-300' : 'bg-gray-100 text-green-600 hover:bg-green-50 border border-green-300'}`}
                                                 variants={buttonVariants}
                                                 animate={item.client_answer === true ? 'active' : 'inactive'}
                                                 whileHover="hover"
@@ -154,7 +186,7 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                             <motion.button 
                                                 type="button" 
                                                 onClick={() => handleChecklistChange(index, 'client_answer', false)} 
-                                                className={`p-1.5 rounded-full ${item.client_answer === false ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-red-200'}`}
+                                                className={`p-1.5 rounded-full transition-all duration-200 ${item.client_answer === false ? 'bg-red-700 text-white shadow-lg ring-2 ring-red-300' : 'bg-gray-100 text-red-600 hover:bg-red-50 border border-red-300'}`}
                                                 variants={buttonVariants}
                                                 animate={item.client_answer === false ? 'active' : 'inactive'}
                                                 whileHover="hover"
@@ -170,8 +202,8 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                         >
                                             {item.client_answer === true ? 
-                                                <ThumbsUp size={18} className="text-green-500" /> : 
-                                                <ThumbsDown size={18} className="text-red-500" />
+                                                <ThumbsUp size={18} className="text-green-700" /> : 
+                                                <ThumbsDown size={18} className="text-red-700" />
                                             }
                                         </motion.div>
                                     )}
@@ -212,26 +244,48 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                         />
                                     </div>
                                 ) : (
-                                    item.technician_finding !== null &&
-                                    <motion.div 
-                                        className='flex items-center gap-2'
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                    >
+                                    <div className='flex items-center gap-2'>
                                         <span className='text-sm font-semibold text-indigo-600 w-20'>Técnico:</span>
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                        <motion.div 
+                                            className="p-1.5 rounded-full bg-gray-100 cursor-not-allowed opacity-60"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 0.6 }}
+                                            transition={{ delay: 0.2 }}
                                         >
-                                            {item.technician_finding === true ? 
-                                                <ThumbsUp size={18} className="text-green-500" /> : 
-                                                item.technician_finding === false ? 
-                                                <ThumbsDown size={18} className="text-red-500" /> : 
-                                                <span className="text-xs text-gray-400">Sin revisar</span>
-                                            }
+                                            <ThumbsUp size={16} className="text-gray-400" />
                                         </motion.div>
+                                        <motion.div 
+                                            className="p-1.5 rounded-full bg-gray-100 cursor-not-allowed opacity-60"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 0.6 }}
+                                            transition={{ delay: 0.3 }}
+                                        >
+                                            <ThumbsDown size={16} className="text-gray-400" />
+                                        </motion.div>
+                                        <motion.input 
+                                            type="text" 
+                                            placeholder="Notas del técnico..." 
+                                            disabled
+                                            className="text-sm border-b border-gray-200 flex-1 ml-2 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 0.6 }}
+                                            transition={{ delay: 0.4 }}
+                                        />
+                                        {item.technician_finding !== null && (
+                                            <motion.div
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                                className="ml-2"
+                                            >
+                                                {item.technician_finding === true ? 
+                                                    <ThumbsUp size={18} className="text-green-700" /> : 
+                                                    item.technician_finding === false ? 
+                                                    <ThumbsDown size={18} className="text-red-700" /> : 
+                                                    <span className="text-xs text-gray-400">Sin revisar</span>
+                                                }
+                                            </motion.div>
+                                        )}
                                         {item.technician_notes && (
                                             <motion.p 
                                                 className="text-xs text-gray-500 ml-2 pl-2 border-l"
@@ -242,7 +296,7 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                                 | {item.technician_notes}
                                             </motion.p>
                                         )}
-                                    </motion.div>
+                                    </div>
                                 )}
                             </motion.div>
                         </motion.div>
@@ -258,6 +312,27 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                         </motion.p>
                     )}
                 </AnimatePresence>
+                
+                {/* 3. Selector para agregar preguntas predeterminadas - ÚLTIMA OPCIÓN */}
+                {permissions.canEditInitialDetails && (
+                    <motion.div className={`mt-4 ${checklistItems.length > 0 ? 'pt-4 border-t border-gray-200' : ''}`} variants={itemVariants}>
+                        <motion.select 
+                            onChange={handleAddQuestion} 
+                            className="w-full bg-gray-50 border rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
+                            whileFocus={{ scale: 1.02 }}
+                            disabled={isLoadingQuestions}
+                        >
+                            <option value="">
+                                {isLoadingQuestions ? 'Cargando preguntas...' : '+ Añadir pregunta predeterminada...'}
+                            </option>
+                            {predefinedQuestions.map(q => (
+                                <option key={q.id} value={q.question}>
+                                    {q.question}
+                                </option>
+                            ))}
+                        </motion.select>
+                    </motion.div>
+                )}
             </motion.div>
         </motion.section>
     );
