@@ -70,24 +70,35 @@ export const usePermissions = (mode, order = null) => {
         // Lógica de modificación: Admin/Recepcionista pueden modificar órdenes Pending o In Process
         const canModifyOrder = (isAdmin || isReceptionist) && (isPending || isInProcess);
 
+        // NUEVA FUNCIONALIDAD: Técnicos pueden modificar solo para editar diagnóstico
+        const canModifyForDiagnosis = isTechnician && isMyOrder && isInProcess;
+
         // canEditInitialDetails debe considerar tanto el rol como el modo del modal
-        const canEditInitialDetails = canAdminOrRecepModify && mode === 'edit';
+        const canEditInitialDetails = canModifyOrder && mode === 'edit'; // Solo admin/recepcionista en modo edit
+
+        // canEditDiagnosisPanel: Admin/Recepcionista en modo edit O técnicos asignados en modo edit
+        const canEditDiagnosisPanel = (mode === 'edit') && (canModifyOrder || canModifyForDiagnosis);
+
+        // canEditCosts y canEditPartsUsed: Solo admin/recepcionista en modo edit
+        const canEditCostsInMode = canEditCosts && canModifyOrder && mode === 'edit';
+        const canEditPartsUsedInMode = canEditPartsUsed && canModifyOrder && mode === 'edit';
 
         return {
             canEditInitialDetails: canEditInitialDetails,
-            canEditDiagnosisPanel: canComplete,
+            canEditDiagnosisPanel: canEditDiagnosisPanel,
             canAddPhotos: canAddPhotos, // <-- Nuevo permiso específico para fotos
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
-            canEditCosts: canEditCosts,
-            canEditPartsUsed: canEditPartsUsed,
+            canEditCosts: canEditCostsInMode,
+            canEditPartsUsed: canEditPartsUsedInMode,
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
             canReopenOrder: (isAdmin || isReceptionist) && (isCompleted || isDelivered),
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
             canModifyOrder: canModifyOrder, // <-- Permiso añadido para el botón "Modificar Orden"
+            canModifyForDiagnosis: canModifyForDiagnosis, // <-- NUEVO: Permiso para técnicos editar diagnóstico
             canCompleteOrder: canComplete,
-            isReadOnly: !canModifyOrder && !canComplete,
+            isReadOnly: !canModifyOrder && !canComplete && !canModifyForDiagnosis,
             canViewClients: canViewClients,
             canAccessConfig: canAccessConfig,
             canDeliverOrder: canDeliverOrder, // <-- Permiso añadido

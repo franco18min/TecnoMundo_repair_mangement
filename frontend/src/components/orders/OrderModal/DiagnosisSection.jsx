@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { DisplayField, TextAreaField } from './shared';
 import { PhotoBoard } from './PhotoBoard/index.js';
 import { 
@@ -8,6 +9,31 @@ import {
     deleteRepairOrderPhoto 
 } from '../../../api/repairOrderPhotosApi';
 import { updateOrderDiagnosis } from '../../../api/repairOrdersApi';
+
+// Variantes de animación
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+        opacity: 1, 
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 24
+        }
+    }
+};
 
 export function DiagnosisSection({ mode, permissions, formData, handleFormChange, orderId }) {
     const [photos, setPhotos] = useState([]);
@@ -132,9 +158,22 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
     }, [saveTimeout]);
 
     return (
-        <section>
-            <h3 className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4">Diagnóstico y Reparación</h3>
-            <div className="space-y-6">
+        <motion.section
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+        >
+            <motion.h3 
+                className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4"
+                variants={itemVariants}
+            >
+                Diagnóstico y Reparación
+            </motion.h3>
+            
+            <motion.div 
+                className="space-y-6"
+                variants={itemVariants}
+            >
                 {/* Campos de texto existentes */}
                 <div className="space-y-4">
                     {permissions.canEditDiagnosisPanel ? (
@@ -191,7 +230,7 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
                         />
                     )}
                 </div>
-            </div>
-        </section>
+            </motion.div>
+        </motion.section>
     );
 }

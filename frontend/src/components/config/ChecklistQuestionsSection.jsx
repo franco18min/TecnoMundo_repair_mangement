@@ -6,7 +6,8 @@ import {
   Trash2, 
   Check, 
   X,
-  AlertTriangle
+  AlertTriangle,
+  Loader
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -134,7 +135,7 @@ const ChecklistQuestionsSection = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <Loader className="animate-spin text-indigo-600" size={48} />
       </div>
     );
   }

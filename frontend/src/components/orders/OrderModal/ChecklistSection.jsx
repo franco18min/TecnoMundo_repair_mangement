@@ -103,7 +103,7 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
             animate="show"
         >
             <motion.h3 
-                className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4"
+                className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4"
                 variants={itemVariants}
             >
                 Checklist de Recepción
@@ -175,24 +175,24 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                             <motion.button 
                                                 type="button" 
                                                 onClick={() => handleChecklistChange(index, 'client_answer', true)} 
-                                                className={`p-1.5 rounded-full transition-all duration-200 ${item.client_answer === true ? 'bg-green-700 text-white shadow-lg ring-2 ring-green-300' : 'bg-gray-100 text-green-600 hover:bg-green-50 border border-green-300'}`}
+                                                className={`p-2 transition-all duration-200 ${item.client_answer === true ? 'text-green-600' : 'text-gray-400 hover:text-green-500'}`}
                                                 variants={buttonVariants}
                                                 animate={item.client_answer === true ? 'active' : 'inactive'}
-                                                whileHover="hover"
-                                                whileTap={{ scale: 0.95 }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
                                             >
-                                                <ThumbsUp size={16} />
+                                                <ThumbsUp size={20} strokeWidth={item.client_answer === true ? 2.5 : 1.5} />
                                             </motion.button>
                                             <motion.button 
                                                 type="button" 
                                                 onClick={() => handleChecklistChange(index, 'client_answer', false)} 
-                                                className={`p-1.5 rounded-full transition-all duration-200 ${item.client_answer === false ? 'bg-red-700 text-white shadow-lg ring-2 ring-red-300' : 'bg-gray-100 text-red-600 hover:bg-red-50 border border-red-300'}`}
+                                                className={`p-2 transition-all duration-200 ${item.client_answer === false ? 'text-red-600' : 'text-gray-400 hover:text-red-500'}`}
                                                 variants={buttonVariants}
                                                 animate={item.client_answer === false ? 'active' : 'inactive'}
-                                                whileHover="hover"
-                                                whileTap={{ scale: 0.95 }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
                                             >
-                                                <ThumbsDown size={16} />
+                                                <ThumbsDown size={20} strokeWidth={item.client_answer === false ? 2.5 : 1.5} />
                                             </motion.button>
                                         </>
                                     ) : (
@@ -202,8 +202,8 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                         >
                                             {item.client_answer === true ? 
-                                                <ThumbsUp size={18} className="text-green-700" /> : 
-                                                <ThumbsDown size={18} className="text-red-700" />
+                                                <ThumbsUp size={20} className="text-green-600" strokeWidth={2.5} /> : 
+                                                <ThumbsDown size={20} className="text-red-600" strokeWidth={2.5} />
                                             }
                                         </motion.div>
                                     )}
@@ -215,24 +215,24 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                         <motion.button 
                                             type="button" 
                                             onClick={() => handleChecklistChange(index, 'technician_finding', true)} 
-                                            className={`p-1.5 rounded-full ${item.technician_finding === true ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-green-200'}`}
+                                            className={`p-2 transition-all duration-200 ${item.technician_finding === true ? 'text-green-600' : 'text-gray-400 hover:text-green-500'}`}
                                             variants={buttonVariants}
                                             animate={item.technician_finding === true ? 'active' : 'inactive'}
-                                            whileHover="hover"
-                                            whileTap={{ scale: 0.95 }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
                                         >
-                                            <ThumbsUp size={16} />
+                                            <ThumbsUp size={20} strokeWidth={item.technician_finding === true ? 2.5 : 1.5} />
                                         </motion.button>
                                         <motion.button 
                                             type="button" 
                                             onClick={() => handleChecklistChange(index, 'technician_finding', false)} 
-                                            className={`p-1.5 rounded-full ${item.technician_finding === false ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-red-200'}`}
+                                            className={`p-2 transition-all duration-200 ${item.technician_finding === false ? 'text-red-600' : 'text-gray-400 hover:text-red-500'}`}
                                             variants={buttonVariants}
                                             animate={item.technician_finding === false ? 'active' : 'inactive'}
-                                            whileHover="hover"
-                                            whileTap={{ scale: 0.95 }}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
                                         >
-                                            <ThumbsDown size={16} />
+                                            <ThumbsDown size={20} strokeWidth={item.technician_finding === false ? 2.5 : 1.5} />
                                         </motion.button>
                                         <motion.input 
                                             type="text" 
@@ -247,20 +247,20 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                     <div className='flex items-center gap-2'>
                                         <span className='text-sm font-semibold text-indigo-600 w-20'>Técnico:</span>
                                         <motion.div 
-                                            className="p-1.5 rounded-full bg-gray-100 cursor-not-allowed opacity-60"
+                                            className="p-2 cursor-not-allowed opacity-60"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 0.6 }}
                                             transition={{ delay: 0.2 }}
                                         >
-                                            <ThumbsUp size={16} className="text-gray-400" />
+                                            <ThumbsUp size={20} className="text-gray-400" strokeWidth={1.5} />
                                         </motion.div>
                                         <motion.div 
-                                            className="p-1.5 rounded-full bg-gray-100 cursor-not-allowed opacity-60"
+                                            className="p-2 cursor-not-allowed opacity-60"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 0.6 }}
                                             transition={{ delay: 0.3 }}
                                         >
-                                            <ThumbsDown size={16} className="text-gray-400" />
+                                            <ThumbsDown size={20} className="text-gray-400" strokeWidth={1.5} />
                                         </motion.div>
                                         <motion.input 
                                             type="text" 
@@ -271,32 +271,7 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                             animate={{ opacity: 0.6 }}
                                             transition={{ delay: 0.4 }}
                                         />
-                                        {item.technician_finding !== null && (
-                                            <motion.div
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
-                                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                                                className="ml-2"
-                                            >
-                                                {item.technician_finding === true ? 
-                                                    <ThumbsUp size={18} className="text-green-700" /> : 
-                                                    item.technician_finding === false ? 
-                                                    <ThumbsDown size={18} className="text-red-700" /> : 
-                                                    <span className="text-xs text-gray-400">Sin revisar</span>
-                                                }
-                                            </motion.div>
-                                        )}
-                                        {item.technician_notes && (
-                                            <motion.p 
-                                                className="text-xs text-gray-500 ml-2 pl-2 border-l"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: 0.4 }}
-                                            >
-                                                | {item.technician_notes}
-                                            </motion.p>
-                                        )}
-                                    </div>
+                    </div>
                                 )}
                             </motion.div>
                         </motion.div>

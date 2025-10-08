@@ -42,10 +42,10 @@ export function ModalFooter({
                 )}
 
                 {/* Botón "Modificar Orden" / "Ver Orden" */}
-                {permissions.canModifyOrder && (
+                {(permissions.canModifyOrder || permissions.canModifyForDiagnosis) && (
                     <motion.button type="button" onClick={handleModifyClick} className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         {mode === 'view' ? (
-                            <><Edit size={16} className="mr-2"/> Modificar Orden</>
+                            <><Edit size={16} className="mr-2"/> {permissions.canModifyForDiagnosis && !permissions.canModifyOrder ? 'Editar Diagnóstico' : 'Modificar Orden'}</>
                         ) : (
                             <><Eye size={16} className="mr-2"/> Atrás</>
                         )}

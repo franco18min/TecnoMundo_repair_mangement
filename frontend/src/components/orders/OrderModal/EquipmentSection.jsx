@@ -53,7 +53,7 @@ export function EquipmentSection({ permissions, formData, handleFormChange, devi
             animate="show"
         >
             <motion.h3 
-                className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4"
+                className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4"
                 variants={itemVariants}
             >
                 Datos del Equipo y Falla

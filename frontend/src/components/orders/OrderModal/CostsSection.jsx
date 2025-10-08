@@ -2,6 +2,31 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DisplayField, FormField } from './shared';
 
+// Variantes de animación
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+        opacity: 1, 
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 24
+        }
+    }
+};
+
 export function CostsSection({ mode, permissions, formData, handleFormChange }) {
     const costFields = (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -28,9 +53,21 @@ export function CostsSection({ mode, permissions, formData, handleFormChange }) 
     );
 
     return (
-        <section>
-            <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Costos y Pagos</h3>
-            {costFields}
-        </section>
+        <motion.section
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+        >
+            <motion.h3 
+                className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4"
+                variants={itemVariants}
+            >
+                Costos y Pagos
+            </motion.h3>
+            
+            <motion.div variants={itemVariants}>
+                {costFields}
+            </motion.div>
+        </motion.section>
     );
 }
