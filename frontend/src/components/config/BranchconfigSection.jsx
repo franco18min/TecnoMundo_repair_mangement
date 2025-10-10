@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Edit, Loader, Building2 } from 'lucide-react';
+import { PlusCircle, Edit, Loader, Building2, Phone, Mail } from 'lucide-react';
 import { fetchBranches } from '../../api/branchApi';
 import { useToast } from '../../context/ToastContext';
 import { BranchModal } from './BranchModal';
@@ -65,7 +65,10 @@ export const BranchConfigSection = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
+                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
                                 <th className="relative px-6 py-3">
                                     <span className="sr-only">Editar</span>
                                 </th>
@@ -81,7 +84,34 @@ export const BranchConfigSection = () => {
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
                                     >
-                                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{branch.branch_name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <Building2 size={16} className="text-gray-400 mr-2" />
+                                                <span className="font-medium text-gray-900">{branch.branch_name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                                            {branch.company_name || 'No especificado'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                                            {branch.address || 'No especificado'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                                            <div className="space-y-1">
+                                                {branch.phone && (
+                                                    <div className="flex items-center text-sm">
+                                                        <Phone size={12} className="text-gray-400 mr-1" />
+                                                        {branch.phone}
+                                                    </div>
+                                                )}
+                                                {branch.email && (
+                                                    <div className="flex items-center text-sm">
+                                                        <Mail size={12} className="text-gray-400 mr-1" />
+                                                        {branch.email}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <button onClick={() => handleOpenModal(branch)} className="text-indigo-600 hover:text-indigo-900 font-medium">
                                                 <Edit size={18} />

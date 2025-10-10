@@ -242,12 +242,13 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
             >
-                <table className="w-full min-w-[900px]">
+                <table className="w-full min-w-[1000px]">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dispositivo</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
@@ -272,7 +273,8 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{order.id}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer?.name || 'Cliente no especificado'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device_type?.type_name || 'N/A'} {order.device_model || ''}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device?.type || 'N/A'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device?.model || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.badge}`}>
                                                 {status.icon}

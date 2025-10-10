@@ -10,6 +10,13 @@ class Branch(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     branch_name = Column(String, unique=True, index=True, nullable=False)
+    
+    # Campos para personalización de tickets
+    company_name = Column(String, nullable=True)  # Nombre de la empresa para el ticket
+    address = Column(String, nullable=True)       # Dirección del local
+    phone = Column(String, nullable=True)         # Número de teléfono
+    email = Column(String, nullable=True)         # Correo electrónico
+    icon_name = Column(String, default='Building', nullable=True)  # Nombre del icono
 
     # Relaciones inversas: una sucursal puede tener muchos usuarios y órdenes
     users = relationship("User", back_populates="branch")

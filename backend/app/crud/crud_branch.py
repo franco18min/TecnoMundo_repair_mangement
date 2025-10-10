@@ -27,7 +27,14 @@ def create(db: Session, *, obj_in: BranchCreate) -> Branch:
     """
     Crea una nueva sucursal.
     """
-    db_obj = Branch(branch_name=obj_in.branch_name)
+    db_obj = Branch(
+        branch_name=obj_in.branch_name,
+        company_name=obj_in.company_name,
+        address=obj_in.address,
+        phone=obj_in.phone,
+        email=obj_in.email,
+        icon_name=obj_in.icon_name or 'Building'
+    )
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)

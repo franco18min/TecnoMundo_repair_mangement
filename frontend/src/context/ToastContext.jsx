@@ -18,7 +18,8 @@ export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
 
     const showToast = useCallback((message, type = 'info') => {
-        const id = Date.now();
+        // Generar ID único combinando timestamp con número aleatorio
+        const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         setToasts(prev => [...prev, { id, message, type }]);
 
         // Auto-dismiss after 5 seconds

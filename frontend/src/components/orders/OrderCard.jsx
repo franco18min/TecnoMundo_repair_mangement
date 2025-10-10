@@ -20,7 +20,9 @@ export function OrderCard({ order, onClick }) {
   }), [order.status]);
 
   const currentStatus = statusStyles[order.status] || statusStyles['Default'];
-  const deviceName = `${order.device_type?.type_name || 'N/A'} ${order.device_model || ''}`.trim();
+  
+  const deviceType = order.device?.type || 'N/A';
+  const deviceModel = order.device?.model || 'N/A';
 
   return (
     // --- INICIO DE LA MODIFICACIÓN ---
@@ -37,7 +39,10 @@ export function OrderCard({ order, onClick }) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-sm font-bold text-indigo-600">#{order.id}</p>
-            <h3 className="text-lg font-semibold text-gray-800">{deviceName}</h3>
+            <div className="mb-1">
+              <h3 className="text-lg font-semibold text-gray-800">{deviceType}</h3>
+              <p className="text-sm text-gray-600 font-medium">{deviceModel}</p>
+            </div>
             <p className="text-sm text-gray-500">{order.customer.name}</p>
           </div>
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ${currentStatus.badge}`}>
