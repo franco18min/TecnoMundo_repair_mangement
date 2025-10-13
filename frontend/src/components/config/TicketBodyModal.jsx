@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FileText, Loader, Eye, Save, AlertCircle, Plus, Check, Search } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { getBranchTicketConfig, updateBranchTicketConfig } from '../../api/branchApi';
 
-export function TicketBodyModal({ isOpen, onClose, ticketType, onSave }) {
+export function TicketBodyModal({ isOpen, onClose, ticketType, onSave, branch = null }) {
     const [bodyContent, setBodyContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -148,14 +149,86 @@ Tel: [TELEFONO_SUCURSAL]`
 
     useEffect(() => {
         if (isOpen) {
-            // Aquí podrías cargar el contenido guardado desde localStorage o API
-            const savedContent = localStorage.getItem(`ticketBodyContent_${ticketType}`);
-            setBodyContent(savedContent || defaultContent[ticketType] || '');
+            loadBranchConfig();
             setError('');
             setShowPreview(false);
             setShowAutocomplete(false);
         }
-    }, [isOpen, ticketType]);
+    }, [isOpen, ticketType, branch]);
+
+    const loadBranchConfig = async () => {
+        try {
+            // Si no hay branch, cargar configuración global desde localStorage
+            if (!branch) {
+                const globalKey = `globalTicketBodyContent_${ticketType}`;
+                const globalConfig = localStorage.getItem(globalKey);
+                if (globalConfig) {
+                    setBodyContent(globalConfig);
+                } else {
+                    setBodyContent(defaultContent[ticketType] || '');
+                }
+                return;
+            }
+
+            const config = await getBranchTicketConfig(branch.id);
+            
+            // Determinar qué campo usar según el tipo de ticket
+            const fieldName = ticketType === 'client' ? 'client_body_content' : 'workshop_body_content';
+            
+            if (config[fieldName]) {
+                setBodyContent(config[fieldName]);
+            } else {
+                setBodyContent(defaultContent[ticketType] || '');
+            }
+        } catch (error) {
+            console.error('Error loading branch config:', error);
+            // Si hay error, usar configuración por defecto
+            setBodyContent(defaultContent[ticketType] || '');
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
+
+        try {
+            // Si no hay branch, guardar configuración global en localStorage
+            if (!branch) {
+                const globalKey = `globalTicketBodyContent_${ticketType}`;
+                localStorage.setItem(globalKey, bodyContent);
+                showToast('Configuración global guardada exitosamente', 'success');
+                onClose();
+                return;
+            }
+
+            // Guardar configuración de sucursal
+            const fieldName = ticketType === 'client' ? 'client_body_content' : 'workshop_body_content';
+            const updateData = {
+                [fieldName]: bodyContent
+            };
+
+            await updateBranchTicketConfig(branch.id, updateData);
+            showToast('Configuración de contenido guardada exitosamente', 'success');
+            
+            if (onSave) {
+                onSave();
+            }
+            
+            onClose();
+        } catch (error) {
+            console.error('Error saving config:', error);
+            setError('Error al guardar la configuración. Por favor, inténtalo de nuevo.');
+            showToast('Error al guardar la configuración', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const resetToDefault = () => {
+        setBodyContent(defaultContent[ticketType] || '');
+        showToast('Contenido restaurado a valores por defecto', 'info');
+    };
 
     // Función para detectar variables utilizadas
     const getUsedVariables = () => {
@@ -279,41 +352,7 @@ Tel: [TELEFONO_SUCURSAL]`
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setError('');
 
-        try {
-            console.log('=== GUARDANDO CONFIGURACIÓN ===');
-            console.log('Tipo de ticket:', ticketType);
-            console.log('Contenido a guardar:', bodyContent);
-            console.log('Clave localStorage:', `ticketBodyContent_${ticketType}`);
-            
-            // Guardar en localStorage (en una implementación real, esto iría a la API)
-            localStorage.setItem(`ticketBodyContent_${ticketType}`, bodyContent);
-            
-            // Verificar que se guardó correctamente
-            const saved = localStorage.getItem(`ticketBodyContent_${ticketType}`);
-            console.log('Contenido guardado verificado:', saved);
-            console.log('=== FIN GUARDADO ===');
-            
-            onSave(bodyContent);
-            showToast('Cuerpo de ticket actualizado con éxito', 'success');
-            onClose();
-        } catch (err) {
-            const errorMessage = err.message || 'Ocurrió un error inesperado.';
-            setError(errorMessage);
-            showToast(errorMessage, 'error');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const resetToDefault = () => {
-        setBodyContent(defaultContent[ticketType] || '');
-        showToast('Contenido restaurado al valor por defecto', 'info');
-    };
 
     // Componente del panel de variables
     const VariablesPanel = () => {

@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader, Eye, Palette, Type, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, RotateCcw } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { getBranchTicketConfig, updateBranchTicketConfig } from '../../api/branchApi';
 
-export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) => {
+export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, branch = null }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPreview, setShowPreview] = useState(true);
     const [selectedText, setSelectedText] = useState('');
     const [selectionRange, setSelectionRange] = useState(null);
     const [styledContent, setStyledContent] = useState('');
     const previewRef = useRef(null);
+    const { showToast } = useToast();
 
     // Configuración por defecto
     const defaultConfig = {
@@ -20,7 +23,8 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) =>
         selectedTextFontWeight: 'normal',
         selectedTextFontStyle: 'normal',
         selectedTextTextDecoration: 'none',
-        selectedTextTextAlign: 'left'
+        selectedTextTextAlign: 'left',
+        selectedTextColor: '#000000'
     };
 
     // Configuración de estilos
@@ -69,43 +73,104 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) =>
         if (isOpen && ticketType) {
             loadConfiguration();
         }
+    }, [isOpen, ticketType, branch]);
+
+    // Actualizar contenido cuando se abra el modal o cambie el tipo
+    useEffect(() => {
+        if (isOpen && ticketType) {
+            const content = getCurrentBodyContent();
+            setStyledContent(content);
+        }
     }, [isOpen, ticketType]);
 
-    const loadConfiguration = () => {
-        const storageKey = `ticketBodyStyle_${ticketType}`;
-        const styledContentKey = `ticketBodyStyledContent_${ticketType}`;
-        
-        // Cargar configuración
-        const savedConfig = localStorage.getItem(storageKey);
-        if (savedConfig) {
-            try {
-                const parsedConfig = JSON.parse(savedConfig);
-                setConfig(parsedConfig);
-            } catch (error) {
-                console.error('Error parsing saved configuration:', error);
+    const loadConfiguration = async () => {
+        try {
+            // Si no hay branch, usar localStorage como fallback
+            if (!branch) {
+                const storageKey = `globalTicketBodyStyle_${ticketType}`;
+                const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
+                
+                const savedConfig = localStorage.getItem(storageKey);
+                if (savedConfig) {
+                    const parsedConfig = JSON.parse(savedConfig);
+                    setConfig(parsedConfig);
+                }
+                
+                const savedStyledContent = localStorage.getItem(styledContentKey);
+                if (savedStyledContent) {
+                    setStyledContent(savedStyledContent);
+                } else {
+                    const content = getCurrentBodyContent();
+                    setStyledContent(content);
+                }
+                return;
             }
-        }
-        
-        // Cargar contenido estilizado
-        const savedStyledContent = localStorage.getItem(styledContentKey);
-        if (savedStyledContent) {
-            setStyledContent(savedStyledContent);
-        } else {
-            // Si no hay contenido estilizado guardado, usar el contenido original
+
+            const branchConfig = await getBranchTicketConfig(branch.id);
+            
+            // Determinar qué campo usar según el tipo de ticket
+            const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+            
+            if (branchConfig[fieldName]) {
+                const parsedData = JSON.parse(branchConfig[fieldName]);
+                
+                // Si el dato guardado tiene la estructura nueva (con config y styledContent)
+                if (parsedData && typeof parsedData === 'object' && parsedData.config) {
+                    setConfig(parsedData.config);
+                    if (parsedData.styledContent) {
+                        setStyledContent(parsedData.styledContent);
+                    } else {
+                        // Fallback al contenido original si no hay contenido estilizado guardado
+                        const content = getCurrentBodyContent();
+                        setStyledContent(content);
+                    }
+                } else {
+                    // Compatibilidad con formato anterior (solo configuración)
+                    setConfig(parsedData);
+                    const content = getCurrentBodyContent();
+                    setStyledContent(content);
+                }
+            } else {
+                // Si no hay configuración guardada, cargar contenido original
+                const content = getCurrentBodyContent();
+                setStyledContent(content);
+            }
+            
+        } catch (error) {
+            console.error('Error loading branch configuration:', error);
+            // Fallback a configuración por defecto
             const content = getCurrentBodyContent();
             setStyledContent(content);
         }
     };
 
-    const saveConfiguration = () => {
-        const storageKey = `ticketBodyStyle_${ticketType}`;
-        const styledContentKey = `ticketBodyStyledContent_${ticketType}`;
-        
-        // Guardar configuración
-        localStorage.setItem(storageKey, JSON.stringify(config));
-        
-        // Guardar contenido estilizado
-        localStorage.setItem(styledContentKey, styledContent || '');
+    const saveConfiguration = async () => {
+        try {
+            // Si no hay branch, usar localStorage como fallback
+            if (!branch) {
+                const storageKey = `globalTicketBodyStyle_${ticketType}`;
+                const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
+                
+                localStorage.setItem(storageKey, JSON.stringify(config));
+                localStorage.setItem(styledContentKey, styledContent || '');
+                return;
+            }
+
+            // Preparar el nombre del campo según el tipo de ticket
+            const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+            
+            // Preparar datos para enviar a la API
+            const updateData = {
+                [fieldName]: { config, styledContent }
+            };
+
+            // Guardar configuración en la API
+            await updateBranchTicketConfig(branch.id, updateData);
+            
+        } catch (error) {
+            console.error('Error saving configuration:', error);
+            throw error;
+        }
     };
 
     const updateConfig = (key, value) => {
@@ -129,8 +194,8 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) =>
     const applyStyleToSelection = () => {
         if (selectedText && styledContent && selectionRange) {
             try {
-                // Crear el span con estilos aplicados
-                const styledSpan = `<span style="font-size: ${config.selectedTextFontSize}; font-weight: ${config.selectedTextFontWeight}; font-style: ${config.selectedTextFontStyle}; text-decoration: ${config.selectedTextTextDecoration}; color: ${config.selectedTextColor || 'inherit'};">${selectedText}</span>`;
+                // Crear el span con estilos aplicados usando estilos inline para garantizar que se mantengan al imprimir
+                const styledSpan = `<span style="font-size: ${config.selectedTextFontSize}; font-weight: ${config.selectedTextFontWeight}; font-style: ${config.selectedTextFontStyle}; text-decoration: ${config.selectedTextTextDecoration}; text-align: ${config.selectedTextTextAlign}; color: ${config.selectedTextColor || 'inherit'};">${selectedText}</span>`;
                 
                 // Escapar caracteres especiales para regex
                 const escapedText = selectedText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -169,11 +234,13 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) =>
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            saveConfiguration();
+            await saveConfiguration();
             onSave(config);
+            showToast('Estilo de cuerpo de ticket actualizado con éxito', 'success');
             onClose();
         } catch (error) {
             console.error('Error saving configuration:', error);
+            showToast('Error al guardar la configuración', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -187,7 +254,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) =>
         const originalContent = getCurrentBodyContent();
         setStyledContent(originalContent);
         // Limpiar contenido estilizado guardado
-        const styledContentKey = `ticketBodyStyledContent_${ticketType}`;
+        const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
         localStorage.removeItem(styledContentKey);
         // Limpiar cualquier selección activa
         if (window.getSelection) {
@@ -197,11 +264,22 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave }) =>
 
     // Obtener configuración actual del cuerpo del ticket
     const getCurrentBodyContent = () => {
-        const storageKey = `ticketBodyContent_${ticketType}`;
-        const savedContent = localStorage.getItem(storageKey);
+        // Primero buscar configuración global
+        const globalKey = `globalTicketBodyContent_${ticketType}`;
+        const globalContent = localStorage.getItem(globalKey);
         
-        if (savedContent) {
-            return savedContent;
+        if (globalContent) {
+            return globalContent;
+        }
+
+        // Luego buscar configuración específica de sucursal (si existe)
+        if (branch) {
+            const storageKey = `ticketBodyContent_${ticketType}`;
+            const savedContent = localStorage.getItem(storageKey);
+            
+            if (savedContent) {
+                return savedContent;
+            }
         }
 
         // Contenido por defecto según el tipo
@@ -572,6 +650,27 @@ CONTROL DE CALIDAD:
                                                     >
                                                         <Underline size={16} className="mx-auto" />
                                                     </motion.button>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Color del texto
+                                                </label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={config.selectedTextColor}
+                                                        onChange={(e) => updateConfig('selectedTextColor', e.target.value)}
+                                                        className="w-12 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={config.selectedTextColor}
+                                                        onChange={(e) => updateConfig('selectedTextColor', e.target.value)}
+                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                        placeholder="#000000"
+                                                    />
                                                 </div>
                                             </div>
 

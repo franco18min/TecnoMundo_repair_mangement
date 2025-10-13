@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Palette, Type, Layout, Eye, Save, Loader } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { getBranchTicketConfig, updateBranchTicketConfig } from '../../api/branchApi';
 
 export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client', onSave }) {
     const [styleConfig, setStyleConfig] = useState({
@@ -39,16 +40,48 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
     const { showToast } = useToast();
 
     useEffect(() => {
-        if (isOpen && branch) {
-            // Cargar configuración guardada o usar valores por defecto
-            const savedConfig = localStorage.getItem(`ticketStyle_${ticketType}`);
-            if (savedConfig) {
-                setStyleConfig(JSON.parse(savedConfig));
+        if (isOpen) {
+            if (branch) {
+                loadBranchConfig();
+            } else {
+                loadGlobalConfig();
             }
             setError('');
             setShowPreview(false);
         }
     }, [branch, isOpen, ticketType]);
+
+    const loadBranchConfig = async () => {
+        try {
+            const config = await getBranchTicketConfig(branch.id);
+            
+            // Determinar qué campo usar según el tipo de ticket
+            const fieldName = ticketType === 'client' ? 'client_header_style' : 'workshop_header_style';
+            
+            if (config[fieldName]) {
+                setStyleConfig(JSON.parse(config[fieldName]));
+            }
+        } catch (error) {
+            console.error('Error loading branch config:', error);
+            // Si hay error, usar configuración por defecto
+        }
+    };
+
+    const loadGlobalConfig = () => {
+        try {
+            // Cargar configuración global desde localStorage
+            const globalKey = `globalHeaderStyle_${ticketType}`;
+            const savedConfig = localStorage.getItem(globalKey);
+            
+            if (savedConfig) {
+                setStyleConfig(JSON.parse(savedConfig));
+            }
+            // Si no hay configuración guardada, usar la configuración por defecto
+        } catch (error) {
+            console.error('Error loading global config:', error);
+            // Si hay error, usar configuración por defecto
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -56,10 +89,24 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
         setError('');
 
         try {
-            // Guardar configuración en localStorage
-            localStorage.setItem(`ticketStyle_${ticketType}`, JSON.stringify(styleConfig));
+            if (branch) {
+                // Modo sucursal específica - guardar en API
+                const fieldName = ticketType === 'client' ? 'client_header_style' : 'workshop_header_style';
+                
+                const updateData = {
+                    [fieldName]: JSON.stringify(styleConfig)
+                };
+
+                await updateBranchTicketConfig(branch.id, updateData);
+                showToast('Estilo de ticket actualizado con éxito', 'success');
+            } else {
+                // Modo global - guardar en localStorage
+                const globalKey = `globalHeaderStyle_${ticketType}`;
+                localStorage.setItem(globalKey, JSON.stringify(styleConfig));
+                showToast('Estilo de cabecera global actualizado con éxito', 'success');
+            }
+            
             onSave(styleConfig);
-            showToast('Estilo de ticket actualizado con éxito', 'success');
             onClose();
         } catch (err) {
             const errorMessage = err.message || 'Ocurrió un error inesperado.';
@@ -101,24 +148,24 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                         
                         {styleConfig.showContactInfo && (
                             <div className="space-y-1" style={{ fontSize: styleConfig.contactInfoFontSize }}>
-                                {styleConfig.showAddress && branch?.address && (
-                                    <div>{branch.address}</div>
+                                {styleConfig.showAddress && (
+                                    <div>{branch?.address || 'Av. Principal 123, Ciudad'}</div>
                                 )}
-                                {styleConfig.showPhone && branch?.phone && (
-                                    <div>{branch.phone}</div>
+                                {styleConfig.showPhone && (
+                                    <div>{branch?.phone || 'Tel: (555) 123-4567'}</div>
                                 )}
-                                {styleConfig.showEmail && branch?.email && (
-                                    <div>{branch.email}</div>
+                                {styleConfig.showEmail && (
+                                    <div>{branch?.email || 'info@tecnomundo.com'}</div>
                                 )}
                             </div>
                         )}
                         
-                        {styleConfig.showBranchName && branch?.branch_name && (
+                        {styleConfig.showBranchName && (
                             <div className="flex items-center justify-center gap-1 font-medium mt-2" style={{ fontSize: styleConfig.branchNameFontSize }}>
                                 {styleConfig.showIcon && (
                                     <div className="w-3 h-3 bg-gray-400 rounded"></div>
                                 )}
-                                <span>{branch.branch_name}</span>
+                                <span>{branch?.branch_name || 'Sucursal Principal'}</span>
                             </div>
                         )}
                     </header>
@@ -194,10 +241,16 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                         <div className="p-6 border-b flex justify-between items-center">
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-800">
-                                    Configurar Estilo de Cabecera - {branch?.branch_name}
+                                    {branch 
+                                        ? `Configurar Estilo de Cabecera - ${branch.branch_name}`
+                                        : `Configurar Estilo de Cabecera (Global) - ${ticketType === 'client' ? 'Cliente' : 'Taller'}`
+                                    }
                                 </h2>
                                 <p className="text-gray-600 mt-1">
-                                    Personaliza la apariencia y disposición de la cabecera del ticket
+                                    {branch 
+                                        ? 'Personaliza la apariencia y disposición de la cabecera del ticket para esta sucursal'
+                                        : 'Configuración global de estilos de cabecera que se aplicará a todas las sucursales'
+                                    }
                                 </p>
                             </div>
                             <motion.button 

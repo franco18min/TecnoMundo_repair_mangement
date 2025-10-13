@@ -17,6 +17,14 @@ class Branch(Base):
     phone = Column(String, nullable=True)         # Número de teléfono
     email = Column(String, nullable=True)         # Correo electrónico
     icon_name = Column(String, default='Building', nullable=True)  # Nombre del icono
+    
+    # Configuración de estilos y contenidos de tickets
+    client_header_style = Column(String, default='{}', nullable=True)    # Estilos de cabecera para tickets de cliente
+    workshop_header_style = Column(String, default='{}', nullable=True)  # Estilos de cabecera para tickets de taller
+    client_body_content = Column(String, default='', nullable=True)      # Contenido del cuerpo para tickets de cliente
+    workshop_body_content = Column(String, default='', nullable=True)    # Contenido del cuerpo para tickets de taller
+    client_body_style = Column(String, default='{}', nullable=True)      # Estilos del cuerpo para tickets de cliente
+    workshop_body_style = Column(String, default='{}', nullable=True)    # Estilos del cuerpo para tickets de taller
 
     # Relaciones inversas: una sucursal puede tener muchos usuarios y órdenes
     users = relationship("User", back_populates="branch")

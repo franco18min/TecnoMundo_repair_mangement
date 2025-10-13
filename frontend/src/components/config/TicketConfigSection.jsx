@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Edit, Loader, Building2, Eye, Settings, Ticket, Edit3, AlertCircle, Palette } from 'lucide-react';
+import { FileText, Edit, Loader, Building2, Eye, Settings, Ticket, Edit3, AlertCircle, Palette, User, Wrench } from 'lucide-react';
 import { fetchBranches } from '../../api/branchApi';
 import { useToast } from '../../context/ToastContext';
 import { TicketStyleModal } from './TicketStyleModal';
@@ -12,12 +12,16 @@ export const TicketConfigSection = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isTicketStyleModalOpen, setIsTicketStyleModalOpen] = useState(false);
+    const [isGlobalHeaderStyleModalOpen, setIsGlobalHeaderStyleModalOpen] = useState(false);
     const [isBodyModalOpen, setIsBodyModalOpen] = useState(false);
     const [isBodyStyleModalOpen, setIsBodyStyleModalOpen] = useState(false);
     const [selectedBranch, setSelectedBranch] = useState(null);
     const [bodyTicketType, setBodyTicketType] = useState('client');
     const [bodyStyleTicketType, setBodyStyleTicketType] = useState('client');
+    const [isGlobalBodyModal, setIsGlobalBodyModal] = useState(false);
+    const [isGlobalBodyStyleModal, setIsGlobalBodyStyleModal] = useState(false);
     const [styleTicketType, setStyleTicketType] = useState('client');
+    const [globalHeaderStyleTicketType, setGlobalHeaderStyleTicketType] = useState('client');
     const { showToast } = useToast();
 
     const loadBranches = useCallback(async () => {
@@ -52,21 +56,48 @@ export const TicketConfigSection = () => {
     const handleOpenBodyModal = (ticketType) => {
         setBodyTicketType(ticketType);
         setIsBodyModalOpen(true);
+        setIsGlobalBodyModal(false);
     };
 
     const handleCloseBodyModal = () => {
         setIsBodyModalOpen(false);
         setBodyTicketType('client');
+        setIsGlobalBodyModal(false);
     };
 
     const handleOpenBodyStyleModal = (ticketType) => {
         setBodyStyleTicketType(ticketType);
         setIsBodyStyleModalOpen(true);
+        setIsGlobalBodyStyleModal(false);
     };
 
     const handleCloseBodyStyleModal = () => {
         setIsBodyStyleModalOpen(false);
         setBodyStyleTicketType('client');
+        setIsGlobalBodyStyleModal(false);
+    };
+
+    // Funciones específicas para modales globales
+    const handleOpenGlobalBodyModal = (ticketType) => {
+        setBodyTicketType(ticketType);
+        setIsBodyModalOpen(true);
+        setIsGlobalBodyModal(true);
+    };
+
+    const handleOpenGlobalBodyStyleModal = (ticketType) => {
+        setBodyStyleTicketType(ticketType);
+        setIsBodyStyleModalOpen(true);
+        setIsGlobalBodyStyleModal(true);
+    };
+
+    const handleOpenGlobalHeaderStyleModal = (ticketType) => {
+        setGlobalHeaderStyleTicketType(ticketType);
+        setIsGlobalHeaderStyleModalOpen(true);
+    };
+
+    const handleCloseGlobalHeaderStyleModal = () => {
+        setIsGlobalHeaderStyleModalOpen(false);
+        setGlobalHeaderStyleTicketType('client');
     };
 
     const handleSaveTicketStyle = (styleConfig) => {
@@ -107,75 +138,6 @@ export const TicketConfigSection = () => {
 
     return (
         <div className="space-y-6">
-            {/* Configuración de Estilo de Tickets por Sucursal */}
-            <motion.div
-                className="bg-white rounded-xl shadow-sm border border-gray-200"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-            >
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                            <Palette size={20} className="text-purple-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-800">
-                                Estilo de Cabeceras por Sucursal
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                                Personaliza la apariencia y disposición de las cabeceras de tickets
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="p-6">
-                    <div className="grid gap-4">
-                        {branches.map((branch) => (
-                            <motion.div
-                                key={branch.id}
-                                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
-                                whileHover={{ scale: 1.01 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-gray-100 rounded-lg">
-                                            {getIconComponent(branch.icon_name)}
-                                        </div>
-                                        <h4 className="font-medium text-gray-800">
-                                            {branch.branch_name}
-                                        </h4>
-                                    </div>
-                                </div>
-                                
-                                <div className="grid gap-2 md:grid-cols-2">
-                                    <motion.button
-                                        onClick={() => handleOpenTicketStyleModal(branch, 'client')}
-                                        className="flex items-center gap-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200"
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Settings size={16} />
-                                        <span className="text-sm">Estilo Ticket Cliente</span>
-                                    </motion.button>
-                                    
-                                    <motion.button
-                                        onClick={() => handleOpenTicketStyleModal(branch, 'workshop')}
-                                        className="flex items-center gap-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200"
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Settings size={16} />
-                                        <span className="text-sm">Estilo Ticket Taller</span>
-                                    </motion.button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </motion.div>
 
             {/* Configuración Global de Cuerpo de Tickets */}
             <motion.div
@@ -218,7 +180,7 @@ export const TicketConfigSection = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <motion.button
-                                        onClick={() => handleOpenBodyModal('client')}
+                                        onClick={() => handleOpenGlobalBodyModal('client')}
                                         className="flex items-center gap-2 px-3 py-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
@@ -246,7 +208,7 @@ export const TicketConfigSection = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <motion.button
-                                        onClick={() => handleOpenBodyModal('workshop')}
+                                        onClick={() => handleOpenGlobalBodyModal('workshop')}
                                         className="flex items-center gap-2 px-3 py-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
@@ -302,7 +264,7 @@ export const TicketConfigSection = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <motion.button
-                                        onClick={() => handleOpenBodyStyleModal('client')}
+                                        onClick={() => handleOpenGlobalBodyStyleModal('client')}
                                         className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
@@ -330,12 +292,96 @@ export const TicketConfigSection = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <motion.button
-                                        onClick={() => handleOpenBodyStyleModal('workshop')}
+                                        onClick={() => handleOpenGlobalBodyStyleModal('workshop')}
                                         className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
                                         <Edit3 size={16} />
+                                        <span className="text-sm">Configurar Estilos</span>
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Configuración de Estilo de Cabeceras (Global) */}
+            <motion.div
+                className="bg-white rounded-xl shadow-sm border border-gray-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+            >
+                <div className="p-6 border-b border-gray-200">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                            <Settings size={20} className="text-purple-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800">
+                                Estilo de Cabeceras (Global)
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                                Configura los estilos de cabecera para todos los tickets (aplica a todas las sucursales)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <motion.div
+                            className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                            whileHover={{ scale: 1.01 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-medium text-gray-800 mb-1">
+                                        Estilo Cabecera de Cliente
+                                    </h4>
+                                    <p className="text-sm text-gray-600">
+                                        Estilos para cabeceras de tickets que verán los clientes
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <motion.button
+                                        onClick={() => handleOpenGlobalHeaderStyleModal('client')}
+                                        className="flex items-center gap-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <Settings size={16} />
+                                        <span className="text-sm">Configurar Estilos</span>
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                            whileHover={{ scale: 1.01 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-medium text-gray-800 mb-1">
+                                        Estilo Cabecera de Taller
+                                    </h4>
+                                    <p className="text-sm text-gray-600">
+                                        Estilos para cabeceras de tickets internos del taller
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <motion.button
+                                        onClick={() => handleOpenGlobalHeaderStyleModal('workshop')}
+                                        className="flex items-center gap-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <Settings size={16} />
                                         <span className="text-sm">Configurar Estilos</span>
                                     </motion.button>
                                 </div>
@@ -358,6 +404,7 @@ export const TicketConfigSection = () => {
                 isOpen={isBodyModalOpen}
                 onClose={handleCloseBodyModal}
                 ticketType={bodyTicketType}
+                branch={isGlobalBodyModal ? null : (branches.length > 0 ? branches[0] : null)}
                 onSave={(content) => {
                     showToast('Configuración de ticket actualizada', 'success');
                 }}
@@ -367,8 +414,19 @@ export const TicketConfigSection = () => {
                 isOpen={isBodyStyleModalOpen}
                 onClose={handleCloseBodyStyleModal}
                 ticketType={bodyStyleTicketType}
+                branch={isGlobalBodyStyleModal ? null : (branches.length > 0 ? branches[0] : null)}
                 onSave={(styleConfig) => {
                     showToast('Estilos de cuerpo actualizados', 'success');
+                }}
+            />
+
+            <TicketStyleModal
+                isOpen={isGlobalHeaderStyleModalOpen}
+                onClose={handleCloseGlobalHeaderStyleModal}
+                branch={null} // null indica modo global
+                ticketType={globalHeaderStyleTicketType}
+                onSave={(styleConfig) => {
+                    showToast('Estilos de cabecera globales actualizados', 'success');
                 }}
             />
         </div>

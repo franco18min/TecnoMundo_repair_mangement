@@ -72,44 +72,115 @@ const processVariables = (content, order) => {
 export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
   // Cargar configuraciones de forma síncrona
   const getTicketStyle = () => {
+    console.log('🎫 WorkshopTicket - Cargando estilos de header...');
+    
+    // Primero intentar cargar estilos globales de header
+    const globalHeaderStyle = localStorage.getItem('globalHeaderStyle_workshop');
+    console.log('🎫 WorkshopTicket - globalHeaderStyle_workshop:', globalHeaderStyle);
+    if (globalHeaderStyle) {
+      try {
+        const parsed = JSON.parse(globalHeaderStyle);
+        console.log('🎫 WorkshopTicket - Usando estilos globales de header:', parsed);
+        return parsed;
+      } catch (error) {
+        console.error('🎫 WorkshopTicket - Error parsing global header style:', error);
+      }
+    }
+    
+    // Si no hay estilos globales, usar los estilos por sucursal como fallback
     const savedStyle = localStorage.getItem('ticketStyle_workshop');
+    console.log('🎫 WorkshopTicket - ticketStyle_workshop:', savedStyle);
     if (savedStyle) {
       try {
-        return JSON.parse(savedStyle);
+        const parsed = JSON.parse(savedStyle);
+        console.log('🎫 WorkshopTicket - Usando estilos por sucursal de header:', parsed);
+        return parsed;
       } catch (error) {
-        console.error('Error parsing saved style:', error);
+        console.error('🎫 WorkshopTicket - Error parsing saved style:', error);
         return {};
       }
     }
+    
+    console.log('🎫 WorkshopTicket - No se encontraron estilos de header, usando valores por defecto');
     return {};
   };
 
   const getBodyContent = () => {
-    // Primero intentar cargar el contenido estilizado
+    console.log('🎫 WorkshopTicket - Cargando contenido de cuerpo...');
+    
+    // Primero intentar cargar el contenido global estilizado
+    const globalStyledContent = localStorage.getItem('globalTicketBodyStyledContent_workshop');
+    console.log('🎫 WorkshopTicket - globalTicketBodyStyledContent_workshop:', globalStyledContent);
+    if (globalStyledContent) {
+      console.log('🎫 WorkshopTicket - Usando contenido global estilizado');
+      return globalStyledContent;
+    }
+    
+    // Luego intentar cargar el contenido global original
+    const globalContent = localStorage.getItem('globalTicketBodyContent_workshop');
+    console.log('🎫 WorkshopTicket - globalTicketBodyContent_workshop:', globalContent);
+    if (globalContent) {
+      console.log('🎫 WorkshopTicket - Usando contenido global original');
+      return globalContent;
+    }
+    
+    // Si no hay contenido global, usar el contenido por sucursal estilizado
     const styledContent = localStorage.getItem('ticketBodyStyledContent_workshop');
+    console.log('🎫 WorkshopTicket - ticketBodyStyledContent_workshop:', styledContent);
     if (styledContent) {
+      console.log('🎫 WorkshopTicket - Usando contenido por sucursal estilizado');
       return styledContent;
     }
-    // Si no hay contenido estilizado, usar el contenido original
-    return localStorage.getItem('ticketBodyContent_workshop') || '';
+    
+    // Finalmente, usar el contenido original por sucursal
+    const originalContent = localStorage.getItem('ticketBodyContent_workshop') || '';
+    console.log('🎫 WorkshopTicket - ticketBodyContent_workshop:', originalContent);
+    console.log('🎫 WorkshopTicket - Usando contenido original por sucursal');
+    return originalContent;
   };
 
   const getWorkshopBodyStyle = () => {
+    console.log('🎫 WorkshopTicket - Cargando estilos de cuerpo...');
+    
+    // Primero intentar cargar estilos globales de cuerpo
+    const globalBodyStyle = localStorage.getItem('globalTicketBodyStyle_workshop');
+    console.log('🎫 WorkshopTicket - globalTicketBodyStyle_workshop:', globalBodyStyle);
+    if (globalBodyStyle) {
+      try {
+        const parsed = JSON.parse(globalBodyStyle);
+        console.log('🎫 WorkshopTicket - Usando estilos globales de cuerpo:', parsed);
+        return parsed;
+      } catch (error) {
+        console.error('🎫 WorkshopTicket - Error parsing global workshop body style:', error);
+      }
+    }
+    
+    // Si no hay estilos globales, usar los estilos por sucursal como fallback
     const savedStyle = localStorage.getItem('ticketBodyStyle_workshop');
+    console.log('🎫 WorkshopTicket - ticketBodyStyle_workshop:', savedStyle);
     if (savedStyle) {
       try {
-        return JSON.parse(savedStyle);
+        const parsed = JSON.parse(savedStyle);
+        console.log('🎫 WorkshopTicket - Usando estilos por sucursal de cuerpo:', parsed);
+        return parsed;
       } catch (error) {
-        console.error('Error parsing workshop body style:', error);
+        console.error('🎫 WorkshopTicket - Error parsing workshop body style:', error);
         return {};
       }
     }
+    
+    console.log('🎫 WorkshopTicket - No se encontraron estilos de cuerpo, usando valores por defecto');
     return {};
   };
 
   const ticketStyle = getTicketStyle();
   const bodyContent = getBodyContent();
   const workshopBodyStyle = getWorkshopBodyStyle();
+  
+  console.log('🎫 WorkshopTicket - Renderizando ticket para orden:', order?.id);
+  console.log('🎫 WorkshopTicket - Estilo de ticket final:', ticketStyle);
+  console.log('🎫 WorkshopTicket - Contenido de cuerpo final:', bodyContent);
+  console.log('🎫 WorkshopTicket - Estilo de cuerpo final:', workshopBodyStyle);
 
   if (!order) return null;
 
