@@ -1,9 +1,7 @@
-// frontend/src/components/tickets/WorkshopTicket.jsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, Phone, Mail, Store, Home, Globe } from 'lucide-react';
+import { fetchTicketConfigByType, defaultConfigurations } from '../../../api/ticketConfigApi';
 
-// Componentes internos para un código más limpio
 const Section = ({ title, children, className = '' }) => (
     <div className={`mt-2 ${className}`}>
         <p className="font-bold">{title}:</p>
@@ -11,9 +9,10 @@ const Section = ({ title, children, className = '' }) => (
     </div>
 );
 
-const HeaderLine = ({ children }) => <p className="text-center text-sm">{children}</p>;
+const HeaderLine = ({ children, style = {} }) => (
+    <p className="text-center text-sm" style={style}>{children}</p>
+);
 
-// Función para obtener el componente de icono
 const getIconComponent = (iconName, size = 16) => {
   const iconMap = {
     'Building': Building2,
@@ -27,7 +26,6 @@ const getIconComponent = (iconName, size = 16) => {
   return <IconComponent size={size} />;
 };
 
-// Función para procesar variables en el contenido
 const processVariables = (content, order) => {
   if (!content || !order) return content;
   
@@ -62,178 +60,150 @@ const processVariables = (content, order) => {
 
   let processedContent = content;
   Object.entries(variables).forEach(([variable, value]) => {
-    processedContent = processedContent.replace(new RegExp(variable.replace(/[[\]]/g, '\\$&'), 'g'), value);
+    processedContent = processedContent.replace(new RegExp(variable.replace(/[[\\]]/g, '\\$&'), 'g'), value);
   });
 
   return processedContent;
 };
 
-// Componente principal del ticket del taller
 export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
-  // Cargar configuraciones de forma síncrona
-  const getTicketStyle = () => {
-    const savedStyle = localStorage.getItem('ticketStyle_workshop');
-    if (savedStyle) {
-      try {
-        return JSON.parse(savedStyle);
-      } catch (error) {
-        console.error('Error parsing saved style:', error);
-        return {};
-      }
-    }
-    return {};
-  };
+    const [headerStyleConfig, setHeaderStyleConfig] = useState({});
+    const [bodyStyleConfig, setBodyStyleConfig] = useState({});
+    const [bodyContent, setBodyContent] = useState('');
+    const [loading, setLoading] = useState(true);
 
-  const getBodyContent = () => {
-    // Primero intentar cargar el contenido estilizado
-    const styledContent = localStorage.getItem('ticketBodyStyledContent_workshop');
-    if (styledContent) {
-      return styledContent;
-    }
-    // Si no hay contenido estilizado, usar el contenido original
-    return localStorage.getItem('ticketBodyContent_workshop') || '';
-  };
+    useEffect(() => {
+        const loadConfigs = async () => {
+            try {
+                setLoading(true);
 
-  const getWorkshopBodyStyle = () => {
-    const savedStyle = localStorage.getItem('ticketBodyStyle_workshop');
-    if (savedStyle) {
-      try {
-        return JSON.parse(savedStyle);
-      } catch (error) {
-        console.error('Error parsing workshop body style:', error);
-        return {};
-      }
-    }
-    return {};
-  };
+                const headerConf = await fetchTicketConfigByType('workshop_header_style');
+                setHeaderStyleConfig(headerConf ? JSON.parse(headerConf.config_value) : defaultConfigurations.workshop_header_style);
 
-  const ticketStyle = getTicketStyle();
-  const bodyContent = getBodyContent();
-  const workshopBodyStyle = getWorkshopBodyStyle();
+                const bodyStyleConf = await fetchTicketConfigByType('workshop_body_style');
+                const bodyStyleData = bodyStyleConf ? JSON.parse(bodyStyleConf.config_value) : {};
+                setBodyStyleConfig(bodyStyleData.styleConfig || defaultConfigurations.workshop_body_style.styleConfig);
 
-  if (!order) return null;
+                if (bodyStyleData.styledContent) {
+                    setBodyContent(bodyStyleData.styledContent);
+                } else {
+                    const bodyContentConf = await fetchTicketConfigByType('workshop_body');
+                    setBodyContent(bodyContentConf ? JSON.parse(bodyContentConf.config_value).content : defaultConfigurations.workshop_body.content);
+                }
+            } catch (error) {
+                console.error("Error loading ticket configurations:", error);
+                setHeaderStyleConfig(defaultConfigurations.workshop_header_style);
+                setBodyStyleConfig(defaultConfigurations.workshop_body_style.styleConfig);
+                setBodyContent(defaultConfigurations.workshop_body.content);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  // Estilos dinámicos basados en configuración
-  const headerStyle = {
-    fontFamily: ticketStyle.headerFontFamily || 'monospace',
-    fontSize: ticketStyle.headerFontSize || '14px',
-    textAlign: ticketStyle.headerAlignment || 'center'
-  };
-
-  const companyNameStyle = {
-    ...headerStyle,
-    fontSize: ticketStyle.companyNameFontSize || '24px',
-    fontWeight: 'bold',
-    letterSpacing: '0.1em',
-    marginBottom: '4px'
-  };
-
-  const contactInfoStyle = {
-    ...headerStyle,
-    fontSize: ticketStyle.contactInfoFontSize || '12px'
-  };
-
-  const bodyStyle = {
-    fontFamily: workshopBodyStyle.bodyFontFamily || 'monospace',
-    fontSize: workshopBodyStyle.bodyFontSize || '12px',
-    lineHeight: workshopBodyStyle.bodyLineHeight || '1.4',
-    textAlign: workshopBodyStyle.bodyAlignment || 'left'
-  };
-
-  // Generar estilos CSS dinámicos para texto seleccionado
-  const generateSelectedTextStyles = () => {
-    if (!workshopBodyStyle.selectedTextFontSize && !workshopBodyStyle.selectedTextFontWeight && 
-        !workshopBodyStyle.selectedTextFontStyle && !workshopBodyStyle.selectedTextDecoration && 
-        !workshopBodyStyle.selectedTextAlignment) {
-      return '';
-    }
-
-    return `
-      .selected-text {
-        ${workshopBodyStyle.selectedTextFontSize ? `font-size: ${workshopBodyStyle.selectedTextFontSize} !important;` : ''}
-        ${workshopBodyStyle.selectedTextFontWeight ? `font-weight: ${workshopBodyStyle.selectedTextFontWeight} !important;` : ''}
-        ${workshopBodyStyle.selectedTextFontStyle ? `font-style: ${workshopBodyStyle.selectedTextFontStyle} !important;` : ''}
-        ${workshopBodyStyle.selectedTextDecoration ? `text-decoration: ${workshopBodyStyle.selectedTextDecoration} !important;` : ''}
-        ${workshopBodyStyle.selectedTextAlignment ? `text-align: ${workshopBodyStyle.selectedTextAlignment} !important;` : ''}
-      }
-    `;
-  };
-
-  return (
-    <div ref={ref} className="bg-white p-2 text-black" style={{ fontFamily: bodyStyle.fontFamily }}>
-      {/* Estilos que se aplicarán solo al imprimir */}
-      <style>{`
-        @media print {
-          @page { size: 80mm auto; margin: 2mm; }
-          html, body { width: 80mm; background: #fff !important; color: #000 !important; }
+        if (order) {
+            loadConfigs();
         }
-        ${generateSelectedTextStyles()}
-      `}</style>
+    }, [order]);
 
-      {/* Encabezado personalizable por sucursal */}
-      {ticketStyle.showHeader !== false && (
-        <header className="mb-2" style={headerStyle}>
-          {/* Nombre de la empresa */}
-          {ticketStyle.showCompanyName !== false && (
-            <div style={companyNameStyle}>
-              {order.branch?.company_name || 'TECNO MUNDO'}
-            </div>
-          )}
-          
-          {/* Información de contacto */}
-          {ticketStyle.showContactInfo !== false && (
-            <div className="mt-2 space-y-1" style={contactInfoStyle}>
-              {ticketStyle.showAddress !== false && order.branch?.address && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.address}</HeaderLine>
-              )}
-              {ticketStyle.showPhone !== false && order.branch?.phone && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.phone}</HeaderLine>
-              )}
-              {ticketStyle.showEmail !== false && order.branch?.email && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.email}</HeaderLine>
-              )}
-            </div>
-          )}
-          
-          {/* Nombre de sucursal con icono */}
-          {ticketStyle.showBranchName !== false && order.branch?.branch_name && (
-            <div className="mt-2 flex items-center justify-center gap-1 font-medium" style={contactInfoStyle}>
-              {ticketStyle.showIcon !== false && getIconComponent(order.branch.icon_name, 12)}
-              <span>{order.branch.branch_name}</span>
-            </div>
-          )}
-        </header>
-      )}
+    if (!order || loading) return <div ref={ref}>Cargando ticket...</div>;
 
-      {ticketStyle.showDivider !== false && (
-        <hr className="border-t border-dashed border-black my-2" />
-      )}
+    const headerStyle = {
+        fontFamily: headerStyleConfig.headerFontFamily || 'monospace',
+        fontSize: headerStyleConfig.headerFontSize || '14px',
+        textAlign: headerStyleConfig.headerAlignment || 'center'
+    };
 
-      {/* Cuerpo del Ticket */}
-      <div style={bodyStyle}>
-        {bodyContent ? (
-          <div 
-            className="whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ 
-              __html: processVariables(bodyContent, order).replace(/\n/g, '<br/>') 
-            }}
-          />
-        ) : (
-          // Contenido por defecto si no hay configuración personalizada
-          <>
-            <h3 className="text-center font-bold text-base mb-2">Orden de Taller</h3>
-            <p className="font-bold text-lg text-center mb-2">N° {String(order.id).padStart(8, '0')}</p>
-            
-            <Section title="Dispositivo" style={bodyStyle}>
-              <p>{order.device_type?.type_name} - {order.device_model}</p>
-            </Section>
-            
-            <Section title="Cliente" style={bodyStyle}>
-              <p>{order.customer.first_name} {order.customer.last_name}</p>
-            </Section>
-          </>
-        )}
-      </div>
-    </div>
-  );
+    const companyNameStyle = {
+        ...headerStyle,
+        fontSize: headerStyleConfig.companyNameFontSize || '24px',
+        fontWeight: 'bold',
+        letterSpacing: '0.1em',
+        marginBottom: '4px'
+    };
+
+    const contactInfoStyle = {
+        ...headerStyle,
+        fontSize: headerStyleConfig.contactInfoFontSize || '12px'
+    };
+
+    const bodyStyle = {
+        fontFamily: bodyStyleConfig.bodyFontFamily || 'monospace',
+        fontSize: bodyStyleConfig.bodyFontSize || '12px',
+        lineHeight: bodyStyleConfig.bodyLineHeight || '1.4',
+        textAlign: bodyStyleConfig.bodyAlignment || 'left'
+    };
+
+    const generateSelectedTextStyles = () => {
+        if (!bodyStyleConfig.selectedTextFontSize && !bodyStyleConfig.selectedTextFontWeight && 
+            !bodyStyleConfig.selectedTextFontStyle && !bodyStyleConfig.selectedTextDecoration && 
+            !bodyStyleConfig.selectedTextAlignment) {
+          return '';
+        }
+    
+        return `
+          .selected-text {
+            ${bodyStyleConfig.selectedTextFontSize ? `font-size: ${bodyStyleConfig.selectedTextFontSize} !important;` : ''}
+            ${bodyStyleConfig.selectedTextFontWeight ? `font-weight: ${bodyStyleConfig.selectedTextFontWeight} !important;` : ''}
+            ${bodyStyleConfig.selectedTextFontStyle ? `font-style: ${bodyStyleConfig.selectedTextFontStyle} !important;` : ''}
+            ${bodyStyleConfig.selectedTextDecoration ? `text-decoration: ${bodyStyleConfig.selectedTextDecoration} !important;` : ''}
+            ${bodyStyleConfig.selectedTextAlignment ? `text-align: ${bodyStyleConfig.selectedTextAlignment} !important;` : ''}
+          }
+        `;
+      };
+
+    return (
+        <div ref={ref} className="bg-white p-2 text-black" style={{ fontFamily: bodyStyle.fontFamily }}>
+            <style>{`
+                @media print {
+                    @page { size: 80mm auto; margin: 2mm; }
+                    html, body { width: 80mm; background: #fff !important; color: #000 !important; }
+                }
+                ${generateSelectedTextStyles()}
+            `}</style>
+
+            {headerStyleConfig.showHeader !== false && (
+                <header className="mb-2" style={headerStyle}>
+                    {headerStyleConfig.showCompanyName !== false && (
+                        <div style={companyNameStyle}>
+                            {order.branch?.company_name || 'TECNO MUNDO'}
+                        </div>
+                    )}
+                    
+                    {headerStyleConfig.showContactInfo !== false && (
+                        <div className="mt-2 space-y-1" style={contactInfoStyle}>
+                            {headerStyleConfig.showAddress !== false && order.branch?.address && (
+                                <HeaderLine style={contactInfoStyle}>{order.branch.address}</HeaderLine>
+                            )}
+                            {headerStyleConfig.showPhone !== false && order.branch?.phone && (
+                                <HeaderLine style={contactInfoStyle}>{order.branch.phone}</HeaderLine>
+                            )}
+                            {headerStyleConfig.showEmail !== false && order.branch?.email && (
+                                <HeaderLine style={contactInfoStyle}>{order.branch.email}</HeaderLine>
+                            )}
+                        </div>
+                    )}
+                    
+                    {headerStyleConfig.showBranchName !== false && order.branch?.branch_name && (
+                        <div className="mt-2 flex items-center justify-center gap-1 font-medium" style={contactInfoStyle}>
+                            {headerStyleConfig.showIcon !== false && getIconComponent(order.branch.icon_name, 12)}
+                            <span>{order.branch.branch_name}</span>
+                        </div>
+                    )}
+                </header>
+            )}
+
+            {headerStyleConfig.showDivider !== false && (
+                <hr className="border-t border-dashed border-black my-2" />
+            )}
+
+            <div style={bodyStyle}>
+                <div 
+                    className="whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{
+                        __html: processVariables(bodyContent, order).replace(/\n/g, '<br/>') 
+                    }}
+                />
+            </div>
+        </div>
+    );
 });
