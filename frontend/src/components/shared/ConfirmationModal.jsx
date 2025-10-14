@@ -14,6 +14,8 @@ export function ConfirmationModal({
   cancelText = "Cancelar",
   variant = "default" // "default" | "delete"
 }) {
+  if (!isOpen) return null;
+
   // Configuración específica para cada variante
   const isDeleteVariant = variant === "delete";
   
@@ -44,14 +46,12 @@ export function ConfirmationModal({
   if (isDeleteVariant) {
     return (
       <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+        <motion.div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
           <motion.div 
             className="relative bg-white max-w-md w-full rounded-xl shadow-2xl p-6"
             initial={{ scale: 0.9, y: -20, opacity: 0 }} 
@@ -88,8 +88,7 @@ export function ConfirmationModal({
               </div>
             </div>
           </motion.div>
-          </motion.div>
-        )}
+        </motion.div>
       </AnimatePresence>
     );
   }
@@ -97,14 +96,12 @@ export function ConfirmationModal({
   // Layout original para variant="default"
   return (
     <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
+      <motion.div
+        className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
         <motion.div
           className="bg-white rounded-xl shadow-2xl w-full max-w-sm"
           initial={{ scale: 0.9, y: -20 }}
@@ -146,8 +143,7 @@ export function ConfirmationModal({
             </motion.button>
           </div>
         </motion.div>
-        </motion.div>
-      )}
+      </motion.div>
     </AnimatePresence>
   );
 }

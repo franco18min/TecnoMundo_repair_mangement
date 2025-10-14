@@ -257,23 +257,31 @@ export const UserConfigSection = () => {
                 </AnimatePresence>
             </motion.div>
 
-            <UserModal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                user={selectedUser}
-                onSave={handleSave}
-            />
+            <AnimatePresence>
+                {isModalOpen && (
+                    <UserModal
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        user={selectedUser}
+                        onSave={handleSave}
+                    />
+                )}
+            </AnimatePresence>
 
-            <ConfirmationModal
-                isOpen={confirm.isOpen}
-                title={confirm.title}
-                message={confirm.message}
-                onConfirm={() => {
-                    confirm.onConfirm();
-                    setConfirm({ isOpen: false });
-                }}
-                onClose={() => setConfirm({ isOpen: false })}
-            />
+            <AnimatePresence>
+                {confirm.isOpen && (
+                    <ConfirmationModal
+                        isOpen={confirm.isOpen}
+                        title={confirm.title}
+                        message={confirm.message}
+                        onConfirm={() => {
+                            confirm.onConfirm();
+                            setConfirm({ isOpen: false });
+                        }}
+                        onClose={() => setConfirm({ isOpen: false })}
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };

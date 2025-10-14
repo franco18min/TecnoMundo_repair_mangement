@@ -114,22 +114,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         e.target.value = '';
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
-    
-    const handleLoadDefaultQuestions = (defaultQuestions) => {
-        // Agregar solo las preguntas que no están ya en el checklist
-        const newQuestions = defaultQuestions.filter(defaultQ => 
-            !checklistItems.find(item => item.check_description === defaultQ.question)
-        ).map(defaultQ => ({
-            check_description: defaultQ.question,
-            client_answer: null,
-            technician_finding: null,
-            technician_notes: ''
-        }));
-        
-        if (newQuestions.length > 0) {
-            setChecklistItems([...checklistItems, ...newQuestions]);
-        }
-    };
 
     const handleTakeOrder = async () => {
         if (!orderId) return;
@@ -267,27 +251,15 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     };
 
     const isPatternValue = formData.password_or_pattern && formData.password_or_pattern.includes('-');
+    if (!isOpen) return null;
 
     return (
         <>
             <OrderPrinter ref={printerRef} />
 
             <AnimatePresence>
-                {isOpen && (
-                    <motion.div 
-                        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <motion.div 
-                            className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" 
-                            initial={{ scale: 0.9, y: -20 }} 
-                            animate={{ scale: 1, y: 0 }} 
-                            exit={{ scale: 0.9, y: 20 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        >
+                <motion.div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
                         <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><motion.button 
                                 onClick={() => onClose(false)} 
                                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
@@ -304,7 +276,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
                                     <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                     <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
-                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} onLoadDefaultQuestions={handleLoadDefaultQuestions} />
+                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
                                 </form>
                                 <ModalFooter
                                     mode={mode}
@@ -323,9 +295,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                 />
                             </>
                         )}
-                        </motion.div>
                     </motion.div>
-                )}
+                </motion.div>
             </AnimatePresence>
 
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />

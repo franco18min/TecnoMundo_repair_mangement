@@ -57,23 +57,22 @@ export function ClientModal({ isOpen, onClose, client, mode, onClientUpdated, on
         }
     };
 
+    if (!isOpen) return null;
+
     return (
         <AnimatePresence>
-            {isOpen && (
+            <motion.div
+                className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
                 <motion.div
-                    className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    className="bg-white rounded-xl shadow-2xl w-full max-w-md"
+                    initial={{ scale: 0.9, y: -20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
                 >
-                    <motion.div
-                        className="bg-white rounded-xl shadow-2xl w-full max-w-md"
-                        initial={{ scale: 0.9, y: -20 }}
-                        animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.9, y: 20 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    >
                     <div className="p-6 border-b flex justify-between items-center">
                         {/* El título ahora es dinámico */}
                         <h2 className="text-2xl font-bold text-gray-800">{mode === 'edit' ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
@@ -104,9 +103,8 @@ export function ClientModal({ isOpen, onClose, client, mode, onClientUpdated, on
                             {isSubmitting ? <Loader size={20} className="animate-spin" /> : (mode === 'edit' ? 'Guardar Cambios' : 'Crear Cliente')}
                         </motion.button>
                     </div>
-                    </motion.div>
                 </motion.div>
-            )}
+            </motion.div>
         </AnimatePresence>
     );
 }
