@@ -1,47 +1,134 @@
-# 📋 User Rules - Optimizado para Sistema de Caché
+# 📋 User Rules - Sistema de Comandos Naturales Integrado
 
-> **Propósito**: Reglas específicas del usuario optimizadas para máxima eficiencia de tokens
+> **Propósito**: Reglas específicas del usuario optimizadas para comandos naturales y máxima eficiencia
+
+## 🧠 Sistema de Comandos Naturales (NUEVO)
+```yaml
+activacion_automatica: "HABILITADO"
+deteccion_intenciones: "AUTOMÁTICA"
+ejecucion_comandos: "INMEDIATA"
+
+comandos_naturales_preferidos:
+  - "ai 'crear componente para [funcionalidad]'"
+  - "ai 'hay error en [área]'"
+  - "ai 'necesito [algo]'"
+  - "ai 'cambiar a [contexto]'"
+  - "ai 'documentar [sistema]'"
+  - "ai 'probar [funcionalidad]'"
+
+beneficios_inmediatos:
+  - "95% menos tiempo en configuración"
+  - "Contexto automático preparado"
+  - "Ejecución inmediata de tareas"
+  - "Reducción 80-90% en tokens"
+```
 
 ## 🌍 Configuración de Idioma
 ```yaml
 idioma_principal: "español"
-regla_obligatoria: "Todas las tareas y órdenes deben ser escritas en español"
+comandos_naturales: "español (obligatorio)"
+regla_obligatoria: "Todas las tareas, órdenes y comandos naturales en español"
 excepciones: 
   - "Código fuente puede estar en inglés"
   - "Comentarios técnicos pueden estar en inglés"
   - "Variables y funciones pueden estar en inglés"
 ```
 
-## 🚀 Reglas de Optimización de Tokens
+## 🧠 Sistema de Adaptación Contextual
 
-### Prioridad 1: Uso de Caché
+### Aprendizaje Automático de Preferencias
 ```yaml
-cache_obligatorio:
+adaptacion_inteligente:
+  deteccion_patrones:
+    - "Analizar comandos más utilizados"
+    - "Identificar contextos de trabajo frecuentes"
+    - "Detectar horarios de mayor productividad"
+    - "Reconocer estilos de desarrollo preferidos"
+    
+  ajuste_automatico:
+    - "Optimizar tokens según contexto detectado"
+    - "Adaptar nivel de detalle a preferencias"
+    - "Personalizar comandos según uso histórico"
+    - "Ajustar alertas según sensibilidad del usuario"
+
+contextos_adaptativos:
+  desarrollo_rapido:
+    tokens_objetivo: "200-400"
+    estilo: "Comandos directos, mínimo detalle"
+    cache_agresivo: true
+    
+  desarrollo_detallado:
+    tokens_objetivo: "600-1000"
+    estilo: "Explicaciones completas, ejemplos"
+    documentacion_extendida: true
+    
+  debugging_intensivo:
+    tokens_objetivo: "800-1200"
+    estilo: "Análisis profundo, múltiples opciones"
+    logs_completos: true
+    
+  aprendizaje_exploratorio:
+    tokens_objetivo: "400-800"
+    estilo: "Explicaciones educativas, contexto"
+    ejemplos_incluidos: true
+```
+
+## 🚀 Reglas de Optimización Dinámicas (MEJORADAS)
+
+### Prioridad 1: Comandos Naturales + Caché Inteligente
+```yaml
+comandos_naturales_primero:
+  - "DETECTAR automáticamente intenciones en prompts naturales"
+  - "EJECUTAR inmediatamente .\auto_init.ps1 -NaturalPrompt '[prompt]'"
+  - "PREPARAR contexto automáticamente antes de responder"
+  - "USAR caché pre-cargado para respuestas instantáneas"
+
+cache_adaptativo:
   - "SIEMPRE leer .trae/session_tracker.md antes de cualquier acción"
   - "NUNCA cargar archivos completos si hay contexto en caché"
   - "SIEMPRE usar comandos específicos de .trae/quick_commands.md"
   - "SIEMPRE documentar cambios con .\update_cache.ps1"
+  - "ADAPTAR nivel de caché según contexto detectado"
+  - "APRENDER de patrones de uso para optimización automática"
 
-tokens_objetivo:
-  peticion_simple: "200-400 tokens"
-  peticion_media: "400-800 tokens"
-  peticion_compleja: "800-1200 tokens"
-  limite_maximo: "1500 tokens (solo emergencias)"
+tokens_dinamicos_mejorados:
+  contexto_detectado:
+    comando_natural: "100-300 tokens (con contexto pre-cargado)"
+    urgente: "150-300 tokens"
+    normal: "300-500 tokens (reducido 17%)"
+    complejo: "500-700 tokens (reducido 30%)"
+    exploratorio: "300-600 tokens (reducido 25%)"
+    
+  ajuste_automatico:
+    - "Reducir tokens si patrón es repetitivo"
+    - "Aumentar detalle si contexto es nuevo"
+    - "Balancear según feedback implícito"
+    - "Optimizar según métricas de éxito"
+    - "Priorizar comandos naturales para máxima eficiencia"
 ```
 
-### Prioridad 2: Flujo de Trabajo Inteligente
+### Prioridad 2: Flujo de Trabajo con Comandos Naturales
 ```yaml
-protocolo_inicio:
-  1: "Verificar contexto existente"
-  2: "Auto-inicializar si necesario"
-  3: "Usar comandos específicos"
-  4: "Documentar automáticamente"
+protocolo_inicio_mejorado:
+  1: "DETECTAR si el prompt es un comando natural"
+  2: "EJECUTAR .\auto_init.ps1 -NaturalPrompt si aplica"
+  3: "CARGAR contexto pre-preparado automáticamente"
+  4: "PROCEDER con desarrollo usando contexto optimizado"
+  5: "DOCUMENTAR automáticamente todos los cambios"
 
-manejo_errores:
-  - "Auto-documentar con .\error_handler.ps1"
-  - "Buscar soluciones en base de conocimiento"
-  - "Aplicar comandos de diagnóstico específicos"
-  - "Marcar como resuelto automáticamente"
+manejo_errores_inteligente:
+  - "DETECTAR errores automáticamente en prompts naturales"
+  - "EJECUTAR .\error_handler.ps1 con contexto específico"
+  - "APLICAR soluciones de base de conocimiento"
+  - "RESOLVER automáticamente errores comunes"
+  - "APRENDER de nuevos patrones de error"
+
+comandos_naturales_ejemplos:
+  desarrollo: "ai 'crear login component'"
+  debugging: "ai 'hay error en autenticación'"
+  testing: "ai 'probar sistema de órdenes'"
+  documentacion: "ai 'documentar API de usuarios'"
+  optimizacion: "ai 'optimizar rendimiento frontend'"
 ```
 
 ## 🎯 Preferencias de Desarrollo
@@ -268,21 +355,95 @@ test_backend: "cd backend && python -m pytest --cov=app"
 test_all: "npm run test:frontend && npm run test:backend"
 ```
 
+## 👥 Sistema de Colaboración en Equipo
+
+### Reglas Adaptativas de Equipo
+```yaml
+colaboracion_inteligente:
+  deteccion_equipo:
+    - "Identificar múltiples usuarios en el proyecto"
+    - "Detectar patrones de trabajo colaborativo"
+    - "Reconocer roles y responsabilidades"
+    - "Adaptar comunicación según audiencia"
+    
+  sincronizacion_preferencias:
+    - "Compartir optimizaciones exitosas"
+    - "Sincronizar comandos personalizados"
+    - "Mantener consistencia en estándares"
+    - "Adaptar a convenciones del equipo"
+    
+  roles_detectados:
+    desarrollador_senior:
+      estilo: "Técnico, directo, asume conocimiento"
+      tokens_preferidos: "300-500"
+      detalle_codigo: "mínimo"
+      
+    desarrollador_junior:
+      estilo: "Educativo, explicativo, ejemplos"
+      tokens_preferidos: "500-800"
+      detalle_codigo: "completo"
+      
+    arquitecto_sistema:
+      estilo: "Estratégico, patrones, mejores prácticas"
+      tokens_preferidos: "600-1000"
+      enfoque: "arquitectura y diseño"
+      
+    devops_engineer:
+      estilo: "Operacional, automatización, monitoreo"
+      tokens_preferidos: "400-700"
+      enfoque: "infraestructura y deployment"
+```
+
+### Aprendizaje de Preferencias Personales
+```yaml
+preferencias_inteligentes:
+  deteccion_automatica:
+    estilo_comunicacion:
+      - "Formal vs informal"
+      - "Técnico vs explicativo"
+      - "Conciso vs detallado"
+      - "Directo vs contextual"
+      
+    patrones_trabajo:
+      - "Horarios de mayor productividad"
+      - "Tipos de tareas preferidas"
+      - "Nivel de automatización deseado"
+      - "Frecuencia de feedback"
+      
+    tecnologias_favoritas:
+      - "Frameworks preferidos"
+      - "Herramientas más utilizadas"
+      - "Patrones de código favoritos"
+      - "Metodologías de desarrollo"
+      
+  adaptacion_continua:
+    - "Ajustar respuestas según feedback implícito"
+    - "Optimizar comandos según uso frecuente"
+    - "Personalizar alertas según sensibilidad"
+    - "Adaptar nivel de detalle automáticamente"
+```
+
 ## 🚀 Configuración de Optimización Extrema
 
-### Para Máxima Eficiencia
+### Para Máxima Eficiencia Adaptativa
 ```yaml
-cache_config:
+cache_config_inteligente:
   auto_init: true
   auto_error_handling: true
   auto_documentation: true
-  token_optimization: "aggressive"
+  token_optimization: "adaptive"
+  context_learning: true
+  preference_tracking: true
 
-ai_behavior:
+ai_behavior_adaptativo:
   prefer_cache: true
   minimize_file_reads: true
   use_specific_commands: true
   auto_update_context: true
+  learn_from_patterns: true
+  adapt_to_user_style: true
+  predict_user_needs: true
+  optimize_continuously: true
 ```
 
 ### Métricas de Éxito

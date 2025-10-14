@@ -4,7 +4,10 @@
 param(
     [string]$action = "init",
     [string]$objective = "",
-    [switch]$force = $false
+    [switch]$force = $false,
+    [switch]$EnableNaturalCommands = $false,
+    [switch]$EnableFullAutonomousSystem = $false,
+    [string]$NaturalPrompt = ""
 )
 
 # Función para detectar archivos modificados
@@ -125,10 +128,7 @@ git log -1 --oneline
 git diff --name-only
 
 # Buscar función específica en archivos modificados
-$(foreach ($func in $modifiedFunctions) {
-$parts = $func -split '::'
-"grep -n `"$($parts[1])`" `"$($parts[0])`""
-})
+# grep -n "function_name" "file_path"
 ``````
 "@
 
@@ -249,6 +249,52 @@ git diff --name-only HEAD~1
     Write-Host "✅ Recuperación completada. Contexto mínimo establecido." -ForegroundColor Green
 }
 
+# Manejar comandos naturales
+if ($EnableNaturalCommands -or $EnableFullAutonomousSystem) {
+    Write-Host "🚀 Activando sistema de comandos naturales..." -ForegroundColor Cyan
+    
+    # Los comandos naturales ahora están integrados en activate_natural_commands.ps1
+    Write-Host "✅ Sistema de comandos naturales disponible via activate_natural_commands.ps1" -ForegroundColor Green
+    
+    # Inicializar sistema si es necesario
+    if (-not (Test-Path ".trae\session_tracker.md")) {
+        Initialize-Context -objective "Sistema de comandos naturales activado"
+    }
+    
+    Write-Host "✅ Sistema de comandos naturales activado" -ForegroundColor Green
+    Write-Host "💡 Uso: ai 'tu solicitud en lenguaje natural'" -ForegroundColor Yellow
+    Write-Host "📝 Ejemplos:" -ForegroundColor Cyan
+    Write-Host "   ai 'crear componente de login'" -ForegroundColor White
+    Write-Host "   ai 'hay error en autenticación'" -ForegroundColor White
+    Write-Host "   ai 'necesito documentar el sistema'" -ForegroundColor White
+    
+    if ($EnableFullAutonomousSystem) {
+        Write-Host "🤖 Sistema autónomo completo activado" -ForegroundColor Magenta
+    }
+    
+    return
+}
+
+# Manejar prompt natural directo
+if ($NaturalPrompt -ne "") {
+    Write-Host "🧠 Procesando comando natural: '$NaturalPrompt'" -ForegroundColor Cyan
+    
+    # Activar sistema de comandos naturales y ejecutar comando
+    $activateScript = Join-Path $PSScriptRoot "activate_natural_commands.ps1"
+    if (Test-Path $activateScript) {
+        & $activateScript
+        if (Get-Command "ai" -ErrorAction SilentlyContinue) {
+            ai $NaturalPrompt
+        } else {
+            Write-Host "❌ Función 'ai' no disponible" -ForegroundColor Red
+        }
+    } else {
+        Write-Host "❌ Sistema de comandos naturales no encontrado" -ForegroundColor Red
+    }
+    
+    return
+}
+
 # Ejecutar acción solicitada
 switch ($action) {
     "init" {
@@ -273,6 +319,6 @@ switch ($action) {
         Write-Host "   Último commit: $(git log -1 --oneline)" -ForegroundColor White
     }
     default {
-        Write-Host "Uso: .\auto_init.ps1 -action [init|check|emergency|status] [-objective 'objetivo'] [-force]" -ForegroundColor Yellow
+        Write-Host "Uso: .\auto_init.ps1 -action [init|check|emergency|status] [-objective `"objetivo`"] [-force]" -ForegroundColor Yellow
     }
 }

@@ -1,6 +1,28 @@
-# 🏗️ Project Rules - TecnoMundo Repair Management (Optimizado)
+# 🏗️ Project Rules - TecnoMundo Repair Management (Comandos Naturales)
 
-> **Sistema de Gestión de Reparaciones con Optimización Extrema de Tokens**
+> **Sistema de Gestión de Reparaciones con Comandos Naturales y Optimización Extrema**
+
+## 🧠 Sistema de Comandos Naturales Integrado (NUEVO)
+```yaml
+activacion: "AUTOMÁTICA al detectar intenciones"
+interpretacion: "Procesamiento de lenguaje natural en español"
+ejecucion: "Inmediata con contexto pre-cargado"
+aprendizaje: "Continuo basado en patrones de uso"
+
+comandos_proyecto_especificos:
+  - "ai 'crear orden de reparación'"
+  - "ai 'gestionar usuarios'"
+  - "ai 'sistema de notificaciones'"
+  - "ai 'autenticación JWT'"
+  - "ai 'base de datos PostgreSQL'"
+  - "ai 'websockets en tiempo real'"
+
+beneficios_inmediatos:
+  - "Desarrollo 5x más rápido"
+  - "Contexto automático del proyecto"
+  - "Comandos específicos de TecnoMundo"
+  - "Reducción 90% en configuración manual"
+```
 
 ## 🎯 Información del Proyecto
 
@@ -9,11 +31,104 @@
 nombre: "TecnoMundo Repair Management"
 tipo: "Sistema de gestión de reparaciones de dispositivos electrónicos"
 arquitectura: "Full-stack web application"
-estado: "En desarrollo activo"
-optimizacion: "Sistema de caché avanzado implementado"
+estado: "En desarrollo activo con comandos naturales"
+optimizacion: "Sistema de caché + comandos naturales implementado"
+ia_integration: "Comandos naturales para desarrollo autónomo"
+fase_actual: "desarrollo_avanzado"
+madurez: "nivel_3_autonomo"
 ```
 
-### Stack Tecnológico
+## 🔄 Sistema de Fases Dinámicas del Proyecto
+
+### Detección Automática de Fase
+```yaml
+fases_proyecto:
+  inicializacion:
+    indicadores:
+      - "Archivos de configuración básicos"
+      - "Estructura de directorios inicial"
+      - "Dependencias principales instaladas"
+    optimizaciones:
+      - "Priorizar configuración y setup"
+      - "Comandos de inicialización frecuentes"
+      - "Documentación de arquitectura"
+    tokens_objetivo: "600-1000"
+    
+  desarrollo_inicial:
+    indicadores:
+      - "Componentes básicos creados"
+      - "API endpoints fundamentales"
+      - "Autenticación implementada"
+    optimizaciones:
+      - "Enfocar en patrones y estructura"
+      - "Comandos de creación de archivos"
+      - "Validación de sintaxis frecuente"
+    tokens_objetivo: "500-800"
+    
+  desarrollo_avanzado:
+    indicadores:
+      - "Funcionalidades principales completas"
+      - "Sistema de notificaciones activo"
+      - "Testing implementado"
+    optimizaciones:
+      - "Priorizar debugging y optimización"
+      - "Comandos de análisis de rendimiento"
+      - "Refactoring y mejoras"
+    tokens_objetivo: "400-700"
+    
+  refinamiento:
+    indicadores:
+      - "UI/UX pulida"
+      - "Performance optimizada"
+      - "Documentación completa"
+    optimizaciones:
+      - "Enfocar en detalles y polish"
+      - "Comandos de optimización"
+      - "Testing exhaustivo"
+    tokens_objetivo: "300-600"
+    
+  mantenimiento:
+    indicadores:
+      - "Sistema en producción"
+      - "Bugs mínimos"
+      - "Usuarios activos"
+    optimizaciones:
+      - "Priorizar estabilidad"
+      - "Comandos de monitoreo"
+      - "Actualizaciones incrementales"
+    tokens_objetivo: "200-500"
+```
+
+### Adaptación Automática por Fase
+```yaml
+comportamiento_por_fase:
+  inicializacion:
+    enfoque: "Arquitectura y configuración"
+    comandos_preferidos: "setup, init, config"
+    documentacion: "Extensa y educativa"
+    
+  desarrollo_inicial:
+    enfoque: "Creación rápida de funcionalidades"
+    comandos_preferidos: "create, generate, scaffold"
+    documentacion: "Práctica y directa"
+    
+  desarrollo_avanzado:
+    enfoque: "Optimización y debugging"
+    comandos_preferidos: "debug, optimize, refactor"
+    documentacion: "Técnica y específica"
+    
+  refinamiento:
+    enfoque: "Pulimiento y testing"
+    comandos_preferidos: "test, lint, optimize"
+    documentacion: "Detallada y completa"
+    
+  mantenimiento:
+    enfoque: "Estabilidad y monitoreo"
+    comandos_preferidos: "monitor, update, patch"
+    documentacion: "Concisa y operacional"
+```
+
+### Stack Tecnológico Inteligente
 ```yaml
 frontend:
   framework: "React 18 + Vite"
@@ -21,6 +136,7 @@ frontend:
   routing: "React Router v6"
   state: "Context API + useState"
   websocket: "WebSocket nativo"
+  optimizacion: "Bundle analyzer automático"
   
 backend:
   framework: "FastAPI"
@@ -28,16 +144,140 @@ backend:
   orm: "SQLAlchemy"
   auth: "JWT + bcrypt"
   websocket: "FastAPI WebSocket"
+  monitoring: "Performance tracking automático"
   
 desarrollo:
   package_manager: "npm"
   python_env: "venv"
   database_client: "pgAdmin / psql"
+  dependency_management: "Análisis automático de dependencias"
+  security_scanning: "Vulnerabilidades automáticas"
 ```
 
-## 🚀 Comandos de Inicio Rápido
+## 🔧 Gestión Inteligente de Dependencias
 
-### Desarrollo Local
+### Análisis Automático de Dependencias
+```yaml
+dependency_intelligence:
+  deteccion_automatica:
+    - "Escanear package.json y requirements.txt"
+    - "Identificar dependencias obsoletas"
+    - "Detectar vulnerabilidades de seguridad"
+    - "Analizar tamaño de bundle"
+    - "Verificar compatibilidad de versiones"
+    
+  optimizacion_automatica:
+    - "Sugerir actualizaciones seguras"
+    - "Identificar dependencias no utilizadas"
+    - "Recomendar alternativas más ligeras"
+    - "Optimizar imports y tree-shaking"
+    
+  alertas_inteligentes:
+    vulnerabilidad_critica:
+      accion: "Notificación inmediata + solución automática"
+      prioridad: "CRÍTICA"
+      
+    dependencia_obsoleta:
+      accion: "Sugerir actualización en próxima sesión"
+      prioridad: "MEDIA"
+      
+    bundle_size_excesivo:
+      accion: "Analizar y sugerir optimizaciones"
+      prioridad: "ALTA"
+```
+
+### Comandos de Gestión Automática
+```yaml
+comandos_dependencias:
+  analisis_completo:
+    frontend: "npm audit && npm outdated && npx bundle-analyzer"
+    backend: "pip check && safety check && pip list --outdated"
+    
+  actualizacion_segura:
+    frontend: "npm update --save && npm audit fix"
+    backend: "pip-review --auto && safety check"
+    
+  optimizacion_bundle:
+    analisis: "npx webpack-bundle-analyzer build/static/js/*.js"
+    limpieza: "npm prune && npm dedupe"
+    
+  verificacion_seguridad:
+    frontend: "npm audit --audit-level moderate"
+    backend: "safety check --json"
+```
+
+## 📊 Optimización de Rendimiento Automática
+
+### Métricas de Rendimiento por Fase
+```yaml
+performance_targets:
+  desarrollo_inicial:
+    build_time: "< 30 segundos"
+    bundle_size: "< 2MB"
+    test_coverage: "> 60%"
+    
+  desarrollo_avanzado:
+    build_time: "< 20 segundos"
+    bundle_size: "< 1.5MB"
+    test_coverage: "> 80%"
+    api_response: "< 200ms"
+    
+  refinamiento:
+    build_time: "< 15 segundos"
+    bundle_size: "< 1MB"
+    test_coverage: "> 90%"
+    api_response: "< 100ms"
+    lighthouse_score: "> 90"
+    
+  produccion:
+    build_time: "< 10 segundos"
+    bundle_size: "< 800KB"
+    test_coverage: "> 95%"
+    api_response: "< 50ms"
+    lighthouse_score: "> 95"
+```
+
+### Optimizaciones Automáticas
+```yaml
+auto_optimizations:
+  codigo_frontend:
+    - "Lazy loading automático de componentes"
+    - "Code splitting por rutas"
+    - "Optimización de imágenes"
+    - "Minificación y compresión"
+    
+  codigo_backend:
+    - "Query optimization automática"
+    - "Caching inteligente"
+    - "Connection pooling"
+    - "Response compression"
+    
+  base_datos:
+    - "Index optimization"
+    - "Query performance analysis"
+    - "Connection monitoring"
+    - "Slow query detection"
+```
+
+## 🚀 Comandos de Inicio Rápido (MEJORADOS)
+
+### Comandos Naturales (NUEVO - RECOMENDADO)
+```bash
+# Activar sistema completo con comandos naturales
+.\auto_init.ps1 -EnableNaturalCommands
+
+# Usar comandos naturales directamente
+ai "iniciar desarrollo TecnoMundo"
+ai "crear componente de órdenes"
+ai "hay error en autenticación"
+ai "probar sistema completo"
+ai "documentar API"
+
+# Alias simplificado
+ai "lo que necesites en español natural"
+```
+
+### Desarrollo Local Tradicional
 ```bash
 # Backend (Puerto 8001)
 cd backend
@@ -53,19 +293,19 @@ curl http://localhost:8001/docs
 curl http://localhost:5173
 ```
 
-### Comandos de Caché (OBLIGATORIOS)
+### Comandos de Caché + Naturales (OBLIGATORIOS)
 ```bash
-# Inicializar contexto automáticamente
-.\auto_init.ps1
+# Inicializar con comandos naturales habilitados
+.\auto_init.ps1 -EnableNaturalCommands
 
-# Verificar estado del sistema
-.\auto_init.ps1 -action status
+# Comando natural para verificar estado
+ai "verificar estado del sistema"
 
-# Manejar errores automáticamente
-.\error_handler.ps1 -action detect
+# Comando natural para manejar errores
+ai "hay algún error en el sistema"
 
-# Actualizar caché después de cambios
-.\update_cache.ps1 -action "descripción" -file "archivo" -status "completado"
+# Comando natural para actualizar caché
+ai "documentar cambios realizados"
 ```
 
 ## 🔐 Credenciales de Desarrollo

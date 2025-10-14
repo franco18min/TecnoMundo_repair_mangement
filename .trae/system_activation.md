@@ -26,7 +26,7 @@ project_rules:
   - "project_rules_optimized.md" ✅ (Reglas de proyecto optimizadas)
 
 documentation:
-  - "example_usage.md" ✅ (Ejemplos de uso)
+  - "agent_configuration_guide.md" ✅ (Guía de configuración con ejemplos)
   - "system_activation.md" ✅ (Este archivo)
 ```
 
