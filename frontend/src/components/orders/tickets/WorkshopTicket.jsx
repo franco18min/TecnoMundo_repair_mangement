@@ -305,6 +305,12 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
           </>
         )}
       </div>
+
+      {/* Sección de firma del cliente - Solo para registro interno */}
+      <footer className="text-center mt-4" style={bodyStyle}>
+        <div className="h-16 border-b border-black w-3/4 mx-auto"></div>
+        <p className="text-xs mt-1 text-center w-3/4 mx-auto">Firma del Cliente</p>
+      </footer>
     </div>
   );
 });

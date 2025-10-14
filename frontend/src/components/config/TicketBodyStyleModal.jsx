@@ -75,13 +75,28 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
         }
     }, [isOpen, ticketType, branch]);
 
-    // Actualizar contenido cuando se abra el modal o cambie el tipo
+    // El contenido se carga únicamente a través de loadConfiguration
+
+    // Forzar re-render de la vista previa cuando styledContent cambie
     useEffect(() => {
-        if (isOpen && ticketType) {
-            const content = getCurrentBodyContent();
-            setStyledContent(content);
+        if (styledContent && previewRef.current) {
+            // Forzar actualización del DOM
+            const previewElement = previewRef.current;
+            previewElement.innerHTML = styledContent;
         }
-    }, [isOpen, ticketType]);
+    }, [styledContent]);
+
+    // Guardar automáticamente el contenido estilizado cuando cambie (solo si contiene estilos aplicados)
+    useEffect(() => {
+        if (styledContent && isOpen && styledContent.includes('<span style=')) {
+            // Solo guardar si el contenido tiene estilos aplicados
+            if (!branch) {
+                const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
+                console.log('Guardando contenido estilizado automáticamente:', styledContent);
+                localStorage.setItem(styledContentKey, styledContent);
+            }
+        }
+    }, [styledContent, isOpen, branch, ticketType]);
 
     const loadConfiguration = async () => {
         try {
@@ -96,10 +111,13 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                     setConfig(parsedConfig);
                 }
                 
+                // Priorizar contenido estilizado guardado
                 const savedStyledContent = localStorage.getItem(styledContentKey);
-                if (savedStyledContent) {
+                if (savedStyledContent && savedStyledContent.trim() !== '') {
+                    console.log('Cargando contenido estilizado desde localStorage:', savedStyledContent);
                     setStyledContent(savedStyledContent);
                 } else {
+                    console.log('No hay contenido estilizado guardado, usando contenido original');
                     const content = getCurrentBodyContent();
                     setStyledContent(content);
                 }
@@ -117,9 +135,11 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 // Si el dato guardado tiene la estructura nueva (con config y styledContent)
                 if (parsedData && typeof parsedData === 'object' && parsedData.config) {
                     setConfig(parsedData.config);
-                    if (parsedData.styledContent) {
+                    if (parsedData.styledContent && parsedData.styledContent.trim() !== '') {
+                        console.log('Cargando contenido estilizado desde API:', parsedData.styledContent);
                         setStyledContent(parsedData.styledContent);
                     } else {
+                        console.log('No hay contenido estilizado en API, usando contenido original');
                         // Fallback al contenido original si no hay contenido estilizado guardado
                         const content = getCurrentBodyContent();
                         setStyledContent(content);
@@ -127,6 +147,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 } else {
                     // Compatibilidad con formato anterior (solo configuración)
                     setConfig(parsedData);
+                    console.log('Formato anterior detectado, usando contenido original');
                     const content = getCurrentBodyContent();
                     setStyledContent(content);
                 }
@@ -159,9 +180,14 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             // Preparar el nombre del campo según el tipo de ticket
             const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
             
-            // Preparar datos para enviar a la API
+            // Preparar datos para enviar a la API con la estructura correcta
+            const dataToSave = {
+                config: config,
+                styledContent: styledContent || ''
+            };
+            
             const updateData = {
-                [fieldName]: { config, styledContent }
+                [fieldName]: JSON.stringify(dataToSave)
             };
 
             // Guardar configuración en la API
@@ -187,7 +213,18 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 const range = selection.getRangeAt(0);
                 setSelectedText(selectedText);
                 setSelectionRange(range.cloneRange());
+                
+                // Mostrar feedback visual de la selección
+                console.log('Texto seleccionado:', selectedText);
+            } else {
+                // Limpiar selección si no hay texto válido
+                setSelectedText('');
+                setSelectionRange(null);
             }
+        } else {
+            // Limpiar selección si no está dentro del área de vista previa
+            setSelectedText('');
+            setSelectionRange(null);
         }
     };
 
@@ -202,12 +239,19 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 
                 // Reemplazar solo la primera ocurrencia del texto seleccionado
                 const newContent = styledContent.replace(new RegExp(escapedText), styledSpan);
+                
+                // Actualizar el contenido estilizado y forzar re-render
                 setStyledContent(newContent);
                 
                 // Limpiar la selección
                 setSelectedText('');
                 setSelectionRange(null);
-                window.getSelection().removeAllRanges();
+                
+                // Usar setTimeout para asegurar que el DOM se actualice antes de limpiar la selección
+                setTimeout(() => {
+                    window.getSelection().removeAllRanges();
+                }, 100);
+                
             } catch (error) {
                 console.error('Error applying styles:', error);
                 // Limpiar la selección en caso de error
@@ -351,14 +395,22 @@ CONTROL DE CALIDAD:
         }
     };
 
-    // Componente de vista previa
-    const TicketPreview = () => {
+    // Componente de vista previa - Memoizado para optimizar re-renders
+    const TicketPreview = React.memo(() => {
         const bodyStyle = {
             fontFamily: config.bodyFontFamily,
             fontSize: config.bodyFontSize,
             lineHeight: config.bodyLineHeight,
             textAlign: config.bodyTextAlign
         };
+
+        // Forzar re-render cuando styledContent cambia
+        React.useEffect(() => {
+            if (previewRef.current) {
+                // Limpiar cualquier selección activa después de aplicar estilos
+                window.getSelection().removeAllRanges();
+            }
+        }, [styledContent]);
 
         return (
             <div className="bg-white border-2 border-dashed border-gray-300 p-6 rounded-lg">
@@ -368,11 +420,11 @@ CONTROL DE CALIDAD:
                     style={bodyStyle}
                     onMouseUp={handleTextSelection}
                     className="whitespace-pre-line select-text cursor-text"
-                    dangerouslySetInnerHTML={{ __html: styledContent }}
+                    dangerouslySetInnerHTML={{ __html: styledContent || '' }}
                 />
             </div>
         );
-    };
+    });
 
     const getModalTitle = () => {
         return ticketType === 'client' 
