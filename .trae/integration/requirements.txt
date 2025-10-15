@@ -1,0 +1,42 @@
+# 🔗 NEXUS Integration Dependencies
+# Dependencias para la integración completa con TecnoMundo Repair Management
+# Trae 2.0 - Sistema Autónomo
+
+# Dependencias principales de integración
+aiohttp>=3.8.0
+websockets>=11.0.0
+asyncio-mqtt>=0.13.0
+pyyaml>=6.0.0
+psutil>=5.9.0
+
+# Dependencias de base de datos
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Dependencias de machine learning
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+joblib>=1.3.0
+
+# Dependencias de optimización
+cachetools>=5.3.0
+lz4>=4.3.0
+msgpack>=1.0.0
+
+# Dependencias de monitoreo
+prometheus-client>=0.17.0
+structlog>=23.1.0
+
+# Dependencias de desarrollo
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.7.0
+flake8>=6.0.0
+
+# Dependencias opcionales para funcionalidades avanzadas
+redis>=4.6.0  # Para cache distribuido
+celery>=5.3.0  # Para tareas asíncronas
+fastapi>=0.103.0  # Para API endpoints
+uvicorn>=0.23.0  # Para servidor ASGI

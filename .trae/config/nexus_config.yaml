@@ -1,0 +1,424 @@
+# 🤖 NEXUS - Configuración Principal del Sistema
+# Configuración centralizada para el asistente de desarrollo autónomo
+
+# ==========================================
+# INFORMACIÓN GENERAL DEL SISTEMA
+# ==========================================
+system:
+  name: "NEXUS"
+  version: "1.0.0"
+  description: "Asistente de Desarrollo Autónomo con Comandos Naturales"
+  language: "español"
+  timezone: "UTC"
+  debug_mode: false
+
+# ==========================================
+# CONFIGURACIÓN DE COMANDOS NATURALES
+# ==========================================
+natural_commands:
+  enabled: true
+  auto_detection: true
+  immediate_execution: true
+  language: "español"
+  
+  # Patrones de activación automática
+  activation_patterns:
+    - "crear|hacer|generar"
+    - "hay|tengo.*error|problema"
+    - "necesito|quiero"
+    - "probar|testear"
+    - "documentar"
+    - "optimizar|mejorar"
+    - "cambiar a|usar"
+    - "instalar|configurar"
+  
+  # Configuración de respuesta
+  response_config:
+    max_tokens: 800
+    adaptive_tokens: true
+    context_aware: true
+    immediate_feedback: true
+
+# ==========================================
+# OPTIMIZACIÓN DE TOKENS
+# ==========================================
+token_optimization:
+  enabled: true
+  adaptive_mode: true
+  
+  # Límites por contexto
+  limits:
+    comando_natural: 300
+    urgente: 300
+    normal: 500
+    complejo: 700
+    exploratorio: 600
+  
+  # Estrategias de optimización
+  strategies:
+    cache_first: true
+    context_compression: true
+    selective_loading: true
+    pattern_recognition: true
+    
+  # Reducción automática
+  auto_reduction:
+    enabled: true
+    threshold: 0.8  # 80% del límite
+    reduction_factor: 0.15  # 15% de reducción
+
+# ==========================================
+# GESTIÓN DE CONTEXTO
+# ==========================================
+context_management:
+  enabled: true
+  max_context_size: 1000
+  compression_enabled: true
+  selective_loading: true
+  
+  # Cache de contexto
+  cache:
+    enabled: true
+    max_size: 2000
+    ttl: 3600  # 1 hora
+    cleanup_interval: 1800  # 30 minutos
+    
+  # Persistencia
+  persistence:
+    enabled: true
+    auto_save: true
+    save_interval: 300  # 5 minutos
+    backup_enabled: true
+    backup_interval: 3600  # 1 hora
+
+# ==========================================
+# SISTEMA DE WORKFLOWS
+# ==========================================
+workflows:
+  enabled: true
+  auto_execution: true
+  parallel_execution: true
+  max_concurrent: 5
+  
+  # Tipos de workflow
+  types:
+    development:
+      enabled: true
+      auto_start: true
+      timeout: 1800  # 30 minutos
+      
+    debugging:
+      enabled: true
+      auto_start: true
+      timeout: 900   # 15 minutos
+      
+    testing:
+      enabled: true
+      auto_start: false
+      timeout: 600   # 10 minutos
+      
+    documentation:
+      enabled: true
+      auto_start: false
+      timeout: 300   # 5 minutos
+
+# ==========================================
+# OPTIMIZACIÓN DE RENDIMIENTO
+# ==========================================
+performance:
+  monitoring:
+    enabled: true
+    interval: 60  # segundos
+    metrics_retention: 168  # horas (1 semana)
+    
+  # Umbrales de alerta
+  thresholds:
+    cpu_warning: 70
+    cpu_critical: 85
+    memory_warning: 80
+    memory_critical: 90
+    response_time_warning: 30
+    response_time_critical: 60
+    
+  # Optimización automática
+  auto_optimization:
+    enabled: true
+    cpu_threshold: 80
+    memory_threshold: 85
+    response_threshold: 45
+
+# ==========================================
+# MACHINE LEARNING Y ADAPTACIÓN
+# ==========================================
+machine_learning:
+  enabled: true
+  
+  # Modelos disponibles
+  models:
+    command_prediction:
+      enabled: true
+      retrain_interval: 86400  # 24 horas
+      confidence_threshold: 0.7
+      
+    error_prediction:
+      enabled: true
+      retrain_interval: 43200  # 12 horas
+      confidence_threshold: 0.8
+      
+    performance_prediction:
+      enabled: true
+      retrain_interval: 21600  # 6 horas
+      confidence_threshold: 0.75
+      
+    user_pattern_detection:
+      enabled: true
+      retrain_interval: 172800  # 48 horas
+      confidence_threshold: 0.6
+  
+  # Aprendizaje adaptativo
+  adaptive_learning:
+    enabled: true
+    learning_rate: 0.1
+    adaptation_threshold: 0.05
+    feedback_weight: 0.3
+
+# ==========================================
+# MEJORA CONTINUA
+# ==========================================
+continuous_improvement:
+  enabled: true
+  
+  # Intervalos de análisis
+  intervals:
+    analysis: 3600      # 1 hora
+    optimization: 21600 # 6 horas
+    learning: 14400     # 4 horas
+    reporting: 86400    # 24 horas
+  
+  # Criterios de optimización automática
+  auto_optimization_criteria:
+    min_confidence: 0.8
+    max_effort_score: 0.6
+    min_impact_score: 0.6
+    categories: ["performance", "efficiency"]
+  
+  # Métricas objetivo
+  target_metrics:
+    token_reduction: 0.7      # 70% reducción
+    speed_improvement: 0.5    # 50% mejora
+    error_auto_resolution: 0.8 # 80% auto-resolución
+    context_retention: 1.0    # 100% retención
+
+# ==========================================
+# INTEGRACIÓN CON PROYECTO
+# ==========================================
+project_integration:
+  enabled: true
+  
+  # Rutas del proyecto
+  paths:
+    root: "."
+    frontend: "./frontend"
+    backend: "./backend"
+    database: "./database"
+    docs: "./docs"
+    tests: "./tests"
+  
+  # Servicios del proyecto
+  services:
+    frontend:
+      enabled: true
+      port: 5173
+      command: "npm run dev"
+      health_check: "http://localhost:5173"
+      
+    backend:
+      enabled: true
+      port: 8001
+      command: "uvicorn main:app --reload --port 8001"
+      health_check: "http://localhost:8001/health"
+      
+    database:
+      enabled: true
+      port: 5432
+      type: "postgresql"
+      health_check: "pg_isready -p 5432"
+  
+  # Configuración de desarrollo
+  development:
+    hot_reload: true
+    auto_restart: true
+    file_watching: true
+    error_monitoring: true
+
+# ==========================================
+# SEGURIDAD
+# ==========================================
+security:
+  enabled: true
+  
+  # Comandos permitidos
+  allowed_commands:
+    - "npm"
+    - "python"
+    - "pip"
+    - "uvicorn"
+    - "pytest"
+    - "git"
+    - "docker"
+    - "psql"
+  
+  # Rutas restringidas
+  restricted_paths:
+    - "/etc"
+    - "/sys"
+    - "/proc"
+    - "C:\\Windows\\System32"
+    - "C:\\Program Files"
+  
+  # Validación de entrada
+  input_validation:
+    enabled: true
+    max_command_length: 1000
+    sanitize_input: true
+    block_dangerous_patterns: true
+
+# ==========================================
+# LOGGING Y MONITOREO
+# ==========================================
+logging:
+  enabled: true
+  level: "INFO"
+  
+  # Archivos de log
+  files:
+    main: ".trae/logs/nexus.log"
+    errors: ".trae/logs/errors.log"
+    performance: ".trae/logs/performance.log"
+    user_interactions: ".trae/logs/interactions.log"
+  
+  # Rotación de logs
+  rotation:
+    enabled: true
+    max_size: "10MB"
+    backup_count: 5
+    
+  # Métricas
+  metrics:
+    enabled: true
+    export_interval: 300  # 5 minutos
+    retention_days: 30
+
+# ==========================================
+# NOTIFICACIONES
+# ==========================================
+notifications:
+  enabled: true
+  
+  # Canales de notificación
+  channels:
+    console: true
+    file: true
+    webhook: false
+    
+  # Tipos de notificación
+  types:
+    system_start: true
+    optimization_complete: true
+    error_detected: true
+    performance_alert: true
+    improvement_applied: true
+
+# ==========================================
+# BACKUP Y RECUPERACIÓN
+# ==========================================
+backup:
+  enabled: true
+  
+  # Configuración de backup
+  config:
+    interval: 3600  # 1 hora
+    retention_days: 7
+    compression: true
+    
+  # Elementos a respaldar
+  include:
+    - ".trae/cache"
+    - ".trae/config"
+    - ".trae/metrics"
+    - ".trae/logs"
+    
+  # Ubicación de backups
+  location: ".trae/backups"
+
+# ==========================================
+# CARACTERÍSTICAS EXPERIMENTALES
+# ==========================================
+experimental:
+  enabled: false
+  
+  # Funcionalidades en desarrollo
+  features:
+    advanced_ml_models: false
+    distributed_processing: false
+    real_time_collaboration: false
+    voice_commands: false
+    
+  # Configuración experimental
+  config:
+    risk_tolerance: "low"
+    feedback_collection: true
+    telemetry: false
+
+# ==========================================
+# CONFIGURACIÓN DE DESARROLLO
+# ==========================================
+development:
+  enabled: true
+  
+  # Herramientas de desarrollo
+  tools:
+    hot_reload: true
+    auto_format: true
+    lint_on_save: true
+    test_on_change: false
+    
+  # Configuración de debugging
+  debugging:
+    enabled: true
+    verbose_logging: false
+    performance_profiling: true
+    memory_tracking: true
+    
+  # Configuración de testing
+  testing:
+    auto_run: false
+    coverage_threshold: 80
+    parallel_execution: true
+    timeout: 300  # 5 minutos
+
+# ==========================================
+# CONFIGURACIÓN DE PRODUCCIÓN
+# ==========================================
+production:
+  enabled: false
+  
+  # Optimizaciones de producción
+  optimizations:
+    aggressive_caching: true
+    compression: true
+    minification: true
+    cdn_usage: false
+    
+  # Monitoreo de producción
+  monitoring:
+    health_checks: true
+    performance_metrics: true
+    error_tracking: true
+    uptime_monitoring: true
+    
+  # Configuración de escalabilidad
+  scaling:
+    auto_scaling: false
+    max_instances: 1
+    load_balancing: false

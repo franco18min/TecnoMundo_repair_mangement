@@ -1,0 +1,251 @@
+{
+  "system_info": {
+    "name": "NEXUS Activation System",
+    "version": "2.0.0",
+    "project": "TecnoMundo Repair Management",
+    "created": "2024-12-19",
+    "description": "Sistema de activación autónoma mediante comandos naturales en español"
+  },
+  
+  "activation_settings": {
+    "auto_detect": true,
+    "confidence_threshold": 0.6,
+    "max_response_tokens": 800,
+    "use_cache_by_default": true,
+    "auto_documentation": true,
+    "spanish_only": true
+  },
+  
+  "command_categories": {
+    "development": {
+      "priority": "high",
+      "auto_execute": true,
+      "require_confirmation": false,
+      "default_tokens": 400,
+      "cache_duration": "1h"
+    },
+    "debugging": {
+      "priority": "critical",
+      "auto_execute": false,
+      "require_confirmation": true,
+      "default_tokens": 600,
+      "cache_duration": "30m"
+    },
+    "optimization": {
+      "priority": "medium",
+      "auto_execute": true,
+      "require_confirmation": false,
+      "default_tokens": 500,
+      "cache_duration": "2h"
+    },
+    "testing": {
+      "priority": "high",
+      "auto_execute": true,
+      "require_confirmation": false,
+      "default_tokens": 300,
+      "cache_duration": "1h"
+    },
+    "documentation": {
+      "priority": "low",
+      "auto_execute": true,
+      "require_confirmation": false,
+      "default_tokens": 350,
+      "cache_duration": "4h"
+    }
+  },
+  
+  "natural_patterns": {
+    "trigger_words": [
+      "crear", "hacer", "generar", "implementar", "desarrollar", "construir",
+      "hay", "tengo", "error", "problema", "no funciona", "falla",
+      "optimizar", "mejorar", "acelerar", "reducir", "refactorizar",
+      "probar", "testear", "verificar", "validar", "comprobar",
+      "documentar", "explicar", "describir", "detallar", "generar"
+    ],
+    
+    "context_indicators": [
+      "componente", "endpoint", "api", "modelo", "esquema", "servicio",
+      "login", "dashboard", "autenticación", "usuario", "orden",
+      "frontend", "backend", "base de datos", "jwt", "react", "fastapi"
+    ],
+    
+    "urgency_indicators": {
+      "high": ["urgente", "rápido", "inmediato", "ya", "ahora", "crítico"],
+      "medium": ["normal", "cuando puedas", "pronto"],
+      "low": ["después", "no urgente", "cuando tengas tiempo"]
+    }
+  },
+  
+  "execution_strategies": {
+    "rapid_development": {
+      "description": "Para comandos de desarrollo rápido",
+      "max_tokens": 300,
+      "use_cache": true,
+      "auto_execute": true,
+      "tools": ["edit_file_fast_apply", "write_to_file"]
+    },
+    
+    "detailed_analysis": {
+      "description": "Para debugging y análisis profundo",
+      "max_tokens": 800,
+      "use_cache": false,
+      "auto_execute": false,
+      "tools": ["search_codebase", "view_files", "search_by_regex"]
+    },
+    
+    "optimization_focused": {
+      "description": "Para optimización y mejoras",
+      "max_tokens": 500,
+      "use_cache": true,
+      "auto_execute": true,
+      "tools": ["search_codebase", "run_command", "view_files"]
+    },
+    
+    "testing_automation": {
+      "description": "Para testing y validación",
+      "max_tokens": 250,
+      "use_cache": true,
+      "auto_execute": true,
+      "tools": ["run_command", "write_to_file"]
+    }
+  },
+  
+  "context_management": {
+    "cache_locations": {
+      "project_context": ".trae/cache/project_context.json",
+      "user_preferences": ".trae/cache/user_preferences.json",
+      "command_history": ".trae/cache/command_history.json",
+      "error_patterns": ".trae/cache/error_patterns.json"
+    },
+    
+    "auto_load_contexts": [
+      "project_structure",
+      "recent_changes",
+      "user_preferences",
+      "common_patterns"
+    ],
+    
+    "context_refresh_triggers": [
+      "file_changes",
+      "new_errors",
+      "configuration_updates",
+      "dependency_changes"
+    ]
+  },
+  
+  "integration_points": {
+    "frontend": {
+      "framework": "React + Vite",
+      "port": 5173,
+      "build_command": "npm run build",
+      "dev_command": "npm run dev",
+      "test_command": "npm test"
+    },
+    
+    "backend": {
+      "framework": "FastAPI",
+      "port": 8001,
+      "start_command": "uvicorn main:app --reload --port 8001",
+      "test_command": "python -m pytest",
+      "requirements": "requirements.txt"
+    },
+    
+    "database": {
+      "type": "PostgreSQL",
+      "port": 5432,
+      "migrations": "alembic upgrade head",
+      "backup_command": "pg_dump tecnomundo_db"
+    }
+  },
+  
+  "performance_metrics": {
+    "target_response_time": "< 30 seconds",
+    "token_efficiency": "> 70% reduction",
+    "cache_hit_rate": "> 80%",
+    "auto_resolution_rate": "> 75%",
+    "user_satisfaction": "> 90%"
+  },
+  
+  "security_settings": {
+    "allowed_commands": [
+      "npm", "python", "uvicorn", "pytest", "alembic",
+      "git", "code", "dir", "ls", "cat", "grep"
+    ],
+    
+    "restricted_paths": [
+      "C:\\Windows\\System32",
+      "C:\\Program Files",
+      "C:\\Users\\*\\AppData"
+    ],
+    
+    "safe_operations": [
+      "read_files", "write_project_files", "run_dev_commands",
+      "install_dependencies", "run_tests", "create_documentation"
+    ]
+  },
+  
+  "learning_system": {
+    "track_patterns": true,
+    "adapt_responses": true,
+    "learn_preferences": true,
+    "improve_accuracy": true,
+    
+    "feedback_sources": [
+      "command_success_rate",
+      "user_corrections",
+      "execution_time",
+      "token_usage",
+      "error_frequency"
+    ],
+    
+    "adaptation_triggers": [
+      "repeated_commands",
+      "user_corrections",
+      "performance_issues",
+      "new_patterns"
+    ]
+  },
+  
+  "notification_system": {
+    "success_messages": {
+      "es": {
+        "command_executed": "✅ Comando ejecutado exitosamente",
+        "context_loaded": "📋 Contexto cargado automáticamente",
+        "optimization_applied": "⚡ Optimización aplicada",
+        "cache_updated": "💾 Caché actualizado"
+      }
+    },
+    
+    "error_messages": {
+      "es": {
+        "command_not_recognized": "❌ Comando no reconocido",
+        "insufficient_context": "⚠️ Contexto insuficiente",
+        "execution_failed": "🚫 Ejecución fallida",
+        "permission_denied": "🔒 Permisos insuficientes"
+      }
+    }
+  },
+  
+  "advanced_features": {
+    "ml_integration": {
+      "enabled": false,
+      "model_path": ".trae/ml/command_classifier.pkl",
+      "training_data": ".trae/ml/training_data.json",
+      "accuracy_threshold": 0.85
+    },
+    
+    "mcp_integration": {
+      "memory_management": true,
+      "context_planning": true,
+      "predictive_loading": true,
+      "adaptive_caching": true
+    },
+    
+    "auto_improvement": {
+      "collect_metrics": true,
+      "analyze_patterns": true,
+      "suggest_optimizations": true,
+      "update_configurations": true
+    }
+  }
+}
