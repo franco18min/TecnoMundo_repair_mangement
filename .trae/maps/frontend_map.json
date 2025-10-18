@@ -1,0 +1,187 @@
+{
+  "frontend_structure": {
+    "last_updated": "2025-01-18T13:09:00Z",
+    "version": "1.0",
+    "auto_update": true,
+    
+    "framework": {
+      "name": "React",
+      "version": "18",
+      "build_tool": "Vite",
+      "styling": "TailwindCSS",
+      "routing": "React Router"
+    },
+    
+    "api_layer": {
+      "path": "./frontend/src/api/",
+      "client": "apiClient.js",
+      "services": {
+        "auth": "authApi.js",
+        "users": "userApi.js", 
+        "customers": "customerApi.js",
+        "repair_orders": "repairOrdersApi.js",
+        "branches": "branchApi.js",
+        "device_types": "deviceTypeApi.js",
+        "notifications": "notificationsApi.js",
+        "roles": "rolesApi.js",
+        "order": "orderApi.js",
+        "repair_order_photos": "repairOrderPhotosApi.js"
+      }
+    },
+    
+    "components": {
+      "path": "./frontend/src/components/",
+      "structure": {
+        "shared": {
+          "path": "shared/",
+          "purpose": "Componentes reutilizables globales",
+          "common_components": ["Button", "Modal", "Form", "Table"]
+        },
+        "common": {
+          "path": "common/",
+          "purpose": "Componentes comunes del sistema"
+        },
+        "dashboard": {
+          "path": "dashboard/",
+          "purpose": "Componentes del panel principal"
+        },
+        "orders": {
+          "path": "orders/",
+          "purpose": "Gestión de órdenes de reparación"
+        },
+        "clients": {
+          "path": "clients/",
+          "purpose": "Gestión de clientes"
+        },
+        "client": {
+          "path": "client/",
+          "purpose": "Vista individual de cliente"
+        },
+        "clientPortal": {
+          "path": "clientPortal/",
+          "purpose": "Portal público para clientes"
+        },
+        "config": {
+          "path": "config/",
+          "purpose": "Componentes de configuración"
+        }
+      }
+    },
+    
+    "pages": {
+      "path": "./frontend/src/pages/",
+      "routes": {
+        "LoginPage": {
+          "file": "LoginPage.jsx",
+          "route": "/login",
+          "purpose": "Autenticación de usuarios"
+        },
+        "DashboardPage": {
+          "file": "DashboardPage.jsx", 
+          "route": "/dashboard",
+          "purpose": "Panel principal del sistema"
+        },
+        "ClientOrderStatusPage": {
+          "file": "ClientOrderStatusPage.jsx",
+          "route": "/order-status/:ticketNumber",
+          "purpose": "Consulta pública de estado de orden"
+        }
+      }
+    },
+    
+    "context": {
+      "path": "./frontend/src/context/",
+      "providers": {
+        "AuthContext": {
+          "file": "AuthContext.jsx",
+          "purpose": "Gestión de autenticación global",
+          "provides": ["user", "login", "logout", "isAuthenticated"]
+        },
+        "ToastContext": {
+          "file": "ToastContext.jsx",
+          "purpose": "Sistema de notificaciones toast",
+          "provides": ["showToast", "hideToast"]
+        }
+      }
+    },
+    
+    "hooks": {
+      "path": "./frontend/src/hooks/",
+      "custom_hooks": {
+        "usePermissions": {
+          "file": "usePermissions.js",
+          "purpose": "Gestión de permisos de usuario",
+          "returns": ["hasPermission", "userRole"]
+        }
+      }
+    },
+    
+    "services": {
+      "path": "./frontend/src/services/",
+      "business_logic": {
+        "checklistService": {
+          "file": "checklistService.js",
+          "purpose": "Lógica de checklists predefinidos"
+        }
+      }
+    },
+    
+    "utils": {
+      "path": "./frontend/src/utils/",
+      "utilities": {
+        "statusTranslations": {
+          "file": "statusTranslations.js",
+          "purpose": "Traducciones de estados del sistema"
+        }
+      }
+    },
+    
+    "config": {
+      "path": "./frontend/src/config/",
+      "configuration": {
+        "api": {
+          "file": "api.js",
+          "purpose": "Configuración de endpoints API"
+        }
+      }
+    }
+  },
+  
+  "state_management": {
+    "pattern": "Context API + useReducer",
+    "global_state": ["AuthContext", "ToastContext"],
+    "local_state": "useState + useEffect"
+  },
+  
+  "styling": {
+    "framework": "TailwindCSS",
+    "approach": "Utility-first",
+    "responsive": "Mobile-first",
+    "theme": "Configurado en tailwind.config.js"
+  },
+  
+  "context_hints": {
+    "common_patterns": [
+      "Componentes funcionales con hooks",
+      "Props drilling evitado con Context API", 
+      "API calls centralizadas en src/api/",
+      "Rutas protegidas con AuthContext",
+      "Formularios con validación client-side"
+    ],
+    
+    "frequent_tasks": [
+      "Nuevos componentes en carpeta apropiada según funcionalidad",
+      "API calls usar servicios existentes en src/api/",
+      "Estados globales agregar a Context apropiado",
+      "Nuevas páginas registrar en router",
+      "Estilos usar clases TailwindCSS"
+    ],
+    
+    "performance_tips": [
+      "Usar React.memo para componentes pesados",
+      "Lazy loading para rutas con React.lazy",
+      "Optimizar re-renders con useCallback/useMemo",
+      "Virtualización para listas largas"
+    ]
+  }
+}

@@ -1,125 +1,263 @@
-# 🤖 Sistema Autónomo Trae 2.0 - TecnoMundo Repair Management
+# 🚀 Sistema .trae para TecnoMundo Repair Management
 
-> **Sistema de IA Autónomo para Optimización de Desarrollo Full Stack**
+## 📋 Descripción General
 
-## 🎯 Propósito
+Este sistema de contexto inteligente está diseñado específicamente para **Trae 2.0**, proporcionando un agente de IA autónomo (**NEXUS**) que aprovecha todas las capacidades avanzadas del IDE para trabajar con repositorios fullstack React + FastAPI + PostgreSQL.
 
-Sistema autónomo basado en tareas que preserva el contexto para optimizar el rendimiento de Trae 2.0, diseñado específicamente para el proyecto TecnoMundo Repair Management.
-
-## 🏗️ Arquitectura del Sistema
+## 🏗️ Estructura del Sistema
 
 ```
 .trae/
-├── rules/                    # Sistema de Reglas Estructuradas
-│   ├── project_rules.md     # Reglas específicas del proyecto
-│   ├── user_rules.md        # Preferencias y configuraciones personalizadas
-│   └── master_prompt.md     # Prompt maestro para configuración del agente
-├── activation/              # Sistema de Activación Exclusiva
-│   ├── chat_integration.js  # Integración con chat de IA
-│   ├── command_parser.py    # Parser de comandos naturales
-│   └── activation_config.json
-├── optimization/            # Estrategias de Optimización Avanzadas
-│   ├── mcp/                 # Memory, Context, Planning
-│   ├── ml/                  # Machine Learning Components
-│   ├── token_optimizer.py   # Optimización de tokens
-│   └── performance_metrics.json
-├── automation/              # Scripts de Automatización
-│   ├── auto_init.ps1        # Inicialización automática
-│   ├── error_handler.ps1    # Manejo autónomo de errores
-│   ├── context_manager.py   # Gestor de contexto
-│   └── task_scheduler.py    # Programador de tareas
-├── guides/                  # Guías de Uso del Sistema
-│   ├── usage_protocols.md   # Protocolos de interacción
-│   ├── workflows.md         # Flujos de trabajo recomendados
-│   ├── context_handling.md  # Manejo de contextos
-│   └── troubleshooting.md   # Solución de problemas
-├── cache/                   # Sistema de Caché Inteligente
-│   ├── session_tracker.md   # Seguimiento de sesiones
-│   ├── quick_commands.md    # Comandos rápidos
-│   ├── error_patterns.json  # Patrones de errores conocidos
-│   └── context_snapshots/   # Instantáneas de contexto
-├── metrics/                 # Sistema de Métricas y Mejora Continua
-│   ├── performance_logs.json
-│   ├── usage_analytics.json
-│   └── improvement_suggestions.md
-└── config/                  # Configuraciones del Sistema
-    ├── system_config.json   # Configuración principal
-    ├── integrations.json    # Configuraciones de integración
-    └── security_settings.json
+├── rules/                   # Reglas del proyecto y usuario
+│   ├── project_rules.yaml   # Configuración específica del proyecto
+│   └── user_rules.yaml      # Preferencias y reglas del usuario
+├── cache/                   # Sistema de caché contextual
+│   └── context_cache.json   # Caché optimizado para reducción de tokens
+├── maps/                    # Mapeos inteligentes del proyecto
+│   ├── backend_map.json     # Estructura y patrones del backend
+│   ├── frontend_map.json    # Estructura y patrones del frontend
+│   └── database_map.json    # Esquema y relaciones de la BD
+├── prompts/                 # Prompts del agente
+│   └── nexus_agent_prompt.md # Prompt completo del agente NEXUS
+├── config/                  # Configuraciones especiales
+│   ├── mcp_config.yaml      # Configuración MCP para PostgreSQL
+│   └── natural_commands.yaml # Sistema de comandos naturales
+└── README.md               # Esta documentación
 ```
 
-## 🚀 Características Principales
+## 🤖 Agente NEXUS
 
-### 1. **Sistema de Reglas Estructuradas**
-- **Reglas de Proyecto**: Definición de flujos y estándares específicos
-- **Reglas de Usuario**: Preferencias y configuraciones personalizadas
-- **Prompt Maestro**: Configuración precisa del agente IA
+**NEXUS** (Neural EXpert Universal System) es el agente de IA autónomo que:
 
-### 2. **Activación Exclusiva via Chat IA**
-- Integración nativa con el chat de IA de Trae
-- Parser inteligente de comandos naturales
-- Activación contextual automática
+### ✨ Características Principales
+- **Idioma**: Español obligatorio para todas las interacciones
+- **Ejecución**: Inmediata sin confirmación para tareas estándar
+- **Contexto**: Carga automática desde `.trae/cache/`
+- **Optimización**: Reducción de tokens del 70-90%
 
-### 3. **Optimización Avanzada**
-- **MCP (Memory, Context, Planning)**: Gestión inteligente de memoria
-- **Machine Learning**: Adaptación dinámica y mejora continua
-- **Optimización de Tokens**: Reducción 70-90% en uso de tokens
+### 🧠 Comandos Naturales Detectados Automáticamente
+- `"crear/hacer/generar [componente/funcionalidad]"`
+- `"hay/tengo error/problema en [área]"`
+- `"necesito/quiero [funcionalidad]"`
+- `"optimizar/mejorar [sistema]"`
+- `"probar/testear [funcionalidad]"`
+- `"documentar [componente]"`
 
-### 4. **Automatización Completa**
-- Inicialización automática del contexto
-- Manejo autónomo de errores comunes
-- Programación inteligente de tareas
+### 🔧 Capacidades Trae 2.0 Integradas
+- ✅ Búsqueda semántica de código
+- ✅ Edición inteligente de archivos
+- ✅ Gestión completa de archivos y directorios
+- ✅ Ejecución de comandos en terminales múltiples
+- ✅ Acceso directo a PostgreSQL via MCP
+- ✅ Gestión automática de tareas
+- ✅ Vista previa de cambios visuales
 
-## 🎯 Beneficios Inmediatos
+## 📊 Sistema de Mapeos Inteligentes
 
-- ⚡ **95% menos tiempo** en configuración inicial
-- 🧠 **Contexto automático** preparado y optimizado
-- 🚀 **Ejecución inmediata** de tareas complejas
-- 📊 **Reducción 80-90%** en uso de tokens
-- 🔄 **Mejora continua** mediante machine learning
+### Backend Map (`backend_map.json`)
+Mapea la estructura completa del backend FastAPI:
+- **API Endpoints**: Rutas y controladores
+- **Modelos**: Entidades SQLAlchemy con relaciones
+- **Schemas**: Validación Pydantic
+- **CRUD Operations**: Operaciones de base de datos
+- **Servicios**: Lógica de negocio
+- **Core Modules**: Configuración, seguridad, logging
 
-## 🔧 Integración con Full Stack
+### Frontend Map (`frontend_map.json`)
+Mapea la estructura completa del frontend React:
+- **Componentes**: Organización por funcionalidad
+- **Páginas**: Rutas principales de la aplicación
+- **API Layer**: Servicios de comunicación con backend
+- **Context**: Gestión de estado global
+- **Hooks**: Lógica reutilizable
+- **Utils**: Utilidades y helpers
 
-### Frontend (React + Vite)
-- Componentes optimizados con TailwindCSS
-- Context API para gestión de estado
-- React Router para navegación
+### Database Map (`database_map.json`)
+Mapea el esquema completo de PostgreSQL:
+- **Tablas**: Estructura, relaciones, índices
+- **Vistas**: Consultas precompiladas
+- **Procedimientos**: Lógica almacenada
+- **Migraciones**: Historial de cambios
+- **Integración MCP**: Consultas comunes
 
-### Backend (FastAPI)
-- PostgreSQL + SQLAlchemy
-- Autenticación JWT
-- API RESTful optimizada
+## 🔌 Integración MCP (Model Context Protocol)
 
-### DevOps
-- Automatización de deployment
-- Monitoreo de performance
-- Gestión de errores en tiempo real
+### Configuración PostgreSQL
+- **Archivo**: `.trae/config/mcp_config.yaml`
+- **Capacidades**: Consultas SQL directas, análisis de esquema
+- **Seguridad**: Operaciones controladas y auditadas
+- **Performance**: Consultas optimizadas y cacheadas
 
-## 📈 Métricas de Éxito
+### Consultas Predefinidas
+```sql
+-- Estadísticas de órdenes
+SELECT status, COUNT(*) FROM repair_orders GROUP BY status;
 
-- **Velocidad de Desarrollo**: +300% más rápido
-- **Reducción de Errores**: -80% errores manuales
-- **Eficiencia de Tokens**: -90% uso de tokens
-- **Tiempo de Respuesta**: <5 segundos promedio
+-- Historial de cliente
+SELECT * FROM repair_orders WHERE customer_id = $1 ORDER BY created_at DESC;
 
-## 🎮 Activación del Sistema
-
-```bash
-# Activación automática via chat IA
-ai "crear componente de login"
-ai "hay error en autenticación"
-ai "optimizar rendimiento del sistema"
+-- Órdenes pendientes
+SELECT * FROM repair_orders WHERE status IN ('pending', 'in_progress');
 ```
 
-## 🔐 Seguridad y Escalabilidad
+## 💾 Sistema de Caché Contextual
 
-- Configuraciones de seguridad robustas
-- Escalabilidad horizontal automática
-- Backup automático de contexto
-- Encriptación de datos sensibles
+### Optimización de Tokens
+- **Objetivo**: Reducción 70-90% de tokens por petición
+- **Método**: Caché inteligente en lugar de archivos completos
+- **Actualización**: Automática después de cada cambio
+- **Limpieza**: Automática de contexto obsoleto
+
+### Plantillas de Contexto
+- **Frontend Component Creation**: Para crear componentes React
+- **Error Debugging**: Para resolución de problemas
+- **Feature Implementation**: Para nuevas funcionalidades
+- **Performance Optimization**: Para mejoras de rendimiento
+- **Testing Setup**: Para configuración de pruebas
+
+## 🗣️ Sistema de Comandos Naturales
+
+### Detección Automática
+El sistema detecta automáticamente patrones en español:
+
+#### 🔨 Creación y Desarrollo
+- **Patrón**: `"crear {tipo} para {propósito}"`
+- **Acción**: Crear componente React o endpoint FastAPI
+- **Contexto**: Cargar mapeos relevantes
+- **Ejecución**: Inmediata con patrones del proyecto
+
+#### 🐛 Debugging
+- **Patrón**: `"hay error en {área}"`
+- **Acción**: Análisis automático de logs y código
+- **Contexto**: Cargar todos los mapeos + logs de error
+- **Ejecución**: Diagnóstico y solución inmediata
+
+#### ⚡ Optimización
+- **Patrón**: `"optimizar {sistema}"`
+- **Acción**: Análisis de performance y mejoras
+- **Contexto**: Cargar métricas y patrones
+- **Ejecución**: Optimización automática
+
+## 🚀 Cómo Usar el Sistema
+
+### 1. Activación Automática
+El agente NEXUS se activa automáticamente al detectar comandos naturales en español. No requiere prefijos especiales.
+
+### 2. Ejemplos de Uso
+
+#### Crear Componente
+```
+Usuario: "crear componente para gestión de clientes"
+NEXUS: [Carga frontend_map.json] → [Crea componente en src/components/clients/] → [Actualiza mapeos]
+```
+
+#### Resolver Error
+```
+Usuario: "hay error en la autenticación"
+NEXUS: [Carga logs + mapeos] → [Analiza flujo JWT] → [Implementa solución] → [Verifica fix]
+```
+
+#### Optimizar Performance
+```
+Usuario: "optimizar consultas de base de datos"
+NEXUS: [Usa MCP] → [Analiza queries] → [Implementa optimizaciones] → [Mide mejoras]
+```
+
+### 3. Flujo Automático
+Para cada interacción:
+1. **DETECTAR** intención automáticamente
+2. **CARGAR** contexto desde `.trae/cache/`
+3. **EJECUTAR** acción inmediatamente
+4. **ACTUALIZAR** mapeos automáticamente
+5. **DOCUMENTAR** cambios realizados
+
+## 📈 Métricas y Optimización
+
+### Objetivos de Performance
+- ⚡ **Tiempo de respuesta**: <30 segundos
+- 🎯 **Cache hit rate**: >80%
+- 🔧 **Errores auto-resueltos**: >70%
+- 💾 **Reducción de tokens**: 70-90%
+
+### Monitoreo Automático
+- Tracking de patrones de uso más frecuentes
+- Optimización continua de contexto
+- Actualización automática de mapeos
+- Limpieza automática de caché obsoleto
+
+## 🛡️ Seguridad y Mejores Prácticas
+
+### Validaciones Automáticas
+- Verificación de contexto antes de ejecutar
+- Backup automático para cambios críticos
+- Rollback disponible para errores
+- Auditoría de operaciones sensibles
+
+### Calidad de Código
+- Consistencia con patrones existentes
+- Documentación automática y concisa
+- Testing automático cuando sea posible
+- Seguridad por defecto en implementaciones
+
+## 🔄 Mantenimiento del Sistema
+
+### Actualización Automática
+El sistema se actualiza automáticamente cuando:
+- Se crean nuevos archivos
+- Se modifican archivos existentes
+- Se detectan nuevos patrones de comando
+- Se resuelven errores
+- Cambia el contexto de trabajo
+
+### Limpieza Automática
+- Eliminación de caché obsoleto
+- Optimización de mapeos no utilizados
+- Compresión de logs antiguos
+- Actualización de métricas de performance
+
+## 🎯 Casos de Uso Específicos
+
+### Desarrollo Frontend (React)
+- Crear componentes con hooks y TailwindCSS
+- Implementar rutas y navegación
+- Gestionar estado con Context API
+- Integrar con APIs del backend
+
+### Desarrollo Backend (FastAPI)
+- Crear endpoints REST con validación
+- Implementar modelos SQLAlchemy
+- Configurar autenticación JWT
+- Optimizar consultas de base de datos
+
+### Debugging y Mantenimiento
+- Análisis automático de logs de error
+- Diagnóstico de problemas de performance
+- Resolución de conflictos de dependencias
+- Optimización de consultas SQL
+
+### Testing y Calidad
+- Configuración automática de testing
+- Creación de tests unitarios y de integración
+- Validación de cobertura de código
+- Testing de performance y seguridad
+
+## 📞 Soporte y Extensión
+
+### Personalización
+El sistema puede personalizarse modificando:
+- **Reglas del usuario**: `.trae/rules/user_rules.yaml`
+- **Patrones de comando**: `.trae/config/natural_commands.yaml`
+- **Configuración MCP**: `.trae/config/mcp_config.yaml`
+- **Plantillas de contexto**: `.trae/cache/context_cache.json`
+
+### Extensión
+Para agregar nuevas funcionalidades:
+1. Actualizar mapeos relevantes en `.trae/maps/`
+2. Agregar patrones de comando en `.trae/config/natural_commands.yaml`
+3. Crear plantillas de contexto en `.trae/cache/context_cache.json`
+4. Actualizar el prompt del agente si es necesario
 
 ---
 
-**Versión**: 2.0.0  
-**Última Actualización**: 2024  
-**Compatibilidad**: Trae 2.0+, Full Stack Projects
+**Sistema .trae v1.0 - Optimizado para TecnoMundo Repair Management**  
+**Powered by Trae 2.0 Advanced IDE**

@@ -1,0 +1,303 @@
+# 🗣️ Sistema de Comandos Naturales en Español
+# Detección automática de intenciones para Trae 2.0
+
+natural_commands_system:
+  version: "1.0"
+  language: "español"
+  auto_detection: true
+  immediate_execution: true
+  
+  # 🎯 Patrones de Detección Automática
+  detection_patterns:
+    
+    # 🔨 Creación y Desarrollo
+    creation:
+      patterns:
+        - "crear {type} para {purpose}"
+        - "hacer {type} de {functionality}"
+        - "generar {component} que {action}"
+        - "necesito {type} para {purpose}"
+        - "implementar {functionality}"
+        - "agregar {feature} a {area}"
+      
+      types:
+        - "componente"
+        - "página"
+        - "endpoint"
+        - "modelo"
+        - "servicio"
+        - "hook"
+        - "contexto"
+        - "formulario"
+        - "tabla"
+        - "modal"
+      
+      actions:
+        context_load: ["frontend_map.json", "backend_map.json"]
+        execution: "immediate"
+        template: "creation_template"
+    
+    # 🐛 Debugging y Resolución de Problemas
+    debugging:
+      patterns:
+        - "hay error en {area}"
+        - "tengo problema con {component}"
+        - "no funciona {functionality}"
+        - "falla {system}"
+        - "error de {type}"
+        - "bug en {location}"
+        - "se rompe {feature}"
+      
+      areas:
+        - "autenticación"
+        - "base de datos"
+        - "frontend"
+        - "backend"
+        - "API"
+        - "componente"
+        - "formulario"
+        - "navegación"
+      
+      actions:
+        context_load: ["all_maps", "error_logs", "cache"]
+        execution: "diagnostic_first"
+        template: "debugging_template"
+    
+    # ⚡ Optimización y Mejoras
+    optimization:
+      patterns:
+        - "optimizar {system}"
+        - "mejorar {aspect}"
+        - "hacer más rápido {process}"
+        - "reducir {metric}"
+        - "acelerar {functionality}"
+        - "performance de {area}"
+      
+      systems:
+        - "consultas"
+        - "componentes"
+        - "carga"
+        - "renderizado"
+        - "API"
+        - "base de datos"
+        - "bundle"
+        - "memoria"
+      
+      actions:
+        context_load: ["performance_metrics", "all_maps"]
+        execution: "analysis_first"
+        template: "optimization_template"
+    
+    # 🧪 Testing y Validación
+    testing:
+      patterns:
+        - "probar {functionality}"
+        - "testear {component}"
+        - "verificar {behavior}"
+        - "validar {system}"
+        - "test para {feature}"
+        - "comprobar {functionality}"
+      
+      types:
+        - "unitario"
+        - "integración"
+        - "e2e"
+        - "performance"
+        - "seguridad"
+        - "accesibilidad"
+      
+      actions:
+        context_load: ["testing_config", "relevant_maps"]
+        execution: "setup_then_test"
+        template: "testing_template"
+    
+    # 📚 Documentación y Explicación
+    documentation:
+      patterns:
+        - "documentar {component}"
+        - "explicar {functionality}"
+        - "comentar {code}"
+        - "describir {system}"
+        - "manual de {feature}"
+      
+      actions:
+        context_load: ["relevant_maps"]
+        execution: "analyze_then_document"
+        template: "documentation_template"
+
+# 🎨 Plantillas de Ejecución
+execution_templates:
+  
+  creation_template:
+    steps:
+      1: "Cargar contexto relevante desde .trae/maps/"
+      2: "Analizar patrones existentes en el proyecto"
+      3: "Generar código siguiendo convenciones"
+      4: "Crear archivos necesarios"
+      5: "Actualizar mapeos automáticamente"
+    
+    context_requirements:
+      - "project_structure"
+      - "coding_patterns"
+      - "existing_components"
+    
+    output_format: "functional_code"
+  
+  debugging_template:
+    steps:
+      1: "Cargar logs y contexto de error"
+      2: "Analizar stack trace y síntomas"
+      3: "Identificar causa raíz"
+      4: "Proponer solución"
+      5: "Implementar fix automáticamente"
+      6: "Verificar resolución"
+    
+    context_requirements:
+      - "error_logs"
+      - "related_code"
+      - "system_state"
+    
+    output_format: "diagnostic_report + fix"
+  
+  optimization_template:
+    steps:
+      1: "Analizar métricas actuales"
+      2: "Identificar cuellos de botella"
+      3: "Proponer optimizaciones"
+      4: "Implementar mejoras"
+      5: "Medir impacto"
+    
+    context_requirements:
+      - "performance_data"
+      - "system_architecture"
+      - "usage_patterns"
+    
+    output_format: "optimization_report + implementation"
+  
+  testing_template:
+    steps:
+      1: "Analizar funcionalidad a testear"
+      2: "Identificar casos de prueba"
+      3: "Configurar entorno de testing"
+      4: "Crear tests automáticos"
+      5: "Ejecutar y validar"
+    
+    context_requirements:
+      - "functionality_spec"
+      - "testing_framework"
+      - "existing_tests"
+    
+    output_format: "test_suite + execution_report"
+
+# 🔄 Flujo de Procesamiento
+processing_flow:
+  
+  input_analysis:
+    1: "Detectar idioma (debe ser español)"
+    2: "Identificar patrón de comando natural"
+    3: "Extraer entidades (tipo, propósito, área)"
+    4: "Determinar plantilla de ejecución"
+  
+  context_loading:
+    1: "Cargar .trae/cache/context_cache.json"
+    2: "Cargar mapeos relevantes según patrón"
+    3: "Cargar reglas del proyecto y usuario"
+    4: "Optimizar contexto para reducir tokens"
+  
+  execution:
+    1: "Ejecutar según plantilla seleccionada"
+    2: "Aplicar cambios inmediatamente"
+    3: "Actualizar contexto automáticamente"
+    4: "Documentar acciones realizadas"
+
+# 🎯 Ejemplos de Uso
+usage_examples:
+  
+  frontend_development:
+    input: "crear componente para gestión de clientes"
+    detection: "creation pattern"
+    context: ["frontend_map.json", "components_patterns"]
+    execution: "Create React component in src/components/clients/"
+    output: "Functional component with hooks and TailwindCSS"
+  
+  backend_development:
+    input: "necesito endpoint para obtener estadísticas"
+    detection: "creation pattern"
+    context: ["backend_map.json", "api_patterns"]
+    execution: "Create FastAPI endpoint in app/api/v1/"
+    output: "REST endpoint with proper validation and documentation"
+  
+  debugging:
+    input: "hay error en la autenticación"
+    detection: "debugging pattern"
+    context: ["all_maps", "auth_logs", "security_config"]
+    execution: "Analyze auth flow and fix issues"
+    output: "Diagnostic report + implemented solution"
+  
+  optimization:
+    input: "optimizar consultas de base de datos"
+    detection: "optimization pattern"
+    context: ["database_map.json", "query_logs", "performance_metrics"]
+    execution: "Analyze and optimize database queries"
+    output: "Performance report + optimized queries"
+
+# 🚨 Reglas de Validación
+validation_rules:
+  
+  language_enforcement:
+    - "Todos los comandos deben estar en español"
+    - "Respuestas siempre en español"
+    - "Código puede estar en inglés"
+    - "Comentarios técnicos pueden estar en inglés"
+  
+  execution_safety:
+    - "Validar contexto antes de ejecutar"
+    - "No ejecutar comandos destructivos sin confirmación"
+    - "Backup automático para cambios críticos"
+    - "Rollback disponible para errores"
+  
+  performance_optimization:
+    - "Usar caché siempre que sea posible"
+    - "Cargar solo contexto relevante"
+    - "Optimizar tokens automáticamente"
+    - "Limpiar contexto obsoleto"
+
+# 📊 Métricas y Monitoreo
+metrics:
+  
+  detection_accuracy:
+    target: ">95%"
+    measurement: "Comandos correctamente identificados"
+    
+  execution_speed:
+    target: "<30 segundos"
+    measurement: "Tiempo desde comando hasta resultado"
+    
+  context_efficiency:
+    target: "70-90% reducción de tokens"
+    measurement: "Tokens usados vs tokens disponibles"
+    
+  user_satisfaction:
+    target: ">90%"
+    measurement: "Comandos ejecutados correctamente sin intervención"
+
+# 🔄 Auto-mejora del Sistema
+self_improvement:
+  
+  pattern_learning:
+    - "Analizar comandos más frecuentes"
+    - "Identificar nuevos patrones de uso"
+    - "Adaptar detección a preferencias del usuario"
+    - "Optimizar plantillas según resultados"
+  
+  context_optimization:
+    - "Ajustar carga de contexto según uso"
+    - "Eliminar contexto no utilizado"
+    - "Priorizar información más relevante"
+    - "Actualizar mapeos automáticamente"
+  
+  performance_tuning:
+    - "Monitorear tiempos de respuesta"
+    - "Optimizar consultas frecuentes"
+    - "Cachear resultados comunes"
+    - "Reducir overhead de procesamiento"

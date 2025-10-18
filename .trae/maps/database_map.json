@@ -1,0 +1,353 @@
+{
+  "database_structure": {
+    "last_updated": "2025-01-18T13:09:00Z",
+    "version": "1.0",
+    "auto_update": true,
+    "engine": "PostgreSQL",
+    
+    "connection": {
+      "host": "localhost",
+      "port": 5432,
+      "database": "tecnomundo_repair",
+      "mcp_enabled": true,
+      "mcp_service": "./backend/app/services/mcp_service.py"
+    },
+    
+    "tables": {
+      "users": {
+        "model": "User",
+        "primary_key": "id",
+        "key_columns": ["email", "username", "is_active", "role_id"],
+        "relationships": {
+          "role": "many_to_one",
+          "repair_orders": "one_to_many",
+          "notifications": "one_to_many"
+        },
+        "indexes": ["email", "username"],
+        "constraints": ["email_unique", "username_unique"]
+      },
+      
+      "customers": {
+        "model": "Customer", 
+        "primary_key": "id",
+        "key_columns": ["name", "email", "phone", "address"],
+        "relationships": {
+          "repair_orders": "one_to_many"
+        },
+        "indexes": ["email", "phone"],
+        "constraints": ["email_unique"]
+      },
+      
+      "repair_orders": {
+        "model": "RepairOrder",
+        "primary_key": "id", 
+        "key_columns": [
+          "ticket_number", "customer_id", "user_id", "branch_id",
+          "device_type_id", "status", "created_at", "updated_at"
+        ],
+        "relationships": {
+          "customer": "many_to_one",
+          "user": "many_to_one", 
+          "branch": "many_to_one",
+          "device_type": "many_to_one",
+          "photos": "one_to_many",
+          "checklist_items": "one_to_many"
+        },
+        "indexes": ["ticket_number", "status", "created_at"],
+        "constraints": ["ticket_number_unique"]
+      },
+      
+      "branches": {
+        "model": "Branch",
+        "primary_key": "id",
+        "key_columns": ["name", "address", "phone", "is_active"],
+        "relationships": {
+          "repair_orders": "one_to_many",
+          "users": "one_to_many"
+        },
+        "indexes": ["name"],
+        "constraints": ["name_unique"]
+      },
+      
+      "device_types": {
+        "model": "DeviceType",
+        "primary_key": "id",
+        "key_columns": ["name", "category", "is_active"],
+        "relationships": {
+          "repair_orders": "one_to_many"
+        },
+        "indexes": ["name", "category"]
+      },
+      
+      "roles": {
+        "model": "Role",
+        "primary_key": "id", 
+        "key_columns": ["name", "permissions"],
+        "relationships": {
+          "users": "one_to_many"
+        },
+        "indexes": ["name"],
+        "constraints": ["name_unique"]
+      },
+      
+      "notifications": {
+        "model": "Notification",
+        "primary_key": "id",
+        "key_columns": ["user_id", "message", "is_read", "created_at"],
+        "relationships": {
+          "user": "many_to_one"
+        },
+        "indexes": ["user_id", "is_read", "created_at"]
+      },
+      
+      "repair_order_photos": {
+        "model": "RepairOrderPhoto",
+        "primary_key": "id",
+        "key_columns": ["repair_order_id", "filename", "photo_type", "uploaded_at"],
+        "relationships": {
+          "repair_order": "many_to_one"
+        },
+        "indexes": ["repair_order_id"]
+      },
+      
+      "predefined_checklist_items": {
+        "model": "PredefinedChecklistItem", 
+        "primary_key": "id",
+        "key_columns": ["device_type_id", "item_text", "is_active"],
+        "relationships": {
+          "device_type": "many_to_one"
+        },
+        "indexes": ["device_type_id"]
+      },
+      
+      "status_orders": {
+        "model": "StatusOrder",
+        "primary_key": "id",
+        "key_columns": ["name", "description", "color"],
+        "relationships": {
+          "repair_orders": "one_to_many"
+        }
+      },
+      
+      "device_conditions": {
+        "model": "DeviceCondition",
+        "primary_key": "id", 
+        "key_columns": ["name", "description"],
+        "relationships": {
+          "repair_orders": "one_to_many"
+        }
+      }
+    },
+    
+    "views": {
+      "repair_orders_summary": {
+        "purpose": "Vista consolidada de órdenes con datos relacionados",
+        "joins": ["customers", "users", "branches", "device_types", "status_orders"]
+      },
+      "user_permissions": {
+        "purpose": "Vista de usuarios con permisos expandidos",
+        "joins": ["users", "roles"]
+      }
+    },
+    
+    "stored_procedures": {
+      "get_order_statistics": {
+        "purpose": "Estadísticas de órdenes por período",
+        "parameters": ["start_date", "end_date", "branch_id"]
+      },
+      "update_order_status": {
+        "purpose": "Actualización de estado con notificaciones",
+        "parameters": ["order_id", "new_status", "user_id"]
+      }
+    },
+    
+    "migrations": {
+      "path": "./backend/scripts/",
+      "recent_migrations": [
+        "add_branch_ticket_fields.py",
+        "add_ticket_config_columns.py", 
+        "create_predefined_checklist_table.py"
+      ]
+    }
+  },
+  
+  "mcp_integration": {
+    "service_file": "./backend/app/services/mcp_service.py",
+    "config_file": "./backend/app/core/config_mcp.py",
+    "capabilities": [
+      "Direct SQL queries",
+      "Schema introspection", 
+      "Real-time data access",
+      "Performance monitoring"
+    ],
+    
+    "common_queries": {
+      "get_orders_by_status": "SELECT * FROM repair_orders WHERE status = $1",
+      "customer_order_history": "SELECT * FROM repair_orders WHERE customer_id = $1 ORDER BY created_at DESC",
+      "branch_statistics": "SELECT COUNT(*) as total, status FROM repair_orders WHERE branch_id = $1 GROUP BY status",
+      "pending_notifications": "SELECT * FROM notifications WHERE user_id = $1 AND is_read = false"
+    }
+  },
+  
+  "context_hints": {
+    "performance_tips": [
+      "Usar índices en columnas de búsqueda frecuente",
+      "Paginar resultados grandes con LIMIT/OFFSET",
+      "Usar JOINs eficientes para datos relacionados",
+      "Cachear consultas frecuentes"
+    ],
+    
+    "security_considerations": [
+      "Validar permisos antes de consultas sensibles",
+      "Usar parámetros preparados para evitar SQL injection",
+      "Auditar cambios en tablas críticas",
+      "Encriptar datos sensibles"
+    ],
+    
+    "maintenance_tasks": [
+      "Backup diario automático",
+      "Análisis de performance semanal",
+      "Limpieza de logs antiguos",
+      "Actualización de estadísticas"
+    ]
+  },
+  
+  "supabase_integration": {
+    "description": "Configuración de Supabase como proveedor de base de datos PostgreSQL",
+    "api_url": "https://zshbhslyzclpovyngryf.supabase.co",
+    "schema": "public",
+    "mcp_server_config": {
+      "mcpServers": {
+        "Postgrest": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@supabase/mcp-server-postgrest",
+            "--apiUrl",
+            "https://zshbhslyzclpovyngryf.supabase.co",
+            "--schema",
+            "public",
+            "--apiKey",
+            "${SUPABASE_SERVICE_KEY}"
+          ],
+          "env": {}
+        }
+      }
+    },
+    "environment_variables": {
+      "SUPABASE_SERVICE_KEY": {
+        "description": "Clave de servicio de Supabase para acceso completo a la API",
+        "required": true,
+        "security_level": "high",
+        "usage": "Acceso a PostgREST API para operaciones CRUD"
+      },
+      "SUPABASE_URL": {
+        "description": "URL base del proyecto Supabase",
+        "value": "https://zshbhslyzclpovyngryf.supabase.co",
+        "required": true
+      }
+    },
+    "postgrest_capabilities": {
+      "crud_operations": [
+        "GET /table_name - Consultar registros",
+        "POST /table_name - Crear registros",
+        "PATCH /table_name - Actualizar registros",
+        "DELETE /table_name - Eliminar registros"
+      ],
+      "query_features": [
+        "Filtros avanzados con operadores",
+        "Ordenamiento y paginación",
+        "Joins automáticos basados en foreign keys",
+        "Agregaciones y funciones",
+        "Full-text search",
+        "Row Level Security (RLS)"
+      ],
+      "supported_formats": [
+        "JSON (default)",
+        "CSV",
+        "TSV"
+      ]
+    },
+    "common_postgrest_queries": {
+      "get_all_repair_orders": {
+        "method": "GET",
+        "path": "/repair_orders",
+        "description": "Obtener todas las órdenes de reparación"
+      },
+      "get_orders_by_status": {
+        "method": "GET", 
+        "path": "/repair_orders?status=eq.pending",
+        "description": "Filtrar órdenes por estado"
+      },
+      "get_customer_orders": {
+        "method": "GET",
+        "path": "/repair_orders?customer_id=eq.123",
+        "description": "Obtener órdenes de un cliente específico"
+      },
+      "create_repair_order": {
+        "method": "POST",
+        "path": "/repair_orders",
+        "description": "Crear nueva orden de reparación",
+        "headers": {
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        }
+      },
+      "update_order_status": {
+        "method": "PATCH",
+        "path": "/repair_orders?id=eq.123",
+        "description": "Actualizar estado de orden",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "get_orders_with_customer": {
+        "method": "GET",
+        "path": "/repair_orders?select=*,customers(*)",
+        "description": "Órdenes con información del cliente (JOIN)"
+      },
+      "search_orders": {
+        "method": "GET",
+        "path": "/repair_orders?device_model=ilike.*iPhone*",
+        "description": "Búsqueda de texto en modelo de dispositivo"
+      }
+    },
+    "security_configuration": {
+      "row_level_security": {
+        "enabled": true,
+        "policies": [
+          "Users can only see their own orders",
+          "Admins can see all orders",
+          "Technicians can see assigned orders"
+        ]
+      },
+      "api_key_usage": {
+        "service_key": "Full access - usar solo en backend",
+        "anon_key": "Public access - usar en frontend con RLS"
+      }
+    },
+    "integration_patterns": {
+      "direct_api_calls": {
+        "description": "Llamadas directas a PostgREST API",
+        "use_case": "Operaciones CRUD simples",
+        "example": "fetch('https://zshbhslyzclpovyngryf.supabase.co/rest/v1/repair_orders')"
+      },
+      "mcp_integration": {
+        "description": "Uso del servidor MCP para consultas complejas",
+        "use_case": "Análisis de datos, reportes, consultas complejas",
+        "tools": ["mcp_Postgrest_postgrestRequest", "mcp_Postgrest_sqlToRest"]
+      }
+    },
+    "monitoring_and_analytics": {
+      "supabase_dashboard": "https://supabase.com/dashboard/project/zshbhslyzclpovyngryf",
+      "metrics_available": [
+        "API requests per minute",
+        "Database connections",
+        "Storage usage",
+        "Bandwidth usage"
+      ],
+      "logs_access": "Real-time logs via Supabase dashboard"
+    }
+  }
+}
+

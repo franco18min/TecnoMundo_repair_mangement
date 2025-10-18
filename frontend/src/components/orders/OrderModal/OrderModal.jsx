@@ -115,6 +115,31 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
 
+    // Función para cargar preguntas predeterminadas
+    const handleLoadDefaultQuestions = (defaultQuestions) => {
+        if (defaultQuestions && defaultQuestions.length > 0) {
+            const newChecklistItems = defaultQuestions.map(question => ({
+                check_description: question.question,
+                client_answer: null,
+                technician_finding: null,
+                technician_notes: null
+            }));
+            
+            // Evitar duplicados - solo agregar preguntas que no existan ya
+            const existingQuestions = checklistItems.map(item => item.check_description);
+            const uniqueNewItems = newChecklistItems.filter(
+                newItem => !existingQuestions.includes(newItem.check_description)
+            );
+            
+            if (uniqueNewItems.length > 0) {
+                setChecklistItems([...checklistItems, ...uniqueNewItems]);
+                showToast(`${uniqueNewItems.length} preguntas predeterminadas cargadas`, 'success');
+            } else {
+                showToast('Las preguntas predeterminadas ya están cargadas', 'info');
+            }
+        }
+    };
+
     const handleTakeOrder = async () => {
         if (!orderId) return;
         setIsTakeConfirmModalOpen(false);
@@ -287,7 +312,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
                                     <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                     <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
-                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} />
+                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} onLoadDefaultQuestions={handleLoadDefaultQuestions} />
                                 </form>
                                 <ModalFooter
                                     mode={mode}

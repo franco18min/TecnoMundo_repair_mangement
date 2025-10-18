@@ -1,0 +1,140 @@
+{
+  "mcpServers": {
+    "Postgrest": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-postgrest",
+        "--apiUrl",
+        "https://zshbhslyzclpovyngryf.supabase.co",
+        "--schema",
+        "public",
+        "--apiKey",
+        "${SUPABASE_SERVICE_KEY}"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://zshbhslyzclpovyngryf.supabase.co",
+        "SUPABASE_SERVICE_KEY": "${SUPABASE_SERVICE_KEY}",
+        "SUPABASE_ANON_KEY": "${SUPABASE_ANON_KEY}"
+      }
+    }
+  },
+  
+  "configuration": {
+    "description": "Servidor MCP para acceso a Supabase PostgreSQL via PostgREST",
+    "project_id": "zshbhslyzclpovyngryf",
+    "api_version": "v1",
+    "schema": "public",
+    
+    "capabilities": {
+      "crud_operations": true,
+      "real_time_subscriptions": false,
+      "file_storage": false,
+      "auth_management": false,
+      "edge_functions": false
+    },
+    
+    "security": {
+      "row_level_security": true,
+      "api_key_required": true,
+      "rate_limiting": true,
+      "cors_enabled": true
+    }
+  },
+  
+  "usage_examples": {
+    "basic_query": {
+      "description": "Consulta básica a tabla",
+      "method": "GET",
+      "endpoint": "/repair_orders",
+      "example": "mcp_Postgrest_postgrestRequest('GET', '/repair_orders')"
+    },
+    
+    "filtered_query": {
+      "description": "Consulta con filtros",
+      "method": "GET", 
+      "endpoint": "/repair_orders?status=eq.pending",
+      "example": "mcp_Postgrest_postgrestRequest('GET', '/repair_orders?status=eq.pending')"
+    },
+    
+    "create_record": {
+      "description": "Crear nuevo registro",
+      "method": "POST",
+      "endpoint": "/repair_orders",
+      "headers": {
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      "example": "mcp_Postgrest_postgrestRequest('POST', '/repair_orders', {customer_id: 1, device_model: 'iPhone 13'})"
+    },
+    
+    "update_record": {
+      "description": "Actualizar registro existente",
+      "method": "PATCH",
+      "endpoint": "/repair_orders?id=eq.123",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "example": "mcp_Postgrest_postgrestRequest('PATCH', '/repair_orders?id=eq.123', {status: 'completed'})"
+    },
+    
+    "join_query": {
+      "description": "Consulta con JOIN automático",
+      "method": "GET",
+      "endpoint": "/repair_orders?select=*,customers(*)",
+      "example": "mcp_Postgrest_postgrestRequest('GET', '/repair_orders?select=*,customers(*)')"
+    }
+  },
+  
+  "common_filters": {
+    "equality": "column=eq.value",
+    "not_equal": "column=neq.value", 
+    "greater_than": "column=gt.value",
+    "less_than": "column=lt.value",
+    "like": "column=like.*pattern*",
+    "ilike": "column=ilike.*pattern*",
+    "in": "column=in.(value1,value2)",
+    "is_null": "column=is.null",
+    "not_null": "column=not.is.null"
+  },
+  
+  "response_formats": {
+    "json": "Default format",
+    "csv": "Add header: Accept: text/csv",
+    "tsv": "Add header: Accept: text/tab-separated-values"
+  },
+  
+  "error_handling": {
+    "400": "Bad Request - Invalid query syntax",
+    "401": "Unauthorized - Invalid API key",
+    "403": "Forbidden - RLS policy violation",
+    "404": "Not Found - Table or resource not found",
+    "406": "Not Acceptable - Invalid Accept header",
+    "409": "Conflict - Unique constraint violation",
+    "413": "Payload Too Large - Request body too large",
+    "415": "Unsupported Media Type - Invalid Content-Type"
+  },
+  
+  "best_practices": {
+    "performance": [
+      "Usar select específico en lugar de *",
+      "Implementar paginación con limit y offset",
+      "Crear índices para columnas de filtro frecuente",
+      "Usar RLS para seguridad automática"
+    ],
+    
+    "security": [
+      "Nunca exponer SUPABASE_SERVICE_KEY en frontend",
+      "Usar SUPABASE_ANON_KEY para acceso público",
+      "Implementar políticas RLS apropiadas",
+      "Validar datos antes de enviar a API"
+    ],
+    
+    "development": [
+      "Probar consultas en Supabase Dashboard primero",
+      "Usar herramientas MCP para consultas complejas",
+      "Monitorear uso de API en dashboard",
+      "Implementar manejo de errores robusto"
+    ]
+  }
+}

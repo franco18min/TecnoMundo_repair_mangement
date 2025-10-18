@@ -1,0 +1,167 @@
+{
+  "backend_structure": {
+    "last_updated": "2025-01-18T13:09:00Z",
+    "version": "1.0",
+    "auto_update": true,
+    
+    "api_endpoints": {
+      "base_path": "/api/v1",
+      "endpoints": {
+        "auth": "/auth",
+        "users": "/users",
+        "customers": "/customers",
+        "repair_orders": "/repair-orders",
+        "branches": "/branches",
+        "device_types": "/device-types",
+        "notifications": "/notifications",
+        "roles": "/roles",
+        "repair_order_photos": "/repair-order-photos"
+      }
+    },
+    
+    "models": {
+      "path": "./backend/app/models/",
+      "entities": {
+        "User": {
+          "file": "user.py",
+          "relationships": ["roles", "repair_orders", "notifications"],
+          "key_fields": ["id", "email", "username", "is_active"]
+        },
+        "Customer": {
+          "file": "customer.py", 
+          "relationships": ["repair_orders"],
+          "key_fields": ["id", "name", "email", "phone"]
+        },
+        "RepairOrder": {
+          "file": "repair_order.py",
+          "relationships": ["customer", "user", "branch", "device_type", "photos"],
+          "key_fields": ["id", "ticket_number", "status", "created_at"]
+        },
+        "Branch": {
+          "file": "branch.py",
+          "relationships": ["repair_orders", "users"],
+          "key_fields": ["id", "name", "address", "is_active"]
+        },
+        "DeviceType": {
+          "file": "device_type.py",
+          "relationships": ["repair_orders"],
+          "key_fields": ["id", "name", "category"]
+        },
+        "Notification": {
+          "file": "notification.py",
+          "relationships": ["user"],
+          "key_fields": ["id", "message", "is_read", "created_at"]
+        },
+        "Role": {
+          "file": "roles.py",
+          "relationships": ["users"],
+          "key_fields": ["id", "name", "permissions"]
+        },
+        "RepairOrderPhoto": {
+          "file": "repair_order_photo.py",
+          "relationships": ["repair_order"],
+          "key_fields": ["id", "filename", "photo_type"]
+        }
+      }
+    },
+    
+    "schemas": {
+      "path": "./backend/app/schemas/",
+      "validation_schemas": {
+        "UserCreate": "user.py",
+        "UserUpdate": "user.py", 
+        "CustomerCreate": "customer.py",
+        "CustomerUpdate": "customer.py",
+        "RepairOrderCreate": "repair_order.py",
+        "RepairOrderUpdate": "repair_order.py",
+        "BranchCreate": "branch.py",
+        "DeviceTypeCreate": "device_type.py",
+        "NotificationCreate": "notification.py",
+        "RoleCreate": "role.py"
+      }
+    },
+    
+    "crud_operations": {
+      "path": "./backend/app/crud/",
+      "operations": {
+        "user": "crud_user.py",
+        "customer": "crud_customer.py", 
+        "repair_order": "crud_repair_order.py",
+        "branch": "crud_branch.py",
+        "device_type": "crud_device_type.py",
+        "notification": "crud_notification.py",
+        "role": "crud_role.py",
+        "repair_order_photo": "crud_repair_order_photo.py",
+        "predefined_checklist": "crud_predefined_checklist_item.py"
+      }
+    },
+    
+    "services": {
+      "path": "./backend/app/services/",
+      "available_services": {
+        "mcp_service": {
+          "file": "mcp_service.py",
+          "purpose": "Database operations via MCP",
+          "methods": ["query_database", "execute_sql"]
+        }
+      }
+    },
+    
+    "core_modules": {
+      "path": "./backend/app/core/",
+      "modules": {
+        "config": {
+          "file": "config.py",
+          "purpose": "Application configuration"
+        },
+        "config_mcp": {
+          "file": "config_mcp.py", 
+          "purpose": "MCP database configuration"
+        },
+        "security": {
+          "file": "security.py",
+          "purpose": "JWT authentication and security"
+        },
+        "logger": {
+          "file": "logger.py",
+          "purpose": "Application logging"
+        },
+        "websockets": {
+          "file": "websockets.py",
+          "purpose": "Real-time communication"
+        }
+      }
+    },
+    
+    "database": {
+      "path": "./backend/app/db/",
+      "modules": {
+        "session": {
+          "file": "session.py",
+          "purpose": "Database session management"
+        },
+        "base": {
+          "file": "base.py",
+          "purpose": "Database base configuration"
+        }
+      }
+    }
+  },
+  
+  "context_hints": {
+    "common_patterns": [
+      "Para crear nuevos endpoints, seguir patrón en ./backend/app/api/v1/",
+      "Modelos usan SQLAlchemy ORM con relaciones definidas",
+      "Schemas usan Pydantic para validación",
+      "CRUD operations siguen patrón repository",
+      "Autenticación JWT implementada en core/security.py"
+    ],
+    
+    "frequent_tasks": [
+      "Agregar nuevos modelos requiere: model + schema + crud + api",
+      "Modificar permisos en roles.py y security.py",
+      "Nuevas migraciones en scripts/",
+      "Testing con pytest en tests/"
+    ]
+  }
+}
