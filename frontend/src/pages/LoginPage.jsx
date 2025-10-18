@@ -4,12 +4,15 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, KeyRound, Fingerprint, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext'; // 1. IMPORTAMOS EL HOOK DE AUTENTICACIÓN
+import { useNavigate } from 'react-router-dom';
 
 export function LoginPage() {
   const { login } = useAuth(); // 2. USAMOS LA FUNCIÓN 'login' DEL CONTEXTO
+  const navigate = useNavigate();
   const [loginType, setLoginType] = useState('user');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [clientQuery, setClientQuery] = useState(''); // Para DNI o número de orden
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,19 +21,24 @@ export function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (loginType !== 'user') {
-      setError('El inicio de sesión para clientes aún no está implementado.');
-      return;
-    }
-
     setError('');
     setIsLoading(true);
 
     try {
-      // 3. LLAMAMOS A LA FUNCIÓN DE LOGIN DEL CONTEXTO
-      // Ya no necesitamos onLogin() porque el contexto manejará el cambio de estado.
-      await login(username, password);
+      if (loginType === 'user') {
+        // 3. LLAMAMOS A LA FUNCIÓN DE LOGIN DEL CONTEXTO
+        // Ya no necesitamos onLogin() porque el contexto manejará el cambio de estado.
+        await login(username, password);
+      } else {
+        // Manejo del login de cliente - redirigir a página de estado
+        if (!clientQuery.trim()) {
+          setError('Por favor ingresa tu DNI o número de orden.');
+          return;
+        }
+        
+        // Redirigir a la página de estado del cliente
+        navigate(`/client/order/${encodeURIComponent(clientQuery.trim())}`);
+      }
     } catch (err) {
       console.error("Error de inicio de sesión:", err);
       setError(err.message || 'No se pudo iniciar sesión. Verifica tus credenciales.');
@@ -104,7 +112,14 @@ export function LoginPage() {
             ) : (
               <div className="relative mb-6">
                 <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input type="text" placeholder="DNI o N° de Orden" className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                <input 
+                  type="text" 
+                  placeholder="DNI o N° de Orden" 
+                  value={clientQuery}
+                  onChange={(e) => setClientQuery(e.target.value)}
+                  className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
+                  required
+                />
               </div>
             )}
             <motion.button

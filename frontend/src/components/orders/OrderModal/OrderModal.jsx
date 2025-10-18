@@ -6,7 +6,7 @@ import { X, Loader } from 'lucide-react';
 
 // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
 import {
-    createRepairOrder, fetchRepairOrderById, takeRepairOrder, reopenRepairOrder, completeRepairOrder, updateOrderDetails, deliverRepairOrder
+    createRepairOrder, fetchRepairOrderById, takeRepairOrder, reopenRepairOrder, completeRepairOrder, updateOrderDetails, deliverRepairOrder, updateOrderDiagnosis
 } from '../../../api/repairOrdersApi';
 // --- FIN DE LA NUEVA FUNCIONALIDAD ---
 import { searchClients } from '../../../api/customerApi';
@@ -228,8 +228,19 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             }
         }
         else if (mode === 'edit') {
-             try {
-                await updateOrderDetails(orderId, payload);
+            try {
+                // Si es técnico y solo puede editar diagnóstico, usar endpoint específico
+                if (permissions.canModifyForDiagnosis && !permissions.canModifyOrder) {
+                    // Técnico: solo enviar campos de diagnóstico
+                    const diagnosisPayload = {
+                        technician_diagnosis: formData.technician_diagnosis,
+                        repair_notes: formData.repair_notes
+                    };
+                    await updateOrderDiagnosis(orderId, diagnosisPayload);
+                } else {
+                    // Admin/Recepcionista: usar endpoint completo
+                    await updateOrderDetails(orderId, payload);
+                }
                 showToast('Orden modificada con éxito', 'success');
                 onClose(true);
             } catch (err) {
