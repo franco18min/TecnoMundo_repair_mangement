@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DisplayField, FormField, TextAreaField } from './shared';
 import { KeyRound, Lock, Package, Store } from 'lucide-react';
-import PatternLock from '../../shared/PatternLock'; // RUTA CORREGIDA
+import PatternLock from '../PatternLock'; // RUTA ACTUALIZADA: ahora en carpeta orders
 
 // Variantes de animación
 const containerVariants = {
@@ -306,9 +306,9 @@ export function EquipmentSection({ permissions, formData, handleFormChange, devi
                                         className="w-full"
                                     >
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Patrón de Desbloqueo</label>
-                                        <div className="flex justify-start">
+                                        <div className="flex justify-center">
                                             <PatternLock 
-                                                onPatternChange={handlePatternChange} 
+                                                onPatternComplete={handlePatternChange} 
                                                 initialPattern={isPatternValue ? formData.password_or_pattern : ''} 
                                             />
                                         </div>
@@ -325,7 +325,7 @@ export function EquipmentSection({ permissions, formData, handleFormChange, devi
                                 transition={{ delay: 0.2 }}
                             >
                                 <label className="block text-sm font-medium text-gray-500 mb-1">Patrón de Desbloqueo</label>
-                                <div className="flex justify-start">
+                                <div className="flex justify-center">
                                     <PatternLock displayPattern={formData.password_or_pattern} readOnly={true} />
                                 </div>
                             </motion.div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Wrench, Users, History, Settings, Bug } from 'lucide-react';
+
+import { LayoutDashboard, Wrench, Users, Settings } from 'lucide-react';
 import { Sidebar, SidebarItem } from '../components/shared/layout/Sidebar';
 import { DashboardHome } from '../components/dashboard/DashboardHome';
 import { OrdersPage } from '../components/orders/OrdersPage';
@@ -67,7 +67,6 @@ export function DashboardPage({ onLogout }) {
                 {permissions.canViewClients && (
                     <SidebarItem icon={<Users size={20} />} text="Clientes" active={activePage === 'clients'} onClick={() => setActivePage('clients')} />
                 )}
-                <SidebarItem icon={<History size={20} />} text="Historial" active={activePage === 'history'} onClick={() => setActivePage('history')} />
                 <hr className="my-3 border-gray-200" />
                 {permissions.canAccessConfig && (
                     <SidebarItem
@@ -75,14 +74,6 @@ export function DashboardPage({ onLogout }) {
                         text="Configuración"
                         active={activePage === 'config'}
                         onClick={() => setActivePage('config')}
-                    />
-                )}
-                {import.meta.env.MODE === 'development' && (
-                    <SidebarItem
-                        icon={<Bug size={20} />}
-                        text="Pruebas de Errores"
-                        active={activePage === 'error-testing'}
-                        onClick={() => setActivePage('error-testing')}
                     />
                 )}
             </Sidebar>
@@ -94,16 +85,14 @@ export function DashboardPage({ onLogout }) {
             <NotificationToast onNotificationClick={handleNotificationClick} />
             <NotificationBell onNotificationClick={handleNotificationClick} />
 
-            <AnimatePresence>
-                {isModalOpen && currentUser && (
-                    <OrderModal
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        orderId={selectedOrderId}
-                        currentUser={currentUser}
-                    />
-                )}
-            </AnimatePresence>
+            {currentUser && (
+                <OrderModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    orderId={selectedOrderId}
+                    currentUser={currentUser}
+                />
+            )}
         </div>
     );
 }

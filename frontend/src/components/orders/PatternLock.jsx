@@ -1,10 +1,10 @@
-// frontend/src/components/PatternLock.jsx
+// frontend/src/components/orders/PatternLock.jsx
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 
-const PatternLock = ({ onPatternComplete, displayPattern = null, readOnly = false }) => {
+const PatternLock = ({ onPatternComplete, displayPattern = null, readOnly = false, initialPattern = null }) => {
   const [points, setPoints] = useState([]);
   const [currentPath, setCurrentPath] = useState([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -29,14 +29,19 @@ const PatternLock = ({ onPatternComplete, displayPattern = null, readOnly = fals
     }
     setPoints(newPoints);
 
+    // Mostrar patrón en modo lectura
     if (readOnly && displayPattern && newPoints.length > 0) {
-      const patternPoints = displayPattern.split('-').map(id => {
-        return newPoints.find(p => p.id === parseInt(id));
-      }).filter(Boolean); // Filtra por si hay algún id inválido
+      const patternPoints = displayPattern.split('-').map(id => newPoints.find(p => p.id === parseInt(id))).filter(Boolean);
       setCurrentPath(patternPoints);
     }
 
-  }, [readOnly, displayPattern]);
+    // Pre-cargar patrón inicial en modo editable
+    if (!readOnly && initialPattern && newPoints.length > 0) {
+      const initialPoints = initialPattern.split('-').map(id => newPoints.find(p => p.id === parseInt(id))).filter(Boolean);
+      setCurrentPath(initialPoints);
+    }
+
+  }, [readOnly, displayPattern, initialPattern]);
 
   const getPointFromEvent = (e) => {
     if (!svgRef.current) return null;

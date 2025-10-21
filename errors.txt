@@ -1,0 +1,66 @@
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:25 🔵 [DASHBOARD] Abriendo OrderModal: {orderId: 114, isModalOpen: false}
+DashboardPage.jsx:28 🔵 [DASHBOARD] Estado después de abrir: {selectedOrderId: 114, isModalOpen: true}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: 114}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: 114}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+DashboardPage.jsx:32 🔴 [DASHBOARD] Cerrando OrderModal: {isModalOpen: true, selectedOrderId: 114, refresh: false}
+DashboardPage.jsx:35 🔴 [DASHBOARD] Estado después de cerrar: {isModalOpen: false, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Orden', isDeleteVariant: false}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Orden', isDeleteVariant: false}
+ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 1}
+ConfirmationModal.jsx:46 🟢 [CONFIRMATION_MODAL] Modal abierto: {isOpen: true, title: 'Eliminar Orden', isDeleteVariant: false}
+ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 1}
+ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 0}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Orden', isDeleteVariant: false}
+ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 0}
+ConfirmationModal.jsx:120 🔴 [CONFIRMATION_MODAL] Animación de salida completada (default)
+DashboardPage.jsx:25 🔵 [DASHBOARD] Abriendo OrderModal: {orderId: null, isModalOpen: false}
+DashboardPage.jsx:28 🔵 [DASHBOARD] Estado después de abrir: {selectedOrderId: null, isModalOpen: true}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: null}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
+DashboardPage.jsx:32 🔴 [DASHBOARD] Cerrando OrderModal: {isModalOpen: true, selectedOrderId: null, refresh: false}
+DashboardPage.jsx:35 🔴 [DASHBOARD] Estado después de cerrar: {isModalOpen: false, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
+UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: undefined, isDeleteVariant: false}
+UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: undefined, isDeleteVariant: false}
+UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 1}
+UserModal.jsx:48 🟢 [USER_MODAL] Modal abierto: {isOpen: true, isEditing: true}
+UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 1}
+UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 0}
+UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
+UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 0}
+UserModal.jsx:57 🔴 [USER_MODAL] Animación de salida completada
+ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 1}
+ConfirmationModal.jsx:46 🟢 [CONFIRMATION_MODAL] Modal abierto: {isOpen: true, title: 'Desactivar Usuario', isDeleteVariant: false}
+ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 1}
+ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 0}
+ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: undefined, isDeleteVariant: false}
+ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 0}
+ConfirmationModal.jsx:120 🔴 [CONFIRMATION_MODAL] Animación de salida completada (default)
+UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 1}
+UserModal.jsx:48 🟢 [USER_MODAL] Modal abierto: {isOpen: true, isEditing: false}
+UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 1}
+UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 0}
+UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
+UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 0}
+UserModal.jsx:57 🔴 [USER_MODAL] Animación de salida completada

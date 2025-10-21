@@ -13,7 +13,8 @@ import {
   Phone,
   Mail,
   MapPin,
-  Building
+  Building,
+  MessageCircle
 } from 'lucide-react';
 
 // Componentes específicos del cliente
@@ -394,9 +395,8 @@ const ClientOrderStatusPage = () => {
             variants={itemVariants}
             className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Building className="w-5 h-5 text-blue-600 mr-2" />
-              Información de la Sucursal
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Información de contacto
             </h3>
             
             {/* Información horizontal de la sucursal */}
@@ -410,7 +410,20 @@ const ClientOrderStatusPage = () => {
               {/* Teléfono */}
               {orderData?.branch?.phone && (
                 <div className="flex items-center space-x-2">
-                  <Phone className="w-5 h-5 text-green-600" />
+                  <button 
+                    onClick={() => {
+                      const phoneNumber = orderData.branch.phone.replace(/\D/g, '');
+                      const formattedPhone = `+549${phoneNumber}`;
+                      const orderNumber = String(orderData.id).padStart(8, '0');
+                      const message = `Hola, me comunico por la orden N° ${orderNumber}. Me gustaria hacer una consulta adicional sobre los detalles de mi orden.`;
+                      const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+                      window.open(whatsappUrl, '_blank');
+                    }}
+                    className="flex items-center justify-center w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full transition-colors duration-200"
+                    title="Contactar por WhatsApp"
+                  >
+                    <MessageCircle className="w-4 h-4 text-white" />
+                  </button>
                   <span className="text-gray-700">{orderData.branch.phone}</span>
                 </div>
               )}

@@ -4,7 +4,7 @@ import { PlusCircle, Edit, ToggleLeft, ToggleRight, Loader, UserX, UserCheck, Us
 import { getUsers, updateUser } from '../../api/userApi';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
-import { UserModal } from './UserModal';
+import UserModal from './UserModal';
 import { ConfirmationModal } from '../shared/ConfirmationModal';
 
 // Variantes de animación para la tabla
@@ -257,31 +257,23 @@ export const UserConfigSection = () => {
                 </AnimatePresence>
             </motion.div>
 
-            <AnimatePresence>
-                {isModalOpen && (
-                    <UserModal
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        user={selectedUser}
-                        onSave={handleSave}
-                    />
-                )}
-            </AnimatePresence>
+            <UserModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                user={selectedUser}
+                onSave={handleSave}
+            />
 
-            <AnimatePresence>
-                {confirm.isOpen && (
-                    <ConfirmationModal
-                        isOpen={confirm.isOpen}
-                        title={confirm.title}
-                        message={confirm.message}
-                        onConfirm={() => {
-                            confirm.onConfirm();
-                            setConfirm({ isOpen: false });
-                        }}
-                        onClose={() => setConfirm({ isOpen: false })}
-                    />
-                )}
-            </AnimatePresence>
+            <ConfirmationModal
+                isOpen={confirm.isOpen}
+                title={confirm.title}
+                message={confirm.message}
+                onConfirm={() => {
+                    if (confirm.onConfirm) confirm.onConfirm();
+                    setConfirm({ isOpen: false });
+                }}
+                onClose={() => setConfirm({ isOpen: false })}
+            />
         </motion.div>
     );
 };

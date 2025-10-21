@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Star, Award, Calendar } from 'lucide-react';
+import { User, Mail, Phone, Star, Award, Calendar, MessageCircle } from 'lucide-react';
 
 const TechnicianInfo = ({ technician, orderDate, branchEmail }) => {
   if (!technician) {
@@ -85,7 +85,13 @@ const TechnicianInfo = ({ technician, orderDate, branchEmail }) => {
           
           {technician.phone && (
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <Phone className="w-5 h-5 text-green-600 mr-3" />
+              <button 
+                onClick={() => window.open(`https://wa.me/${technician.phone.replace(/\D/g, '')}`, '_blank')}
+                className="flex items-center justify-center w-10 h-10 bg-green-500 hover:bg-green-600 rounded-full transition-colors duration-200 mr-3"
+                title="Contactar por WhatsApp"
+              >
+                <MessageCircle className="w-5 h-5 text-white" />
+              </button>
               <div>
                 <p className="text-sm text-gray-600">Teléfono</p>
                 <p className="font-medium text-gray-800">{technician.phone}</p>

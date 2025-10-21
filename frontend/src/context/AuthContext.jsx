@@ -85,10 +85,21 @@ export const AuthProvider = ({ children }) => {
         if (currentUser) {
             const token = getAccessToken();
             const wsUrl = `${API_CONFIG.BASE_URL.replace('http', 'ws').replace('https', 'wss')}/api/v1/notifications/ws?token=${token}`;
-        websocketRef.current = new WebSocket(wsUrl);
+            
+            // Cerrar conexión existente si existe
+            if (websocketRef.current) {
+                websocketRef.current.close();
+            }
+            
+            websocketRef.current = new WebSocket(wsUrl);
 
             websocketRef.current.onopen = () => console.log("WebSocket conectado.");
-            websocketRef.current.onclose = () => console.log("WebSocket desconectado.");
+            websocketRef.current.onclose = (event) => {
+                // Solo mostrar mensaje si no es un cierre intencional
+                if (event.code !== 1000) {
+                    console.log("WebSocket desconectado inesperadamente. Código:", event.code);
+                }
+            };
             websocketRef.current.onerror = (error) => console.error("Error en WebSocket:", error);
 
             websocketRef.current.onmessage = (event) => {
@@ -112,9 +123,13 @@ export const AuthProvider = ({ children }) => {
                 }
             };
 
-            return () => websocketRef.current?.close();
+            return () => {
+                if (websocketRef.current) {
+                    websocketRef.current.close(1000, 'Component unmounting');
+                }
+            };
         }
-    }, [currentUser, getAccessToken]);
+    }, [currentUser]); // Removida dependencia getAccessToken que causaba reconexiones
 
     const login = async (username, password) => {
         await apiLogin(username, password);

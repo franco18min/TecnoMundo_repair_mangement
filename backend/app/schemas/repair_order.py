@@ -93,6 +93,7 @@ class RepairOrderDetailsUpdate(BaseModel):
     deposit: Optional[float] = None
     parts_used: Optional[str] = None
     status_id: Optional[int] = Field(None, ge=1, le=6)
+    is_spare_part_ordered: Optional[bool] = None
     checklist: Optional[List[DeviceConditionUpdate]] = None
 
 # Schema para actualizar solo campos de diagnóstico

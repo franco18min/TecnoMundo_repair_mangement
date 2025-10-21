@@ -329,18 +329,14 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
             </motion.div>
 
             {/* Modal de confirmación */}
-            <AnimatePresence>
-                {orderToDelete && (
-                    <ConfirmationModal
-                        isOpen={!!orderToDelete}
-                        title="Eliminar Orden"
-                        message={`¿Estás seguro de que quieres eliminar la orden #${orderToDelete.id}? Esta acción no se puede deshacer.`}
-                        onConfirm={handleConfirmDelete}
-                        onClose={() => setOrderToDelete(null)}
-                        isLoading={isLoading}
-                    />
-                )}
-            </AnimatePresence>
+            <ConfirmationModal
+                isOpen={!!orderToDelete}
+                title="Eliminar Orden"
+                message={orderToDelete ? `¿Estás seguro de que quieres eliminar la orden #${orderToDelete.id}? Esta acción no se puede deshacer.` : ""}
+                onConfirm={handleConfirmDelete}
+                onClose={() => setOrderToDelete(null)}
+                isLoading={isLoading}
+            />
         </motion.div>
     );
 }

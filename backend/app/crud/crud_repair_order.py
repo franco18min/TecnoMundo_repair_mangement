@@ -248,6 +248,19 @@ def update_order_details(db: Session, order_id: int, order_update: RepairOrderDe
     if not db_order: return None
     customer_update_data = order_update.customer
     order_update_data = order_update.dict(exclude_unset=True, exclude={'customer', 'checklist'})
+    
+    # Manejar el cambio de estado basado en is_spare_part_ordered
+    if 'is_spare_part_ordered' in order_update_data:
+        is_spare_part_ordered = order_update_data.pop('is_spare_part_ordered')
+        # Si se cambia el estado del repuesto, actualizar el status_id
+        if is_spare_part_ordered:
+            db_order.status_id = 6  # Estado "Esperando repuesto"
+        else:
+            # Si no necesita repuesto y está en estado 6, cambiar a pendiente
+            if db_order.status_id == 6:
+                db_order.status_id = 1  # Estado "Pendiente"
+        db_order.is_spare_part_ordered = is_spare_part_ordered
+    
     for key, value in order_update_data.items():
         setattr(db_order, key, value)
     if customer_update_data and db_order.customer:
