@@ -1,66 +1,20 @@
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:25 🔵 [DASHBOARD] Abriendo OrderModal: {orderId: 114, isModalOpen: false}
-DashboardPage.jsx:28 🔵 [DASHBOARD] Estado después de abrir: {selectedOrderId: 114, isModalOpen: true}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: 114}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: 114}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-DashboardPage.jsx:32 🔴 [DASHBOARD] Cerrando OrderModal: {isModalOpen: true, selectedOrderId: 114, refresh: false}
-DashboardPage.jsx:35 🔴 [DASHBOARD] Estado después de cerrar: {isModalOpen: false, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Orden', isDeleteVariant: false}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Orden', isDeleteVariant: false}
-ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 1}
-ConfirmationModal.jsx:46 🟢 [CONFIRMATION_MODAL] Modal abierto: {isOpen: true, title: 'Eliminar Orden', isDeleteVariant: false}
-ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 1}
-ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 0}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Orden', isDeleteVariant: false}
-ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 0}
-ConfirmationModal.jsx:120 🔴 [CONFIRMATION_MODAL] Animación de salida completada (default)
-DashboardPage.jsx:25 🔵 [DASHBOARD] Abriendo OrderModal: {orderId: null, isModalOpen: false}
-DashboardPage.jsx:28 🔵 [DASHBOARD] Estado después de abrir: {selectedOrderId: null, isModalOpen: true}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: true, currentUser: true, selectedOrderId: null}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: 'Eliminar Foto', isDeleteVariant: true}
-DashboardPage.jsx:32 🔴 [DASHBOARD] Cerrando OrderModal: {isModalOpen: true, selectedOrderId: null, refresh: false}
-DashboardPage.jsx:35 🔴 [DASHBOARD] Estado después de cerrar: {isModalOpen: false, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-DashboardPage.jsx:94 🟡 [DASHBOARD] Renderizando OrderModal: {isModalOpen: false, currentUser: true, selectedOrderId: null}
-UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: undefined, isDeleteVariant: false}
-UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: undefined, isDeleteVariant: false}
-UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 1}
-UserModal.jsx:48 🟢 [USER_MODAL] Modal abierto: {isOpen: true, isEditing: true}
-UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 1}
-UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 0}
-UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
-UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 0}
-UserModal.jsx:57 🔴 [USER_MODAL] Animación de salida completada
-ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 1}
-ConfirmationModal.jsx:46 🟢 [CONFIRMATION_MODAL] Modal abierto: {isOpen: true, title: 'Desactivar Usuario', isDeleteVariant: false}
-ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 1}
-ConfirmationModal.jsx:131 🟡 [CONFIRMATION_MODAL] Animación iniciada (default): {opacity: 0}
-ConfirmationModal.jsx:48 🔴 [CONFIRMATION_MODAL] Modal cerrado: {isOpen: false, title: undefined, isDeleteVariant: false}
-ConfirmationModal.jsx:134 🟢 [CONFIRMATION_MODAL] Animación completada (default): {opacity: 0}
-ConfirmationModal.jsx:120 🔴 [CONFIRMATION_MODAL] Animación de salida completada (default)
-UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 1}
-UserModal.jsx:48 🟢 [USER_MODAL] Modal abierto: {isOpen: true, isEditing: false}
-UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 1}
-UserModal.jsx:68 🟡 [USER_MODAL] Animación iniciada: {opacity: 0}
-UserModal.jsx:50 🔴 [USER_MODAL] Modal cerrado: {isOpen: false, isEditing: false}
-UserModal.jsx:71 🟢 [USER_MODAL] Animación completada: {opacity: 0}
-UserModal.jsx:57 🔴 [USER_MODAL] Animación de salida completada
+react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+login?redirect=/mobile:1  Access to fetch at 'http://192.168.1.28:8001/api/v1/auth/login' from origin 'http://192.168.1.28:5174' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+:8001/api/v1/auth/login:1   Failed to load resource: net::ERR_FAILED
+LoginPage.jsx:43  Error de inicio de sesión: TypeError: Failed to fetch
+    at loginUser (authApi.js:14:26)
+    at login (AuthContext.jsx:135:15)
+    at handleSubmit (LoginPage.jsx:31:15)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at invokeGuardedCallbackAndCatchFirstError (react-dom.development.js:4291:25)
+    at executeDispatch (react-dom.development.js:9041:3)
+    at processDispatchQueueItemsInOrder (react-dom.development.js:9073:7)
+    at processDispatchQueue (react-dom.development.js:9086:5)
+handleSubmit @ LoginPage.jsx:43
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again

@@ -8,6 +8,8 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { ConfirmationModal } from '../shared/ConfirmationModal';
+// NUEVO: Vista móvil con tarjetas
+import { OrderCard } from './OrderCard.jsx';
 
 const statusConfig = {
     'Pending': { text: 'Pendiente', badge: 'bg-red-100 text-red-800', icon: <AlertTriangle size={14} className="text-red-600" /> },
@@ -97,7 +99,7 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
 
 export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     // Usamos 'filteredOrders' en lugar de 'orders'. La variable ahora se llama 'ordersToDisplay' para mayor claridad.
-    const { filteredOrders: ordersToDisplay } = useAuth();
+    const { filteredOrders: ordersToDisplay, currentUser } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [orderToDelete, setOrderToDelete] = useState(null);
@@ -156,6 +158,35 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         });
     }, [ordersToDisplay, filters]);
 
+    // NUEVO: Órdenes del usuario actual (para móvil)
+    const myOrders = useMemo(() => {
+        return (filteredAndSortedOrders || []).filter(order => {
+            const techUsername = typeof order.technician === 'string'
+                ? order.technician
+                : order.technician?.username;
+            const techId = typeof order.technician === 'object' ? order.technician?.id : undefined;
+            return (
+                techUsername === currentUser?.username ||
+                (techId && currentUser?.id && techId === currentUser.id)
+            );
+        });
+    }, [filteredAndSortedOrders, currentUser]);
+
+    // NUEVO: Órdenes sin tomar (unassigned)
+    const unassignedOrders = useMemo(() => {
+        return (filteredAndSortedOrders || []).filter(order => {
+            const assignedName = order?.assignedTechnician?.name ?? order?.technician ?? 'No asignado';
+            return !assignedName || assignedName === 'No asignado';
+        });
+    }, [filteredAndSortedOrders]);
+
+    // NUEVO: Lista para móvil: solo sin tomar + mis órdenes (sin duplicados)
+    const mobileOrders = useMemo(() => {
+        const map = new Map();
+        [...unassignedOrders, ...myOrders].forEach(o => map.set(o.id, o));
+        return Array.from(map.values());
+    }, [unassignedOrders, myOrders]);
+
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
@@ -196,7 +227,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
 
             {/* Filtros */}
             <motion.div 
-                className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+                className="hidden md:block bg-white p-4 rounded-lg shadow-sm border border-gray-200"
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
@@ -235,9 +266,41 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 </motion.div>
             </motion.div>
 
-            {/* Tabla de órdenes */}
+            {/* Lista móvil (tarjetas) órdenes sin tomar y mis órdenes */}
+            <div className="md:hidden space-y-3">
+                {mobileOrders.map((order) => (
+                    <div key={order.id} className="relative">
+                        {permissions.canDeleteOrders && (
+                            <button
+                                className="absolute top-2 right-2 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-sm border border-gray-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+                                title="Eliminar orden"
+                                aria-label="Eliminar orden"
+                                onClick={(e) => { e.stopPropagation(); setOrderToDelete(order); }}
+                            >
+                                <Trash2 className="text-red-600" size={18} />
+                            </button>
+                        )}
+                        <OrderCard order={order} onClick={() => onViewOrderClick(order.id)} />
+                    </div>
+                ))}
+
+                {mobileOrders.length === 0 && (
+                    <motion.div 
+                        className="text-center py-12"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <Archive className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">Sin órdenes para mostrar</h3>
+                        <p className="mt-1 text-sm text-gray-500">En móvil solo se muestran órdenes sin tomar y las que tú hayas tomado.</p>
+                    </motion.div>
+                )}
+            </div>
+
+            {/* Tabla de órdenes (solo en pantallas medianas y grandes) */}
             <motion.div 
-                className="bg-white rounded-lg shadow-md overflow-x-auto"
+                className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.4 }}

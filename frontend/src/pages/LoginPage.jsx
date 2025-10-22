@@ -1,6 +1,6 @@
 // frontend/src/pages/LoginPage.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, KeyRound, Fingerprint, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext'; // 1. IMPORTAMOS EL HOOK DE AUTENTICACIÓN
@@ -15,6 +15,33 @@ export function LoginPage() {
   const [clientQuery, setClientQuery] = useState(''); // Para DNI o número de orden
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // FIX: referencia al contenedor para gestionar la posición al abrir/cerrar teclado
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+
+    const resetPosition = () => {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      } catch {}
+    };
+
+    const onViewportResize = () => {
+      if (!vv) return;
+      const keyboardClosed = vv.height >= window.innerHeight - 60;
+      if (keyboardClosed) {
+        resetPosition();
+      }
+    };
+
+    vv?.addEventListener('resize', onViewportResize);
+
+    return () => {
+      vv?.removeEventListener('resize', onViewportResize);
+    };
+  }, []);
 
   const activeTabClasses = "bg-indigo-600 text-white";
   const inactiveTabClasses = "text-gray-600 hover:bg-gray-200 hover:text-gray-800";
@@ -48,14 +75,18 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
+    <div
+      ref={containerRef}
+      className="min-h-[100dvh] md:min-h-screen bg-gray-100 grid place-items-start md:place-items-center p-4 pb-[env(safe-area-inset-bottom)] font-sans"
+      style={{ overscrollBehavior: 'contain', touchAction: 'manipulation' }}
+    >
       <motion.div
-        className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl p-8"
-        initial={{ opacity: 0, scale: 0.9, y: -50 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="w-full max-w-md max-h-[80dvh] overflow-auto bg-white border border-gray-200 rounded-2xl shadow-xl p-6 sm:p-8"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 120, damping: 15 }}
       >
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">Bienvenido</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-2">Bienvenido</h2>
         <p className="text-center text-gray-500 mb-6">Inicia sesión para continuar</p>
 
         {error && <p className="text-red-500 text-center text-sm mb-4 animate-pulse">{error}</p>}
@@ -95,6 +126,10 @@ export function LoginPage() {
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                     required
+                    autoComplete="username"
+                    inputMode="text"
+                    autoCapitalize="none"
+                    enterKeyHint="go"
                   />
                 </div>
                 <div className="relative mb-6">
@@ -106,6 +141,10 @@ export function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                     required
+                    autoComplete="current-password"
+                    inputMode="text"
+                    autoCapitalize="none"
+                    enterKeyHint="done"
                   />
                 </div>
               </>
@@ -119,6 +158,9 @@ export function LoginPage() {
                   onChange={(e) => setClientQuery(e.target.value)}
                   className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
                   required
+                  autoComplete="off"
+                  inputMode="numeric"
+                  enterKeyHint="go"
                 />
               </div>
             )}

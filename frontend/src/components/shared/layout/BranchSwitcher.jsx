@@ -115,6 +115,9 @@ export function BranchSwitcher() {
                             boxShadow: isOpen ? "0 0 0 1px #4f46e5" : "none"
                         }}
                         transition={{ duration: 0.15 }}
+                        aria-haspopup="listbox"
+                        aria-expanded={isOpen}
+                        aria-label="Selector de sucursal"
                     >
                         {expanded ? (
                             selectedBranch.branch_name
@@ -192,6 +195,8 @@ export function BranchSwitcher() {
                                 stiffness: 400,
                                 damping: 30
                             }}
+                            role="listbox"
+                            aria-label="Lista de sucursales"
                         >
                             <motion.div
                                 className="max-h-60 overflow-y-auto scrollbar-hide"
@@ -227,6 +232,8 @@ export function BranchSwitcher() {
                                                 x: 2
                                             }}
                                             whileTap={{ scale: 0.98 }}
+                                            role="option"
+                                            aria-selected={isSelected}
                                         >
                                             <IconComponent 
                                                 size={14} 
@@ -242,20 +249,7 @@ export function BranchSwitcher() {
                 </AnimatePresence>
             </div>
 
-            {/* Indicador de sucursal seleccionada */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        className="mt-1 text-xs text-indigo-600 font-medium"
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                    >
-                        {selectedBranch.branch_name}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* Eliminado el indicador debajo para evitar empujar el menú y aparecer detrás del dropdown */}
         </motion.div>
     );
 }

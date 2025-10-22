@@ -51,11 +51,11 @@ export function Sidebar({ onLogout, children }) {
                         whileHover={{ scale: 1.1, backgroundColor: "#e5e7eb" }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        aria-label={expanded ? 'Contraer sidebar' : 'Expandir sidebar'}
+                        title={expanded ? 'Contraer sidebar' : 'Expandir sidebar'}
                     >
-                        <motion.div
-                            animate={{ rotate: expanded ? 0 : 180 }}
-                            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                        >
+                        {/* Importante: no rotamos el ícono para que siempre apunte correctamente */}
+                        <motion.div initial={false} animate={{ rotate: 0 }}>
                             {expanded ? <ChevronsLeft /> : <ChevronsRight />}
                         </motion.div>
                     </motion.button>

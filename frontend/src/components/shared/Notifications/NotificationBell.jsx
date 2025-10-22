@@ -24,7 +24,8 @@ export function NotificationBell({ onNotificationClick }) {
 
   return (
     <>
-      <div className="fixed bottom-5 right-5 z-50">
+      {/* En móviles, subir la campana para no tapar la barra inferior */}
+      <div className="fixed right-5 bottom-24 md:bottom-5 z-50">
         <motion.button
           ref={buttonRef}
           onClick={handleBellClick}

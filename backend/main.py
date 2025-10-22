@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api.v1.api import api_router
 from app.db.base import init_db
+from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,18 +17,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Servicio Técnico Pro API", lifespan=lifespan)
 
-# --- CONFIGURACIÓN DE CORS DEFINITIVA ---
-# Lista explícita de orígenes permitidos
-origins = [
-    "http://localhost:5173",  # Desarrollo local
-    "http://localhost:5174",  # Desarrollo local (puerto alternativo)
-    "https://tecnomundo-repair-mangement.web.app",  # Firebase Hosting (dominio principal)
-    "https://tecnomundo-repair-mangement.firebaseapp.com",  # Firebase Hosting (dominio del proyecto)
-]
+# --- CONFIGURACIÓN DE CORS: ahora toma orígenes desde settings ---
+origins = settings.ALLOWED_ORIGINS
+print(f"[CORS] Allowed origins: {origins}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, # Usa la lista específica
+    allow_origins=origins, # Usa la lista de settings
     allow_credentials=True,
     allow_methods=["*"], # Permite todos los métodos
     allow_headers=["*"], # Permite todas las cabeceras

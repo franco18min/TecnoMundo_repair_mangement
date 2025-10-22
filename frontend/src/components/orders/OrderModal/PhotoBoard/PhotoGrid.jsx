@@ -6,7 +6,7 @@ import { PhotoItem } from './PhotoItem.jsx';
 export const PhotoGrid = ({ photos = [], canEdit = false, onSelect, onDelete }) => {
   return (
     <motion.div
-      className="absolute inset-0 mt-12"
+      className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-auto md:absolute md:inset-0 md:mt-12 md:block"
       variants={{ show: { transition: { staggerChildren: 0.1 } } }}
       initial="hidden"
       animate="show"

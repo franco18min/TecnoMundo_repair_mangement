@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 // Componentes específicos del cliente
-import OrderStatusCard from '../components/client/OrderStatusCard';
+
 import OrderTimeline from '../components/client/OrderTimeline';
 import DiagnosisSection from '../components/client/DiagnosisSection';
 import PhotoGallery from '../components/client/PhotoGallery';
@@ -125,17 +125,27 @@ const ClientOrderStatusPage = () => {
     
     setRefreshing(true);
     try {
-      await fetchOrderData(orderData.id);
+      // Obtener detalles por ID (evita errores si la búsqueda original fue por DNI)
+      const data = await getOrderDetails(orderData.id);
+      setOrderData(data);
+      // Refrescar fotos
+      try {
+        const photos = await getOrderPhotos(data.id);
+        setOrderData(prev => ({ ...prev, photos: photos || [] }));
+      } catch (photoError) {
+        console.warn('No se pudieron cargar las fotos en refresh:', photoError);
+      }
       setToast({
         show: true,
         type: 'success',
         message: 'Datos actualizados correctamente'
       });
-    } catch (error) {
+    } catch (err) {
+      console.error('Error al refrescar datos del cliente:', err);
       setToast({
         show: true,
         type: 'error',
-        message: 'Error al actualizar los datos'
+        message: err.message || 'Error al actualizar los datos'
       });
     } finally {
       setRefreshing(false);
@@ -231,7 +241,7 @@ const ClientOrderStatusPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-[100dvh] md:min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-x-hidden pb-[env(safe-area-inset-bottom)]" style={{ overscrollBehavior: 'contain', touchAction: 'manipulation' }}>
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -239,7 +249,7 @@ const ClientOrderStatusPage = () => {
         className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo y navegación */}
             <div className="flex items-center space-x-4">
               <button
@@ -254,7 +264,7 @@ const ClientOrderStatusPage = () => {
               
               <div className="flex items-center space-x-2">
                 <Home className="w-5 h-5 text-blue-600" />
-                <h1 className="text-xl font-bold text-gray-800">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800">
                   TecnoMundo
                 </h1>
               </div>
@@ -280,7 +290,7 @@ const ClientOrderStatusPage = () => {
                 className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
                 title="Actualizar datos"
               >
-                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`${refreshing ? 'animate-spin' : ''} w-5 h-5`} />
               </button>
             </div>
           </div>
@@ -288,7 +298,7 @@ const ClientOrderStatusPage = () => {
       </motion.header>
 
       {/* Contenido principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Panel de bienvenida unificado con información de la orden */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -296,17 +306,17 @@ const ClientOrderStatusPage = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-8"
         >
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-4 sm:p-6 text-white shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                   <Home className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-xl sm:text-2xl font-bold">
                     ¡Hola, {orderData?.customer?.first_name} {orderData?.customer?.last_name}!
                   </h2>
-                  <p className="text-blue-100 mt-1">
+                  <p className="text-sm sm:text-base text-blue-100 mt-1 break-words">
                     Bienvenido al seguimiento de tu orden #{orderData?.id}. Aquí podrás ver el estado actual de tu reparación en tiempo real.
                   </p>
                 </div>
@@ -314,28 +324,28 @@ const ClientOrderStatusPage = () => {
             </div>
             
             {/* Información de la orden integrada */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mt-6">
+              <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
                 <h4 className="font-semibold text-white mb-2">Dispositivo</h4>
-                <p className="text-blue-100">{orderData?.device_model || 'No especificado'}</p>
+                <p className="text-blue-100 break-words">{orderData?.device_model || 'No especificado'}</p>
                 {orderData?.device_type?.name && (
-                  <p className="text-sm text-blue-200 mt-1">Tipo: {orderData?.device_type.name}</p>
+                  <p className="text-sm text-blue-200 mt-1 break-words">Tipo: {orderData?.device_type.name}</p>
                 )}
               </div>
               
-              <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+              <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
                 <h4 className="font-semibold text-white mb-2">Problema Reportado</h4>
-                <p className="text-blue-100">{orderData?.problem_description || 'No especificado'}</p>
+                <p className="text-blue-100 break-words">{orderData?.problem_description || 'No especificado'}</p>
                 {orderData?.accesories && (
-                  <p className="text-sm text-blue-200 mt-1">Accesorios: {orderData?.accesories}</p>
+                  <p className="text-sm text-blue-2 00 mt-1 break-words">Accesorios: {orderData?.accesories}</p>
                 )}
               </div>
 
-              <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+              <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
                 <h4 className="font-semibold text-white mb-2">Sucursal</h4>
-                <p className="text-blue-100">{orderData?.branch?.name}</p>
+                <p className="text-blue-100 break-words">{orderData?.branch?.name}</p>
                 {orderData?.branch?.address && (
-                  <p className="text-sm text-blue-200 mt-1">{orderData?.branch.address}</p>
+                  <p className="text-sm text-blue-200 mt-1 break-words">{orderData?.branch.address}</p>
                 )}
               </div>
             </div>
@@ -360,7 +370,7 @@ const ClientOrderStatusPage = () => {
           </div>
 
           {/* Diagnóstico y detalles técnicos */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="overflow-hidden">
             <ErrorBoundary>
               <DiagnosisSection order={orderData} />
             </ErrorBoundary>
@@ -368,13 +378,13 @@ const ClientOrderStatusPage = () => {
 
           {/* Galería de fotos y costos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="overflow-hidden">
               <ErrorBoundary>
                 <PhotoGallery photos={orderData?.photos || []} />
               </ErrorBoundary>
             </motion.div>
 
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="overflow-hidden">
               <ErrorBoundary>
                 <CostBreakdown order={orderData} />
               </ErrorBoundary>
@@ -382,7 +392,7 @@ const ClientOrderStatusPage = () => {
           </div>
 
           {/* Suscripción por email */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="overflow-hidden">
             <EmailSubscription 
               customerEmail={orderData?.customer?.email || orderData?.customer?.phone_number}
               orderId={orderData?.id}
@@ -393,18 +403,18 @@ const ClientOrderStatusPage = () => {
           {/* Información de la sucursal */}
           <motion.div 
             variants={itemVariants}
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6"
           >
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Información de contacto
             </h3>
             
             {/* Información horizontal de la sucursal */}
-            <div className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               {/* Nombre de sucursal */}
               <div className="flex items-center space-x-2">
                 <Building className="w-5 h-5 text-blue-600" />
-                <span className="font-medium text-gray-800">{orderData?.branch?.branch_name}</span>
+                <span className="font-medium text-gray-800 break-words">{orderData?.branch?.branch_name}</span>
               </div>
               
               {/* Teléfono */}
@@ -424,7 +434,7 @@ const ClientOrderStatusPage = () => {
                   >
                     <MessageCircle className="w-4 h-4 text-white" />
                   </button>
-                  <span className="text-gray-700">{orderData.branch.phone}</span>
+                  <span className="text-gray-700 break-words">{orderData.branch.phone}</span>
                 </div>
               )}
               
@@ -432,7 +442,7 @@ const ClientOrderStatusPage = () => {
               {orderData?.branch?.address && (
                 <div className="flex items-center space-x-2">
                   <MapPin className="w-5 h-5 text-red-600" />
-                  <span className="text-gray-700">{orderData.branch.address}</span>
+                  <span className="text-gray-700 break-words">{orderData.branch.address}</span>
                 </div>
               )}
             </div>

@@ -7,6 +7,18 @@ import { OrderCard } from '../orders/OrderCard';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 
+// Variantes compartidas para animación, replicando las usadas en Gestión de Órdenes
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+        },
+    },
+};
+
 export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
     // --- INICIO DE LA MODIFICACIÓN ---
     // Usamos 'filteredOrders' en lugar de 'orders'
@@ -14,10 +26,24 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
     // --- FIN DE LA MODIFICACIÓN ---
     const { canCreateOrders } = usePermissions('create'); // El modo es 'create' para este permiso
 
+    // Detectar móvil
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // En móvil, mostrar solo órdenes sin tomar y las del usuario actual
+    const mobileFilteredOrders = useMemo(() => {
+        const list = filteredOrders || [];
+        if (!isMobile) return list;
+        return list.filter(order => {
+            const assignedName = order?.assignedTechnician?.name ?? order?.technician ?? 'No asignado';
+            return assignedName === 'No asignado' || assignedName === currentUser?.username;
+        });
+    }, [filteredOrders, isMobile, currentUser]);
+
     const recentOrders = useMemo(() => {
         // La lógica de cortar las 6 más recientes ahora se aplica a la lista ya filtrada
-        return (filteredOrders || []).slice(0, 6);
-    }, [filteredOrders]);
+        const base = isMobile ? mobileFilteredOrders : (filteredOrders || []);
+        return base.slice(0, 6);
+    }, [filteredOrders, mobileFilteredOrders, isMobile]);
 
     return (
         <>
@@ -41,13 +67,16 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
                         transition={{ duration: 0.5, delay: 0.2 }}
                     >
                         <PlusCircle size={20} />
-                        <span className="hidden sm:inline">Crear Nueva Orden</span>
+                        <span className="hidden sm:inline">Nueva orden</span>
                     </motion.button>
                 )}
             </div>
             <motion.div
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 layout
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
             >
                 <AnimatePresence>
                     {recentOrders.length > 0 ? (

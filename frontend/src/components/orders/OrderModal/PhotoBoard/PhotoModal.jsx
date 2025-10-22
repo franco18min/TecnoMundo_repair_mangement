@@ -68,7 +68,7 @@ export const PhotoModal = ({
 
   return (
     <motion.div
-      className="relative bg-white max-w-6xl w-full max-h-[90vh] rounded-xl shadow-2xl p-8 overflow-y-auto m-4"
+      className="relative bg-white max-w-full sm:max-w-5xl w-full max-h-[90vh] rounded-xl shadow-2xl p-4 sm:p-6 overflow-y-auto m-2 sm:m-4"
       onClick={(e) => e.stopPropagation()}
       initial={{ scale: 0.9, y: -20, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -89,7 +89,7 @@ export const PhotoModal = ({
       <ZoomableImage
         src={selectedPhoto.photo}
         alt={selectedPhoto.note || 'Foto de diagnóstico'}
-        className="w-full h-96 rounded-lg mb-6 bg-gray-50"
+        className="w-full h-80 sm:h-96 rounded-lg mb-6 bg-gray-50"
         markers={markers}
         drawings={drawings}
         onAddMarker={handleAddMarker}

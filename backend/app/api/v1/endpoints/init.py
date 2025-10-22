@@ -142,8 +142,9 @@ def check_database_health(db: Session = Depends(get_db)):
     Endpoint para verificar la salud de la base de datos.
     """
     try:
-        # Verificar conexión básica
-        db.execute("SELECT 1")
+        # Verificar conexión básica usando text() para SQLAlchemy 2.x
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         
         # Contar registros en tablas principales
         users_count = db.query(User).count()

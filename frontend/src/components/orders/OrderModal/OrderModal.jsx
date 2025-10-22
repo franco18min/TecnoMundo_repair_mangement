@@ -219,7 +219,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
         try {
             await completeRepairOrder(orderId, payload);
-            showToast('Orden actualizada con éxito', 'success');
+            showToast('Orden completada con éxito', 'success');
             onClose(true);
         } catch (err) {
             setError(err.message || "No se pudo actualizar la orden.");
@@ -245,6 +245,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         };
 
         if (mode === 'create') {
+            setIsSubmitting(true);
             try {
                 const newOrder = await createRepairOrder(payload);
                 showToast('Orden creada con éxito', 'success');
@@ -253,10 +254,12 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             } catch (err) {
                 setError(err.message || "No se pudo crear la orden.");
                 showToast(err.message || "No se pudo crear la orden", 'error');
+            } finally {
                 setIsSubmitting(false);
             }
         }
         else if (mode === 'edit') {
+            setIsSubmitting(true);
             try {
                 // Si es técnico y solo puede editar diagnóstico, usar endpoint específico
                 if (permissions.canModifyForDiagnosis && !permissions.canModifyOrder) {
@@ -279,8 +282,13 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 setIsSubmitting(false);
             }
         }
-        else if (permissions.canEditDiagnosisPanel) {
+        else if (mode === 'view' && permissions.canCompleteOrder) {
+            // Abrir confirmación para completar la orden
             setIsUpdateConfirmModalOpen(true);
+            setIsSubmitting(false);
+        } else {
+            // No hay acción válida en este modo
+            setIsSubmitting(false);
         }
     };
 
@@ -301,7 +309,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div 
-                        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" 
+                        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 sm:p-6" 
                         initial={{ opacity: 0 }} 
                         animate={{ opacity: 1 }} 
                         exit={{ opacity: 0 }}
@@ -309,13 +317,13 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
                     >
                         <motion.div 
-                            className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col" 
+                            className="bg-white rounded-xl shadow-2xl w-full max-w-full sm:max-w-3xl max-h-[92vh] flex flex-col" 
                             initial={{ scale: 0.9, y: -20 }} 
                             animate={{ scale: 1, y: 0 }} 
                             exit={{ scale: 0.9, y: 20 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         >
-                        <div className="p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><motion.button 
+                        <div className="p-4 sm:p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xl sm:text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><motion.button 
                                 onClick={() => onClose(false)} 
                                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
                                 whileHover={{ scale: 1.1, rotate: 90 }}
@@ -324,9 +332,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                             >
                                 <X size={24} />
                             </motion.button></div>
-                        {isLoading ? (<div className="flex-1 flex justify-center items-center p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
+                        {isLoading ? (<div className="flex-1 flex justify-center items-center p-6 sm:p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
                             <>
-                                <form id="order-form" onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-8">
+                                <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-6 sm:space-y-8">
                                     <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
                                     <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
                                     <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
@@ -356,7 +364,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             </AnimatePresence>
 
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
-            <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Actualizar Orden" message="¿Estás seguro de que quieres guardar los cambios en esta orden? Revisa el diagnóstico y los repuestos utilizados antes de confirmar." confirmText="Sí, actualizar orden" />
+            <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Completar Orden" message={`¿Confirmas que deseas completar la orden #${orderId}? Revisa el diagnóstico, repuestos y costos antes de confirmar.`} confirmText="Sí, completar" />
             <ConfirmationModal isOpen={isReopenConfirmOpen} onClose={() => setIsReopenConfirmOpen(false)} onConfirm={handleReopenOrder} title="Confirmar Reapertura" message={`¿Estás seguro de que quieres reabrir la orden #${orderId} y pasarla al estado 'En Proceso'?`} confirmText="Sí, Reabrir" />
             {/* --- INICIO DE LA NUEVA FUNCIONALIDAD --- */}
             <ConfirmationModal isOpen={isDeliverConfirmModalOpen} onClose={() => setIsDeliverConfirmModalOpen(false)} onConfirm={handleDeliverOrder} title="Confirmar Entrega" message={`¿Confirmas que has entregado el equipo asociado a la orden #${orderId} al cliente?`} confirmText="Sí, Entregar" />

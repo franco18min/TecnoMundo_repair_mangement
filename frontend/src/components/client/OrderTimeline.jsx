@@ -42,13 +42,82 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
     }
   ];
 
+  // NUEVO: clases de color para el anillo de pulso según el estado
+  const getRingClass = (color) => {
+    switch (color) {
+      case 'red': return 'ring-red-300';
+      case 'blue': return 'ring-blue-300';
+      case 'yellow': return 'ring-yellow-300';
+      case 'green': return 'ring-green-300';
+      case 'indigo': return 'ring-indigo-300';
+      default: return 'ring-blue-300';
+    }
+  };
+
+  // NUEVO: iconos animados por estado actual
+  const renderAnimatedIcon = (IconComponent, stepName, stepStatus) => {
+    if (stepStatus !== 'current') {
+      return <IconComponent size={20} className={stepStatus === 'pending' ? 'text-gray-400' : 'text-white'} />;
+    }
+    switch (stepName) {
+      case 'Pendiente':
+        return (
+          <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+            <IconComponent size={20} className="text-white" />
+          </motion.div>
+        );
+      case 'Esperando repuesto':
+        return (
+          <motion.div animate={{ rotate: [0, 12, -12, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+            <IconComponent size={20} className="text-white" />
+          </motion.div>
+        );
+      case 'En proceso':
+        return (
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, ease: 'linear', duration: 3 }}>
+            <IconComponent size={20} className="text-white" />
+          </motion.div>
+        );
+      case 'Completado':
+        return (
+          <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+            <IconComponent size={20} className="text-white" />
+          </motion.div>
+        );
+      case 'Entregado':
+        return (
+          <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            <IconComponent size={20} className="text-white" />
+          </motion.div>
+        );
+      default:
+        return <IconComponent size={20} className="text-white" />;
+    }
+  };
+
+  // NUEVO: subtexto por estado actual (evitar "En progreso..." cuando Entregado)
+  const getCurrentSubtext = (stepName) => {
+    switch (stepName) {
+      case 'Pendiente':
+        return 'Orden en cola...';
+      case 'Esperando repuesto':
+        return 'Esperando repuestos...';
+      case 'En proceso':
+        return 'En progreso...';
+      case 'Completado':
+        return 'Esperando retiro del cliente...';
+      case 'Entregado':
+        return null; // No mostrar subtexto en entregado
+      default:
+        return null;
+    }
+  };
+
   // Función para obtener el índice del paso actual
   const getCurrentStepIndex = (currentStatus) => {
     if (!currentStatus) return 0;
-    
     // Traducir el estado actual al español para comparar
     const translatedStatus = translateOrderStatus(currentStatus);
-    
     const statusMap = {
       'Pendiente': 1,
       'Esperando repuesto': 2,
@@ -57,7 +126,6 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
       'Entregado': 5,
       'Cancelado': 0 // Los cancelados se quedan en el inicio
     };
-    
     return statusMap[translatedStatus] ?? 0;
   };
 
@@ -114,20 +182,32 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
     >
       <h3 className="text-lg font-semibold text-gray-800 mb-6">Estado de la Reparación</h3>
       
-      {/* Timeline horizontal */}
-      <div className="relative">
+      {/* Timeline horizontal (desktop) */}
+      <div className="relative hidden md:block">
         {/* Línea de progreso */}
-        <div className="absolute top-6 left-6 right-6 h-0.5 bg-gray-200">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.max(0, (currentStepIndex - 1) / (timelineSteps.length - 1)) * 100}%` }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
-          />
-        </div>
+        <motion.div
+          key={currentStepIndex}
+          className="absolute top-6 left-6 right-6 z-0 px-6 pointer-events-none"
+          variants={containerVariants}
+          initial="initial"
+          animate="animate"
+        >
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: timelineSteps.length - 1 }).map((_, i) => (
+              <div key={i} className="flex-1 h-0.5 bg-gray-200 relative overflow-hidden rounded-full">
+                <motion.div
+                  variants={segmentVariants}
+                  custom={i < (currentStepIndex - 1)}
+                  transition={{ duration: segmentDuration, ease: 'easeInOut' }}
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
         
         {/* Pasos del timeline */}
-        <div className="flex justify-between relative">
+        <div className="flex justify-between relative z-10">
           {timelineSteps.map((step, index) => {
             const stepStatus = getStepStatus(index + 1);
             const IconComponent = step.icon;
@@ -141,18 +221,18 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
               >
-                {/* Icono */}
-                <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center mb-3 ${colors.bg} ${colors.border} ${stepStatus === 'current' ? 'ring-4 ring-opacity-30' : ''}`}>
-                  {stepStatus === 'current' && step.name === 'En proceso' ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, ease: 'linear', duration: 4 }}
-                    >
-                      <IconComponent size={20} className="text-white" />
-                    </motion.div>
-                  ) : (
-                    <IconComponent size={20} className={stepStatus === 'pending' ? 'text-gray-400' : 'text-white'} />
+                {/* Icono con marco pulsante */}
+                <div className="relative mb-3">
+                  {stepStatus === 'current' && (
+                    <motion.span
+                      className={`absolute -inset-1 rounded-full ring-4 ${getRingClass(step.color)} ring-opacity-40 pointer-events-none`}
+                      animate={{ scale: [1, 1.25, 1], opacity: [0.6, 0, 0.6] }}
+                      transition={{ duration: 1.6, repeat: Infinity }}
+                    />
                   )}
+                  <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${colors.bg} ${colors.border}`}>
+                    {renderAnimatedIcon(IconComponent, step.name, stepStatus)}
+                  </div>
                 </div>
                 
                 {/* Contenido */}
@@ -164,19 +244,15 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
                     {step.description}
                   </p>
                   
-                  {stepStatus === 'current' && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-xs text-blue-600 font-medium"
-                    >
-                      {step.name === 'Completado' ? 'Esperando retiro del cliente...' : 'En progreso...'}
-                    </motion.div>
-                  )}
-                  
-                  {stepStatus === 'current' && step.name === 'Entregado' && (
-                    <></>
-                  )}
+                  {/* Subtexto por estado actual */}
+                  {stepStatus === 'current' && (() => {
+                    const subtext = getCurrentSubtext(step.name);
+                    return subtext ? (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-blue-600 font-medium">
+                        {subtext}
+                      </motion.div>
+                    ) : null;
+                  })()}
                   
                   {stepStatus === 'completed' && step.name === 'Pendiente' && (
                     <div className="text-xs text-gray-500">
@@ -195,26 +271,57 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
           })}
         </div>
       </div>
-      
-      {/* Progreso general */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Progreso General</span>
-          <span className="text-sm font-bold text-blue-600">
-            {Math.round((currentStepIndex / timelineSteps.length) * 100)}%
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${(currentStepIndex / timelineSteps.length) * 100}%` }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full"
-          />
-        </div>
+
+      {/* Timeline vertical (mobile) */}
+      <div className="md:hidden space-y-3">
+        {timelineSteps.map((step, index) => {
+          const stepStatus = getStepStatus(index + 1);
+          const IconComponent = step.icon;
+          const colors = getColorClasses(step.color, stepStatus);
+          const subtext = getCurrentSubtext(step.name);
+          
+          return (
+            <div key={step.id} className="flex items-start gap-3 p-3 rounded-lg border border-gray-200">
+              <div className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center ${colors.bg} ${colors.border}`}>
+                {renderAnimatedIcon(IconComponent, step.name, stepStatus)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={`font-semibold text-sm ${stepStatus === 'pending' ? 'text-gray-400' : 'text-gray-800'}`}>{step.name}</div>
+                <div className={`text-xs ${stepStatus === 'pending' ? 'text-gray-300' : 'text-gray-600'} break-words leading-snug`}>{step.description}</div>
+                {stepStatus === 'current' && subtext && (
+                  <div className="text-xs text-blue-600 font-medium mt-1">{subtext}</div>
+                )}
+                {stepStatus === 'completed' && step.name === 'Pendiente' && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {new Date(orderDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
+      
+      {/* Eliminado: Progreso general */}
     </motion.div>
   );
 };
 
 export default OrderTimeline;
+
+// NUEVO: animación secuencial de segmentos de la línea de progreso
+const segmentDuration = 0.5; // segundos por segmento
+const containerVariants = {
+  initial: {},
+  animate: {
+    transition: {
+      delayChildren: 0.3,
+      staggerChildren: segmentDuration,
+      staggerDirection: 1
+    }
+  }
+};
+const segmentVariants = {
+  initial: { width: 0 },
+  animate: (fill) => ({ width: fill ? '100%' : '0%' })
+};

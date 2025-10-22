@@ -10,9 +10,8 @@ import { NotificationBell } from '../components/shared/Notifications/Notificatio
 import { NotificationToast } from '../components/shared/Notifications/NotificationToast';
 import { usePermissions } from '../hooks/usePermissions';
 import { ClientsPage } from '../components/clients/ClientsPage';
-// --- INICIO DE LA MODIFICACIÓN ADITIVA ---
 import { ConfigurationPage } from '../components/config/ConfigurationPage';
-// --- FIN DE LA MODIFICACIÓN ADITIVA ---
+import { MobileBottomBar } from '../components/shared/layout/MobileBottomBar';
 
 export function DashboardPage({ onLogout }) {
     const [activePage, setActivePage] = useState('dashboard');
@@ -49,10 +48,8 @@ export function DashboardPage({ onLogout }) {
                 return <OrdersPage onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
             case 'clients':
                 return <ClientsPage onViewOrderClick={handleOpenModal} />;
-            // --- INICIO DE LA MODIFICACIÓN ADITIVA ---
             case 'config':
                 return <ConfigurationPage />;
-            // --- FIN DE LA MODIFICACIÓN ADITIVA ---
             case 'dashboard':
             default:
                 return <DashboardHome onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
@@ -61,26 +58,30 @@ export function DashboardPage({ onLogout }) {
 
     return (
         <div className="flex bg-gray-50 min-h-screen font-sans">
-            <Sidebar onLogout={onLogout}>
-                <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" active={activePage === 'dashboard'} onClick={() => setActivePage('dashboard')} />
-                <SidebarItem icon={<Wrench size={20} />} text="Órdenes" active={activePage === 'orders'} onClick={() => setActivePage('orders')} />
-                {permissions.canViewClients && (
-                    <SidebarItem icon={<Users size={20} />} text="Clientes" active={activePage === 'clients'} onClick={() => setActivePage('clients')} />
-                )}
-                <hr className="my-3 border-gray-200" />
-                {permissions.canAccessConfig && (
-                    <SidebarItem
-                        icon={<Settings size={20} />}
-                        text="Configuración"
-                        active={activePage === 'config'}
-                        onClick={() => setActivePage('config')}
-                    />
-                )}
-            </Sidebar>
+            <div className="hidden md:block">
+                <Sidebar onLogout={onLogout}>
+                    <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" active={activePage === 'dashboard'} onClick={() => setActivePage('dashboard')} />
+                    <SidebarItem icon={<Wrench size={20} />} text="Órdenes" active={activePage === 'orders'} onClick={() => setActivePage('orders')} />
+                    {permissions.canViewClients && (
+                        <SidebarItem icon={<Users size={20} />} text="Clientes" active={activePage === 'clients'} onClick={() => setActivePage('clients')} />
+                    )}
+                    <hr className="my-3 border-gray-200" />
+                    {permissions.canAccessConfig && (
+                        <SidebarItem
+                            icon={<Settings size={20} />}
+                            text="Configuración"
+                            active={activePage === 'config'}
+                            onClick={() => setActivePage('config')}
+                        />
+                    )}
+                </Sidebar>
+            </div>
 
-            <main className="flex-1 p-8 overflow-y-auto">
+            <main className="flex-1 p-8 pb-20 md:pb-8 overflow-y-auto">
                 {renderPage()}
             </main>
+
+            <MobileBottomBar onLogout={onLogout} />
 
             <NotificationToast onNotificationClick={handleNotificationClick} />
             <NotificationBell onNotificationClick={handleNotificationClick} />

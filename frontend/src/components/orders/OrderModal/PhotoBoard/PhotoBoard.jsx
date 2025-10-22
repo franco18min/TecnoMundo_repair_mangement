@@ -17,7 +17,9 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   const [pendingPhoto, setPendingPhoto] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, photoId: null });
-  const fileInputRef = useRef(null);
+  // Refs separados para cámara y galería
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const { showToast } = useToast();
 
   const memoizedPhotos = useMemo(() => {
@@ -209,6 +211,33 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
     }
   };
 
+  // NUEVO: abrir cámara
+  const handleOpenCamera = useCallback(() => {
+    if (isUploading || !canEdit) return;
+    setTimeout(() => {
+      try {
+        cameraInputRef.current?.click();
+      } catch (error) {
+        console.error('Error al abrir cámara:', error);
+        const input = document.getElementById('camera-file-input');
+        input?.click();
+      }
+    }, 100);
+  }, [isUploading, canEdit]);
+
+  // NUEVO: abrir galería
+  const handleOpenGallery = useCallback(() => {
+    if (isUploading || !canEdit) return;
+    setTimeout(() => {
+      try {
+        galleryInputRef.current?.click();
+      } catch (error) {
+        console.error('Error al abrir galería:', error);
+        const input = document.getElementById('gallery-file-input');
+        input?.click();
+      }
+    }, 100);
+  }, [isUploading, canEdit]);
   const handleAddPhoto = useCallback(() => {
     if (isUploading || !canEdit) return;
     setTimeout(() => {
@@ -227,7 +256,7 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
   }, [isUploading, canEdit]);
 
   return (
-    <div className="relative w-full h-[60vh] bg-gradient-to-br from-slate-100 to-slate-200 shadow-inner rounded-lg border-2 border-slate-300 overflow-hidden p-4">
+    <div className="relative w-full h-[50vh] md:h-[60vh] bg-gradient-to-br from-slate-100 to-slate-200 shadow-inner rounded-lg border-2 border-slate-300 overflow-hidden p-2 md:p-4">
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
 
       <div className="flex justify-between items-center mb-4">
@@ -243,8 +272,10 @@ export function PhotoBoard({ photos = [], onAddPhoto, onDeletePhoto, onUpdatePho
           canEdit={canEdit}
           isUploading={isUploading}
           uploadError={uploadError}
-          onAddPhoto={handleAddPhoto}
-          fileInputRef={fileInputRef}
+          onOpenCamera={handleOpenCamera}
+          onOpenGallery={handleOpenGallery}
+          cameraInputRef={cameraInputRef}
+          galleryInputRef={galleryInputRef}
           onFileSelect={handleFileSelect}
         />
       </div>
