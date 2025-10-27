@@ -10,6 +10,7 @@ import {
   Loader
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { checklistService } from '../../services/checklistService';
 
 const ChecklistQuestionsSection = () => {
   const { currentUser } = useAuth();
@@ -30,18 +31,7 @@ const ChecklistQuestionsSection = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8001/api/v1/predefined-checklist-items/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al cargar las preguntas');
-      }
-
-      const data = await response.json();
+      const data = await checklistService.getAllQuestions(token);
       setQuestions(data);
     } catch (err) {
       setError(err.message);
@@ -55,23 +45,10 @@ const ChecklistQuestionsSection = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8001/api/v1/predefined-checklist-items/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          question: newQuestion.trim(),
-          is_default_selected: false
-        })
+      const newQuestionData = await checklistService.createQuestion(token, {
+        question: newQuestion.trim(),
+        is_default_selected: false
       });
-
-      if (!response.ok) {
-        throw new Error('Error al crear la pregunta');
-      }
-
-      const newQuestionData = await response.json();
       setQuestions([...questions, newQuestionData]);
       setNewQuestion('');
       setShowAddForm(false);
@@ -83,20 +60,7 @@ const ChecklistQuestionsSection = () => {
   const handleUpdateQuestion = async (questionId, updatedData) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8001/api/v1/predefined-checklist-items/${questionId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar la pregunta');
-      }
-
-      const updatedQuestion = await response.json();
+      const updatedQuestion = await checklistService.updateQuestion(token, questionId, updatedData);
       setQuestions(questions.map(q => q.id === questionId ? updatedQuestion : q));
       setEditingQuestion(null);
     } catch (err) {
@@ -107,18 +71,7 @@ const ChecklistQuestionsSection = () => {
   const handleDeleteQuestion = async (questionId) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8001/api/v1/predefined-checklist-items/${questionId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar la pregunta');
-      }
-
+      await checklistService.deleteQuestion(token, questionId);
       setQuestions(questions.filter(q => q.id !== questionId));
       setDeleteConfirm(null);
     } catch (err) {

@@ -1,15 +1,14 @@
 // frontend/src/services/checklistService.js
 
-const API_BASE_URL = 'http://localhost:8001/api/v1';
+import { API_CONFIG, getAuthHeaders } from '../config/api';
+
+const API_V1_URL = API_CONFIG.API_V1_URL;
 
 export const checklistService = {
   // Obtener todas las preguntas predefinidas
   async getAllQuestions(token) {
-    const response = await fetch(`${API_BASE_URL}/predefined-checklist-items/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+    const response = await fetch(`${API_V1_URL}/predefined-checklist-items/`, {
+      headers: getAuthHeaders()
     });
 
     if (!response.ok) {
@@ -21,11 +20,8 @@ export const checklistService = {
 
   // Obtener preguntas marcadas como seleccionadas por defecto
   async getDefaultQuestions(token) {
-    const response = await fetch(`${API_BASE_URL}/predefined-checklist-items/default`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+    const response = await fetch(`${API_V1_URL}/predefined-checklist-items/default`, {
+      headers: getAuthHeaders()
     });
 
     if (!response.ok) {
@@ -37,12 +33,9 @@ export const checklistService = {
 
   // Crear una nueva pregunta
   async createQuestion(token, questionData) {
-    const response = await fetch(`${API_BASE_URL}/predefined-checklist-items/`, {
+    const response = await fetch(`${API_V1_URL}/predefined-checklist-items/`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(questionData)
     });
 
@@ -55,12 +48,9 @@ export const checklistService = {
 
   // Actualizar una pregunta existente
   async updateQuestion(token, questionId, questionData) {
-    const response = await fetch(`${API_BASE_URL}/predefined-checklist-items/${questionId}`, {
+    const response = await fetch(`${API_V1_URL}/predefined-checklist-items/${questionId}`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(questionData)
     });
 
@@ -73,12 +63,9 @@ export const checklistService = {
 
   // Eliminar una pregunta
   async deleteQuestion(token, questionId) {
-    const response = await fetch(`${API_BASE_URL}/predefined-checklist-items/${questionId}`, {
+    const response = await fetch(`${API_V1_URL}/predefined-checklist-items/${questionId}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+      headers: getAuthHeaders()
     });
 
     if (!response.ok) {
@@ -90,12 +77,9 @@ export const checklistService = {
 
   // Actualizar selección por defecto de múltiples preguntas
   async updateDefaultSelection(token, questionIds) {
-    const response = await fetch(`${API_BASE_URL}/predefined-checklist-items/default-selection`, {
+    const response = await fetch(`${API_V1_URL}/predefined-checklist-items/default-selection`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(questionIds)
     });
 
