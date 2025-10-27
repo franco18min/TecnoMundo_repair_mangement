@@ -1,10 +1,13 @@
 // frontend/src/api/orderApi.js
+import { API_CONFIG } from '../config/api.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+// Usar configuración centralizada para evitar contenido mixto en producción
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // Función para obtener headers de autenticación
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('access_token');
+  // Mantener consistencia con el resto del proyecto
+  const token = localStorage.getItem('accessToken') || localStorage.getItem('access_token');
   return {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` })

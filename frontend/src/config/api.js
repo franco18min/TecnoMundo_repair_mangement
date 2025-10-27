@@ -1,20 +1,44 @@
 // frontend/src/config/api.js
 
-// Configuración centralizada de la API
+// Configuración centralizada de la API con endurecimiento para producción
+const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'development';
+const BASE_URL_ENV = import.meta.env.VITE_API_BASE_URL;
+const DEFAULT_DEV_BASE_URL = 'http://127.0.0.1:8001';
+
+// Determinar BASE_URL según entorno, evitando fallback inseguro en producción
+let BASE_URL;
+if (ENVIRONMENT === 'production') {
+  if (BASE_URL_ENV && BASE_URL_ENV.startsWith('https://')) {
+    BASE_URL = BASE_URL_ENV;
+  } else {
+    console.error('[Config] VITE_API_BASE_URL no está definido o no es HTTPS en producción. Configure frontend/.env.production correctamente.');
+    // Intentar un valor razonable por defecto en producción (ajuste si su dominio difiere)
+    BASE_URL = BASE_URL_ENV || 'https://api.tecnoapp.ar';
+  }
+} else {
+  BASE_URL = BASE_URL_ENV || DEFAULT_DEV_BASE_URL;
+}
+
+const API_V1_URL = `${BASE_URL}/api/v1`;
+
+// Construir URL de WebSocket en función de BASE_URL
+let WS_URL;
+if (BASE_URL.startsWith('https://')) {
+  WS_URL = BASE_URL.replace('https://', 'wss://') + '/ws';
+} else if (BASE_URL.startsWith('http://')) {
+  WS_URL = BASE_URL.replace('http://', 'ws://') + '/ws';
+} else {
+  WS_URL = BASE_URL_ENV
+    ? BASE_URL_ENV.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws'
+    : 'ws://127.0.0.1:8001/ws';
+}
+
+// Configuración exportada
 export const API_CONFIG = {
-  // URL base de la API desde variables de entorno
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001',
-  
-  // URL completa de la API v1
-  API_V1_URL: `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001'}/api/v1`,
-  
-  // Configuración del entorno
-  ENVIRONMENT: import.meta.env.VITE_ENVIRONMENT || 'development',
-  
-  // Configuración de WebSocket
-  WS_URL: import.meta.env.VITE_API_BASE_URL 
-    ? import.meta.env.VITE_API_BASE_URL.replace('http', 'ws').replace('https', 'wss') + '/ws'
-    : 'ws://127.0.0.1:8001/ws',
+  BASE_URL,
+  API_V1_URL,
+  ENVIRONMENT,
+  WS_URL,
 };
 
 // Función helper para obtener headers de autenticación
