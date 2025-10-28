@@ -84,14 +84,14 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (currentUser) {
             const token = getAccessToken();
-            const wsUrl = `${API_CONFIG.BASE_URL.replace('http', 'ws').replace('https', 'wss')}/api/v1/notifications/ws?token=${token}`;
+            const wsUrlWithToken = `${API_CONFIG.WS_URL}?token=${token}`;
             
             // Cerrar conexión existente si existe
             if (websocketRef.current) {
                 websocketRef.current.close();
             }
             
-            websocketRef.current = new WebSocket(wsUrl);
+            websocketRef.current = new WebSocket(wsUrlWithToken);
 
             websocketRef.current.onopen = () => console.log("WebSocket conectado.");
             websocketRef.current.onclose = (event) => {

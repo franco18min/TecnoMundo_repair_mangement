@@ -34,8 +34,11 @@ class Settings:
 
     # --- Configuración de CORS ---
     # Lee los orígenes permitidos desde una variable de entorno.
-    # Si no se define, permite solo el frontend local por defecto.
-    ALLOWED_ORIGINS_STR: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174")
+    # En ausencia de configuración, permitimos el dominio de producción y el frontend local.
+    ALLOWED_ORIGINS_STR: str = os.getenv(
+        "ALLOWED_ORIGINS",
+        "https://tecnoapp.ar,http://localhost:5173,http://localhost:5174"
+    )
     ALLOWED_ORIGINS: list[str] = [
         origin.strip() for origin in ALLOWED_ORIGINS_STR.split(',')
     ]

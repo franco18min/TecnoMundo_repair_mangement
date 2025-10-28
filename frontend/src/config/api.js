@@ -21,16 +21,17 @@ if (ENVIRONMENT === 'production') {
 
 const API_V1_URL = `${BASE_URL}/api/v1`;
 
-// Construir URL de WebSocket en función de BASE_URL
+// Construir URL de WebSocket en función de BASE_URL (ruta del backend: /api/v1/notifications/ws)
 let WS_URL;
+const WS_PATH = '/api/v1/notifications/ws';
 if (BASE_URL.startsWith('https://')) {
-  WS_URL = BASE_URL.replace('https://', 'wss://') + '/ws';
+  WS_URL = BASE_URL.replace('https://', 'wss://') + WS_PATH;
 } else if (BASE_URL.startsWith('http://')) {
-  WS_URL = BASE_URL.replace('http://', 'ws://') + '/ws';
+  WS_URL = BASE_URL.replace('http://', 'ws://') + WS_PATH;
 } else {
   WS_URL = BASE_URL_ENV
-    ? BASE_URL_ENV.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws'
-    : 'ws://127.0.0.1:8001/ws';
+    ? BASE_URL_ENV.replace('https://', 'wss://').replace('http://', 'ws://') + WS_PATH
+    : `ws://127.0.0.1:8001${WS_PATH}`;
 }
 
 // Configuración exportada
