@@ -37,7 +37,7 @@ class Settings:
     # En ausencia de configuración, permitimos el dominio de producción y el frontend local.
     ALLOWED_ORIGINS_STR: str = os.getenv(
         "ALLOWED_ORIGINS",
-        "https://tecnoapp.ar,http://localhost:5173,http://localhost:5174"
+        "https://tecnoapp.ar,https://www.tecnoapp.ar,http://localhost:5173,http://localhost:5174"
     )
     ALLOWED_ORIGINS: list[str] = [
         origin.strip() for origin in ALLOWED_ORIGINS_STR.split(',')

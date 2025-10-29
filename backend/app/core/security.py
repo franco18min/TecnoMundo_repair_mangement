@@ -1,5 +1,6 @@
 
 from datetime import datetime, timedelta, timezone
+import os
 import hashlib
 import secrets
 import base64
@@ -7,11 +8,12 @@ from jose import JWTError, jwt
 from typing import Optional
 
 # --- Configuración de Seguridad ---
-SECRET_KEY = "un-secreto-muy-seguro-y-dificil-de-adivinar"
-ALGORITHM = "HS256"
-# --- INICIO DE LA CORRECCIÓN ---
-ACCESS_TOKEN_EXPIRE_MINUTES = 240 # 4 horas (4 * 60 minutos)
-# --- FIN DE LA CORRECCIÓN ---
+# Cargar clave y configuración desde variables de entorno para producción
+# Usa valores seguros por defecto en desarrollo, pero en producción se DEBE definir SECRET_KEY
+SECRET_KEY = os.getenv("SECRET_KEY", "change-this-in-production")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+# Permite configurar expiración del token por entorno
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "240"))  # 4 horas por defecto
 
 # Configuración personalizada para hashing de contraseñas usando hashlib
 # Evita problemas de bcrypt con límites de 72 bytes
@@ -93,8 +95,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        # Este es un fallback, pero la lógica de login principal usa ACCESS_TOKEN_EXPIRE_MINUTES
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        # Fallback: usar configuración ACCESS_TOKEN_EXPIRE_MINUTES
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
