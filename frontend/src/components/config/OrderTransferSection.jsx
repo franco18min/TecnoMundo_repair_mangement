@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightLeft, Search, Building2, Package, AlertTriangle, CheckCircle, Clock, Wrench, XCircle, Truck, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -26,6 +26,7 @@ export const OrderTransferSection = () => {
     const [selectedBranch, setSelectedBranch] = useState('');
     const [isTransferring, setIsTransferring] = useState(false);
     const [showAnimation, setShowAnimation] = useState(false);
+    const transferTimerRef = useRef(null);
 
     // Resetear sucursal seleccionada cuando cambie la orden
     useEffect(() => {
@@ -88,10 +89,14 @@ export const OrderTransferSection = () => {
 
         setShowAnimation(true);
         
-        // Pequeño delay para mostrar el estado inicial
-        setTimeout(() => {
+        // Pequeño delay para mostrar el estado inicial, controlado para evitar condiciones de carrera
+        if (transferTimerRef.current) {
+            clearTimeout(transferTimerRef.current);
+        }
+        transferTimerRef.current = setTimeout(() => {
             setIsTransferring(true);
-        }, 500);
+            transferTimerRef.current = null;
+        }, 300);
 
         try {
             await transferRepairOrder(selectedOrder.id, parseInt(selectedBranch));
@@ -101,6 +106,11 @@ export const OrderTransferSection = () => {
             showToast(error.message || 'Error al transferir la orden', 'error');
             setShowAnimation(false);
         } finally {
+            // Evitar que un timeout atrasado vuelva a poner isTransferring en true
+            if (transferTimerRef.current) {
+                clearTimeout(transferTimerRef.current);
+                transferTimerRef.current = null;
+            }
             setIsTransferring(false);
         }
     };
