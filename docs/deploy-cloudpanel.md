@@ -68,6 +68,29 @@ Configuración del Frontend
    - Habilitar HTTP/2 (automático con SSL).
    - Activar compresión (se recomienda; CloudPanel suele traer ajustes de rendimiento).
 
+4) Fallback de rutas SPA (React Router)
+   - Problema común: al refrescar rutas internas como /login, /dashboard o /client/order/xxx, Nginx responde 404.
+   - Solución: añadir una regla Nginx para que todas las rutas no encontradas sirvan index.html (SPA fallback).
+   - En CloudPanel: Sitio tecnoapp.ar → Settings → Nginx Rules → agregar:
+     ```nginx
+     # SPA fallback para React Router
+     location / {
+         try_files $uri $uri/ /index.html;
+     }
+     ```
+   - Si el backend está en el mismo dominio con prefijo /api (no recomendado; preferimos api.tecnoapp.ar), añadir también:
+     ```nginx
+     # Proxy para API si está en el mismo dominio
+     location /api/ {
+         proxy_pass http://127.0.0.1:9001;
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header X-Forwarded-Proto $scheme;
+     }
+     ```
+   - Reiniciar Nginx desde CloudPanel para aplicar cambios.
+
 Configuración del Backend (FastAPI)
 1) Variables de entorno
    - Archivo: backend/.env (ejemplo en backend/.env.example)

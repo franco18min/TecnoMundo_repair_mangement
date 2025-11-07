@@ -13,6 +13,8 @@ from app.models.user import User
 from app.models.status_order import StatusOrder
 from app.models.device_type import DeviceType
 from app.schemas.repair_order import RepairOrder as RepairOrderSchema
+from app.services.email_transaccional import EmailTransactionalService
+from app.crud import crud_email_subscription
 
 router = APIRouter()
 
@@ -107,14 +109,28 @@ def subscribe_to_order_notifications(
             status_code=400,
             detail="Email requerido"
         )
+    # Persistir email de contacto en el cliente (opcional)
+    if order.customer:
+        order.customer.email = email
+        db.commit()
+    # Suscribir email a ESTA orden
+    crud_email_subscription.subscribe(db, order_id=order_id, email=email)
     
-    # Aquí se implementaría la lógica de suscripción
-    # Por ahora retornamos éxito simulado
-    return {
-        "message": "Suscripción exitosa",
-        "order_id": order_id,
-        "email": email
-    }
+    # Opcional: enviar confirmación de suscripción
+    try:
+        email_service = EmailTransactionalService()
+        subject = f"Suscripción activada – Orden #{order.id}"
+        html = (
+            f"<h3>Suscripción activada</h3>"
+            f"<p>Has activado las notificaciones por email para la orden <strong>#{order.id}</strong>.</p>"
+            f"<p>Te enviaremos actualizaciones de estado, diagnóstico y fotos.</p>"
+        )
+        email_service.send_email(email, subject, html)
+    except Exception:
+        # No bloquear por errores de email
+        pass
+
+    return {"message": "Suscripción exitosa", "order_id": order_id, "email": email}
 
 @router.post("/{order_id}/unsubscribe")
 def unsubscribe_from_order_notifications(
@@ -139,14 +155,30 @@ def unsubscribe_from_order_notifications(
             status_code=400,
             detail="Email requerido"
         )
-    
-    # Aquí se implementaría la lógica de desuscripción
-    # Por ahora retornamos éxito simulado
-    return {
-        "message": "Desuscripción exitosa",
-        "order_id": order_id,
-        "email": email
-    }
+    crud_email_subscription.unsubscribe(db, order_id=order_id, email=email)
+
+    return {"message": "Desuscripción exitosa", "order_id": order_id, "email": email}
+
+@router.get("/{order_id}/subscription-status")
+def get_subscription_status(
+    order_id: int,
+    email: str,
+    db: Session = Depends(get_db)
+):
+    """Devuelve si ese email está suscrito activamente a la orden."""
+    return {"order_id": order_id, "email": email, "is_subscribed": crud_email_subscription.is_subscribed(db, order_id, email)}
+
+@router.get("/{order_id}/unsubscribe-email")
+def unsubscribe_via_link(
+    order_id: int,
+    email: str,
+    db: Session = Depends(get_db)
+):
+    """Permite desuscribirse mediante un enlace GET (usable desde correos)."""
+    ok = crud_email_subscription.unsubscribe(db, order_id=order_id, email=email)
+    if not ok:
+        raise HTTPException(status_code=404, detail="No se encontró suscripción activa para esa orden y email")
+    return {"message": "Has sido desuscrito de las notificaciones de esta orden.", "order_id": order_id, "email": email}
 
 @router.get("/{order_id}/photos")
 def get_order_photos(

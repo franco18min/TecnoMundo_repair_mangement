@@ -1,0 +1,20 @@
+kind: frontend
+framework: react-vite
+paths:
+  - frontend/src
+file_patterns:
+  - "**/*.tsx"
+  - "**/*.ts"
+  - "**/*.jsx"
+  - "**/*.js"
+  - "**/*.css"
+semantics:
+  components: react
+  state: context/hooks
+  styling: tailwindcss
+priority:
+  - components
+  - state
+  - hooks
+  - pages
+  - services

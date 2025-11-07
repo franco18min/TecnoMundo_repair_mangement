@@ -34,6 +34,7 @@ def create_public_user(db: Session, *, obj_in: UserCreate) -> User:
     db_obj = User(
         username=obj_in.username,
         email=obj_in.email,
+        phone_number=getattr(obj_in, 'phone_number', None),
         password=hashed_password,
     )
     db.add(db_obj)
@@ -49,6 +50,7 @@ def create(db: Session, *, obj_in: UserCreateByAdmin) -> User:
     db_obj = User(
         username=obj_in.username,
         email=obj_in.email,
+        phone_number=obj_in.phone_number,
         password=hashed_password,
         role_id=obj_in.role_id,
         branch_id=obj_in.branch_id,

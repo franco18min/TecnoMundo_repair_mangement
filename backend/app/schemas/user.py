@@ -11,6 +11,7 @@ class UserWithRole(BaseModel):
     id: int
     username: str
     email: str
+    phone_number: Optional[str] = None
     role: Role
     branch: Optional[Branch] = None
     is_active: bool  # <-- CAMPO AÑADIDO
@@ -22,6 +23,7 @@ class UserWithRole(BaseModel):
 class User(BaseModel):
     id: int
     username: str
+    phone_number: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -30,6 +32,7 @@ class User(BaseModel):
 class UserBase(BaseModel):
     username: str
     email: str
+    phone_number: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -51,6 +54,7 @@ class TokenData(BaseModel):
 class UserCreateByAdmin(BaseModel):
     username: str
     email: str
+    phone_number: Optional[str] = None
     password: str
     role_id: int
     branch_id: Optional[int] = None
@@ -68,6 +72,7 @@ class UserCreateByAdmin(BaseModel):
 
 class UserUpdateByAdmin(BaseModel):
     email: Optional[str] = None
+    phone_number: Optional[str] = None
     password: Optional[str] = None  # Campo para cambio de contraseña
     role_id: Optional[int] = None
     branch_id: Optional[int] = None

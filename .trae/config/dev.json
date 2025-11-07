@@ -1,0 +1,24 @@
+{
+  "env": "dev",
+  "tokens": {
+    "maxMode": {
+      "threshold": 16000,
+      "warningAt": 12000,
+      "hardLimit": 20000,
+      "compression": {
+        "minifyJson": true,
+        "minifyCode": true,
+        "removeComments": true,
+        "stripWhitespace": true
+      },
+      "prioritization": {
+        "segments": ["code", "paths", "commands", "schemas"],
+        "dropLowValue": true
+      }
+    }
+  },
+  "monitoring": {
+    "metricsFile": "cache/metrics.json",
+    "logLevel": "info"
+  }
+}

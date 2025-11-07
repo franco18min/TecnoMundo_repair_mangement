@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Mail, 
@@ -10,8 +10,11 @@ import {
   Smartphone,
   MessageSquare,
   Camera,
-  CheckCircle
+  CheckCircle,
+  ClipboardList
 } from 'lucide-react';
+
+import { subscribeToOrderNotifications, unsubscribeFromOrderNotifications, getSubscriptionStatus } from '../../api/orderApi';
 
 const EmailSubscription = ({ orderId, customerEmail, onSubscriptionChange }) => {
   const [email, setEmail] = useState(customerEmail || '');
@@ -28,6 +31,22 @@ const EmailSubscription = ({ orderId, customerEmail, onSubscriptionChange }) => 
     completionNotice: true
   });
 
+  // Detectar si ya está suscrito ese email a esta orden
+  useEffect(() => {
+    const checkStatus = async () => {
+      const emailToCheck = (email || customerEmail || '').trim();
+      if (!orderId || !emailToCheck) return;
+      try {
+        const res = await getSubscriptionStatus(orderId, emailToCheck);
+        setIsSubscribed(!!res?.is_subscribed);
+      } catch (e) {
+        // Silenciar errores de verificación
+      }
+    };
+    checkStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId, email, customerEmail]);
+
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -43,10 +62,8 @@ const EmailSubscription = ({ orderId, customerEmail, onSubscriptionChange }) => 
     setError('');
 
     try {
-      // Aquí se integraría con Brevo API
-      // Por ahora simulamos la suscripción
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      // Llamada real al backend
+      await subscribeToOrderNotifications(orderId, email);
       setIsSubscribed(true);
       setShowSuccess(true);
       
@@ -71,9 +88,7 @@ const EmailSubscription = ({ orderId, customerEmail, onSubscriptionChange }) => 
     setIsLoading(true);
     
     try {
-      // Aquí se integraría con Brevo API para desuscribir
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await unsubscribeFromOrderNotifications(orderId, email);
       setIsSubscribed(false);
       
       if (onSubscriptionChange) {
@@ -113,8 +128,8 @@ const EmailSubscription = ({ orderId, customerEmail, onSubscriptionChange }) => 
     },
     {
       key: 'technicianMessages',
-      icon: MessageSquare,
-      title: 'Mensajes del Técnico',
+      icon: ClipboardList,
+      title: 'Diagnóstico del técnico',
       description: 'Actualizaciones y comentarios'
     },
     {
@@ -174,7 +189,7 @@ const EmailSubscription = ({ orderId, customerEmail, onSubscriptionChange }) => 
             <div className="mb-6">
               <h4 className="font-semibold text-gray-800 mb-2">¿Quieres recibir actualizaciones?</h4>
               <p className="text-gray-600 text-sm">
-                Te notificaremos por email sobre cambios de estado, mensajes del técnico y cuando tu dispositivo esté listo.
+                Te notificaremos por email sobre cambios de estado (en español), diagnóstico del técnico y nuevas fotos. En cada correo tendrás un enlace directo para ver tu orden y para darte de baja si lo deseas.
               </p>
             </div>
 

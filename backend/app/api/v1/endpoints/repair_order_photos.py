@@ -1,7 +1,7 @@
 # backend/app/api/v1/endpoints/repair_order_photos.py
 
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 import base64
 import io
@@ -11,6 +11,7 @@ from app.schemas import repair_order_photo as schemas_photo
 from app.crud import crud_repair_order_photo, crud_repair_order
 from app.models.user import User
 from app.api.v1 import dependencies as deps
+from app.services.email_transaccional import EmailTransactionalService
 
 router = APIRouter()
 
@@ -73,6 +74,7 @@ def create_repair_order_photo(
     order_id: int = Form(...),
     note: str = Form(None),
     file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_user)
 ):
@@ -143,6 +145,15 @@ def create_repair_order_photo(
         print("🔍 DEBUG: Guardando en base de datos...")
         result = crud_repair_order_photo.create_repair_order_photo(db=db, photo=photo_data)
         print(f"✅ DEBUG: Foto guardada con ID: {result.id}")
+        # Enviar correo al cliente si está suscrito
+        try:
+            email_service = EmailTransactionalService()
+            if background_tasks:
+                background_tasks.add_task(email_service.notify_photo_uploaded, order_id=order_id)
+            else:
+                email_service.notify_photo_uploaded(order_id)
+        except Exception:
+            pass
         return result
         
     except HTTPException as he:

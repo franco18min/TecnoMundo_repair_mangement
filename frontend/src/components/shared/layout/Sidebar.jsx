@@ -30,8 +30,9 @@ export function Sidebar({ onLogout, children }) {
                 }}
             >
                 <div className={`p-4 pb-2 flex items-center ${expanded ? 'justify-between' : 'justify-center'}`}>
-                    <motion.h1
-                        className="overflow-hidden font-bold text-2xl text-indigo-600"
+                    {/* Logo dinámico desde Supabase (system.photos: name='logo'), fallback al texto */}
+                    <motion.div
+                        className="overflow-hidden"
                         initial={false}
                         animate={{ 
                             opacity: expanded ? 1 : 0, 
@@ -43,8 +44,8 @@ export function Sidebar({ onLogout, children }) {
                             ease: [0.4, 0, 0.2, 1] 
                         }}
                     >
-                        TecnoMundo
-                    </motion.h1>
+                        <BrandLogoOrText />
+                    </motion.div>
                     <motion.button 
                         onClick={() => setExpanded(curr => !curr)} 
                         className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors duration-200"
@@ -227,5 +228,38 @@ export function SidebarItem({ icon, text, active, alert, onClick }) {
                 )}
             </AnimatePresence>
         </motion.li>
+    );
+}
+
+// --- Logo dinámico ---
+function BrandLogoOrText() {
+    const [logoSrc, setLogoSrc] = React.useState(null);
+    React.useEffect(() => {
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        async function load() {
+            try {
+                if (!url || !key) return;
+                const endpoint = `${url.replace(/\/$/, '')}/rest/v1/system.photo?select=data_base64,name&name=eq.logo`;
+                const resp = await fetch(endpoint, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+                if (!resp.ok) return;
+                const json = await resp.json();
+                const rec = Array.isArray(json) ? json[0] : null;
+                if (rec && rec.data_base64) {
+                    setLogoSrc(`data:image/png;base64,${rec.data_base64}`);
+                }
+            } catch (e) {
+                console.warn('No se pudo cargar logo desde Supabase', e);
+            }
+        }
+        load();
+    }, []);
+    if (logoSrc) {
+        return (
+            <img src={logoSrc} alt="Logo" className="h-8 w-auto" />
+        );
+    }
+    return (
+        <h1 className="font-bold text-2xl text-indigo-600">TecnoMundo</h1>
     );
 }

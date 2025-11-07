@@ -4,29 +4,34 @@ import { API_CONFIG, getAuthHeaders } from '../config/api.js';
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // 1. Creamos una función de mapeo reutilizable
-export const mapOrderData = (order) => ({
-    id: order.id,
-    branch_id: order.branch?.id,
-    branch: {
-        id: order.branch?.id,
-        branch_name: order.branch?.branch_name || 'Sucursal desconocida'
-    },
-    customer: {
-        name: `${order.customer?.first_name || ''} ${order.customer?.last_name || ''}`.trim()
-    },
-    device: {
-        type: order.device_type?.type_name || 'Desconocido',
-        model: order.device_model
-    },
-    status: order.status?.status_name || 'Desconocido',
-    assignedTechnician: { name: order.technician?.username || 'No asignado' },
-    dateReceived: order.created_at,
-    // Campos adicionales para la tabla
-    date: order.created_at ? new Date(order.created_at).toLocaleDateString('es-ES') : 'N/A',
-    cost: order.total_cost || 0,
-    technician: order.technician?.username || 'No asignado',
-    parts_used: order.parts_used || 'N/A',
-});
+export const mapOrderData = (order) => {
+    // Asegurar que branch_id se actualice dinámicamente aunque la relación branch esté en caché/obsoleta
+    const branchId = order.branch_id ?? order.branch?.id;
+    const normalizedBranch = (order.branch && order.branch.id === branchId)
+        ? { id: order.branch.id, branch_name: order.branch.branch_name }
+        : { id: branchId };
+
+    return {
+        id: order.id,
+        branch_id: branchId,
+        branch: normalizedBranch,
+        customer: {
+            name: `${order.customer?.first_name || ''} ${order.customer?.last_name || ''}`.trim()
+        },
+        device: {
+            type: order.device_type?.type_name || 'Desconocido',
+            model: order.device_model
+        },
+        status: order.status?.status_name || 'Desconocido',
+        assignedTechnician: { name: order.technician?.username || 'No asignado' },
+        dateReceived: order.created_at,
+        // Campos adicionales para la tabla
+        date: order.created_at ? new Date(order.created_at).toLocaleDateString('es-ES') : 'N/A',
+        cost: order.total_cost || 0,
+        technician: order.technician?.username || 'No asignado',
+        parts_used: order.parts_used || 'N/A',
+    };
+};
 
 
 export const fetchRepairOrders = async () => {

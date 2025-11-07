@@ -17,6 +17,7 @@ const getAuthHeaders = () => {
 // Función de mapeo para datos de orden del cliente
 const mapClientOrderData = (order) => ({
   id: order.id,
+  branch_id: order.branch_id ?? order.branch?.id ?? null,
   customer: {
     first_name: order.customer?.first_name || '',
     last_name: order.customer?.last_name || '',
@@ -42,9 +43,11 @@ const mapClientOrderData = (order) => ({
     last_name: order.technician?.last_name || ''
   },
   branch: {
+    id: order.branch?.id ?? order.branch_id ?? null,
     branch_name: order.branch?.branch_name || 'Sucursal principal',
     address: order.branch?.address || '',
-    phone: order.branch?.phone || ''
+    phone: order.branch?.phone || '',
+    email: order.branch?.email || ''
   },
   total_cost: order.total_cost || 0,
   deposit: order.deposit || 0,
@@ -110,7 +113,7 @@ export const getOrderDetails = async (orderId) => {
 // Función para suscribirse a notificaciones por email
 export const subscribeToOrderNotifications = async (orderId, email) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/orders/${orderId}/subscribe`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-orders/${orderId}/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -132,7 +135,7 @@ export const subscribeToOrderNotifications = async (orderId, email) => {
 // Función para desuscribirse de notificaciones por email
 export const unsubscribeFromOrderNotifications = async (orderId, email) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/orders/${orderId}/unsubscribe`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-orders/${orderId}/unsubscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -147,6 +150,25 @@ export const unsubscribeFromOrderNotifications = async (orderId, email) => {
     return await response.json();
   } catch (error) {
     console.error('Error al desuscribirse de notificaciones:', error);
+    throw error;
+  }
+};
+
+// Verificar si un email ya está suscrito a una orden
+export const getSubscriptionStatus = async (orderId, email) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-orders/${orderId}/subscription-status?email=${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error al verificar estado de suscripción:', error);
     throw error;
   }
 };

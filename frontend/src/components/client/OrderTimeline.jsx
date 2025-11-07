@@ -287,7 +287,7 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
           const subtext = getCurrentSubtext(step.name);
           
           return (
-            <div key={step.id} className="relative flex items-stretch gap-3 py-2 min-h-[3rem]">
+            <div key={step.id} className="relative flex items-stretch gap-3 py-2 min-h-[3.75rem]">
               <div className="relative flex flex-col items-center h-full">
                 {/* Icono con marco pulsante */}
                 <div className="relative z-10">
@@ -307,7 +307,7 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
                 {index < timelineSteps.length - 1 && (
                   <>
                     {/* Riel de fondo (anclado al contenedor izquierdo que tiene h-full) */}
-                    <div className="absolute top-12 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 rounded-full" />
+                    <div className="absolute top-[2.5rem] bottom-2 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 rounded-full" />
                     {/* Relleno con degradado (animado) */}
                     <motion.div
                       variants={vSegmentVariants}
@@ -315,7 +315,7 @@ const OrderTimeline = ({ currentStatus, orderDate }) => {
                       animate="animate"
                       custom={index < (currentStepIndex - 1)}
                       transition={{ duration: segmentDuration, ease: 'easeInOut' }}
-                      className="absolute top-12 bottom-0 left-1/2 -translate-x-1/2 w-0.5 origin-top bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"
+                      className="absolute top-[2.5rem] bottom-2 left-1/2 -translate-x-1/2 w-0.5 origin-top bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"
                     />
                   </>
                 )}

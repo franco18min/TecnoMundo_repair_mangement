@@ -206,6 +206,7 @@ def update_order_diagnosis(db: Session, order_id: int, diagnosis_update, backgro
         return None
     
     # Actualizar solo los campos de diagnóstico
+    prev_diagnosis = db_order.technician_diagnosis
     if diagnosis_update.technician_diagnosis is not None:
         db_order.technician_diagnosis = diagnosis_update.technician_diagnosis
     
@@ -218,6 +219,11 @@ def update_order_diagnosis(db: Session, order_id: int, diagnosis_update, backgro
     
     # Enviar notificación de actualización
     background_tasks.add_task(send_order_details_updated_notification, order_id=db_order.id, actor_user_id=user_id)
+    # Enviar email al cliente si cambió el diagnóstico y está suscrito
+    if prev_diagnosis != db_order.technician_diagnosis:
+        from app.services.email_transaccional import EmailTransactionalService
+        email_service = EmailTransactionalService()
+        background_tasks.add_task(email_service.notify_diagnosis_update, order_id=db_order.id)
     
     return db_order
 
@@ -225,6 +231,7 @@ def complete_technician_work(db: Session, order_id: int, order_update: RepairOrd
                              background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
+    prev_status_id = db_order.status_id
     update_data = order_update.dict(exclude_unset=True, exclude={'checklist'})
     for key, value in update_data.items(): setattr(db_order, key, value)
     if order_update.checklist is not None:
@@ -240,12 +247,17 @@ def complete_technician_work(db: Session, order_id: int, order_update: RepairOrd
     db.commit()
     db.refresh(db_order)
     background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
+    # Email al cliente por cambio de estado
+    from app.services.email_transaccional import EmailTransactionalService
+    email_service = EmailTransactionalService()
+    background_tasks.add_task(email_service.notify_status_change, order_id=db_order.id, prev_status_id=prev_status_id, new_status_id=db_order.status_id)
     return db_order
 
 def update_order_details(db: Session, order_id: int, order_update: RepairOrderDetailsUpdate,
                          background_tasks: BackgroundTasks, user_id: int):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
+    prev_status_id = db_order.status_id
     customer_update_data = order_update.customer
     order_update_data = order_update.dict(exclude_unset=True, exclude={'customer', 'checklist'})
     
@@ -281,12 +293,17 @@ def update_order_details(db: Session, order_id: int, order_update: RepairOrderDe
     db.commit()
     db.refresh(db_order)
     background_tasks.add_task(send_order_details_updated_notification, order_id=db_order.id, actor_user_id=user_id)
+    # Email al cliente si cambió el estado
+    from app.services.email_transaccional import EmailTransactionalService
+    email_service = EmailTransactionalService()
+    background_tasks.add_task(email_service.notify_status_change, order_id=db_order.id, prev_status_id=prev_status_id, new_status_id=db_order.status_id)
     return db_order
 
 def assign_technician_and_start_process(db: Session, order_id: int, technician_id: int,
                                         background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
+    prev_status_id = db_order.status_id
     if db_order.technician_id is None and db_order.status_id in [1, 6]:
         db_order.technician_id = technician_id
         db_order.status_id = 2
@@ -294,6 +311,10 @@ def assign_technician_and_start_process(db: Session, order_id: int, technician_i
         db.commit()
         db.refresh(db_order)
         background_tasks.add_task(send_order_taken_notification, order_id=order_id, technician_id=technician_id)
+        # Email al cliente por cambio de estado
+        from app.services.email_transaccional import EmailTransactionalService
+        email_service = EmailTransactionalService()
+        background_tasks.add_task(email_service.notify_status_change, order_id=db_order.id, prev_status_id=prev_status_id, new_status_id=db_order.status_id)
         return db_order
     return None
 
@@ -311,6 +332,7 @@ def delete_repair_order(db: Session, order_id: int, background_tasks: Background
 def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
+    prev_status_id = db_order.status_id
     # Permitir reabrir órdenes completadas (3) o entregadas (5)
     if db_order.status_id in [3, 5]:
         db_order.status_id = 2  # Cambiar a "In Process"
@@ -321,6 +343,10 @@ def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
         db.commit()
         db.refresh(db_order)
         background_tasks.add_task(send_order_reopened_notification, order_id=order_id)
+        # Email al cliente por cambio de estado
+        from app.services.email_transaccional import EmailTransactionalService
+        email_service = EmailTransactionalService()
+        background_tasks.add_task(email_service.notify_status_change, order_id=db_order.id, prev_status_id=prev_status_id, new_status_id=db_order.status_id)
         return db_order
     return None
 
@@ -373,12 +399,17 @@ def mark_as_delivered(db: Session, order_id: int, background_tasks: BackgroundTa
     if db_order.status_id != 3:
         raise ValueError("La orden no puede ser entregada si no está en estado 'Completado'.")
 
+    prev_status_id = db_order.status_id
     db_order.status_id = 5
     db_order.updated_at = func.now()
     db.commit()
     db.refresh(db_order)
 
     background_tasks.add_task(send_order_delivered_notification, order_id=db_order.id, actor_user_id=user_id)
+    # Email al cliente por cambio de estado
+    from app.services.email_transaccional import EmailTransactionalService
+    email_service = EmailTransactionalService()
+    background_tasks.add_task(email_service.notify_status_change, order_id=db_order.id, prev_status_id=prev_status_id, new_status_id=db_order.status_id)
 
     return db_order
 
@@ -467,6 +498,7 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
         raise ValueError("No se puede transferir una orden a la misma sucursal.")
     
     # Si la orden está en proceso (status_id=2), resetear técnico y poner en pendiente
+    prev_status_id = db_order.status_id
     if db_order.status_id == 2:  # En proceso
         db_order.technician_id = None
         db_order.status_id = 1  # Pendiente
@@ -490,5 +522,10 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
         target_branch_id=target_branch_id,
         actor_user_id=user_id
     )
+    # Email al cliente si hubo cambio de estado por la transferencia
+    if prev_status_id != db_order.status_id:
+        from app.services.email_transaccional import EmailTransactionalService
+        email_service = EmailTransactionalService()
+        background_tasks.add_task(email_service.notify_status_change, order_id=db_order.id, prev_status_id=prev_status_id, new_status_id=db_order.status_id)
     
     return db_order

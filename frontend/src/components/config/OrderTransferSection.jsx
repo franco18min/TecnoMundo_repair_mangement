@@ -116,12 +116,16 @@ export const OrderTransferSection = () => {
     };
 
     const getOrderBranchName = (order) => {
-        // Primero intentar usar la información de sucursal incluida en la orden
-        if (order.branch?.branch_name) {
+        // Si tenemos tanto branch_id como branch.id, y coinciden, usar branch.branch_name
+        const mappedBranchId = order?.branch_id != null ? String(order.branch_id) : null;
+        const relatedBranchId = order?.branch?.id != null ? String(order.branch.id) : null;
+
+        if (mappedBranchId && relatedBranchId && mappedBranchId === relatedBranchId && order.branch?.branch_name) {
             return order.branch.branch_name;
         }
-        // Fallback: buscar en la lista de sucursales
-        const branch = branches?.find(b => b.id === order.branch_id);
+
+        // En otros casos (relación desactualizada o ausente), buscar en la lista global de sucursales
+        const branch = branches?.find(b => String(b.id) === mappedBranchId);
         return branch?.branch_name || 'Sucursal desconocida';
     };
 

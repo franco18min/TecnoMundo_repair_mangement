@@ -343,7 +343,7 @@ const ClientOrderStatusPage = () => {
 
               <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
                 <h4 className="font-semibold text-white mb-2">Sucursal</h4>
-                <p className="text-blue-100 break-words">{orderData?.branch?.name}</p>
+                <p className="text-blue-100 break-words">{orderData?.branch?.branch_name}</p>
                 {orderData?.branch?.address && (
                   <p className="text-sm text-blue-200 mt-1 break-words">{orderData?.branch.address}</p>
                 )}

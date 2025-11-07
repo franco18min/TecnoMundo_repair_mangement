@@ -43,4 +43,19 @@ class Settings:
         origin.strip() for origin in ALLOWED_ORIGINS_STR.split(',')
     ]
 
+    # --- Configuración de Email Transaccional (EnvialoSimple/DonWeb) ---
+    EMAIL_PROVIDER: str = os.getenv("EMAIL_PROVIDER", "envialosimple")
+    EMAIL_API_BASE_URL: str = os.getenv("EMAIL_API_BASE_URL", "")
+    EMAIL_API_KEY: str = os.getenv("EMAIL_API_KEY", "")
+    EMAIL_FROM: str = os.getenv("EMAIL_FROM", "no-reply@tecnoapp.ar")
+    EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "TecnoMundo")
+    EMAIL_REPLY_TO: str = os.getenv("EMAIL_REPLY_TO", "no-reply@tecnoapp.ar")
+
+    # URL del portal de clientes (para enlaces en correos)
+    CLIENT_PORTAL_BASE_URL: str = os.getenv("CLIENT_PORTAL_BASE_URL", "https://tecnoapp.ar/client/order")
+
+    # --- Integración con Supabase (REST) para activos de marca ---
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
+    SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
+
 settings = Settings()

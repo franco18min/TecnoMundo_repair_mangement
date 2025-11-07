@@ -38,3 +38,6 @@ protobuf==5.29.5
 pyOpenSSL==25.1.0
 
 pg8000
+requests==2.32.3
+
+pydantic[email]

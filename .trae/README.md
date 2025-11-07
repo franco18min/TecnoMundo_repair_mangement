@@ -1,263 +1,154 @@
-# 🚀 Sistema .trae para TecnoMundo Repair Management
+# Trae 2.0 – Sistema de Contexto, Mapeo y Optimización
 
-## 📋 Descripción General
+Este directorio implementa un sistema completo para integrar Trae 2.0 con el chat de IA, proporcionando:
 
-Este sistema de contexto inteligente está diseñado específicamente para **Trae 2.0**, proporcionando un agente de IA autónomo (**NEXUS**) que aprovecha todas las capacidades avanzadas del IDE para trabajar con repositorios fullstack React + FastAPI + PostgreSQL.
+- Optimización de tokens (modo "max") con compresión, priorización, métricas y alertas.
+- Sistema de mapeo fullstack (backend, frontend, base de datos) basado en YAML.
+- Gestión de contexto automatizada con caché y priorización de la actividad previa.
+- Motor de prompts inteligentes que ejecuta mapeos y contexto, mantiene coherencia con el historial e optimiza instrucciones.
+- Sistema de rules para usuarios y proyectos.
+- Procesamiento de lenguaje natural (comandos en español) con manejo de ambigüedades.
+- Configuración por entorno (dev, test, prod), monitoreo de rendimiento y bucle de retroalimentación.
+- Pruebas unitarias y de integración con Vitest.
 
-## 🏗️ Estructura del Sistema
+## Estructura
 
 ```
 .trae/
-├── rules/                   # Reglas del proyecto y usuario
-│   ├── project_rules.yaml   # Configuración específica del proyecto
-│   └── user_rules.yaml      # Preferencias y reglas del usuario
-├── cache/                   # Sistema de caché contextual
-│   └── context_cache.json   # Caché optimizado para reducción de tokens
-├── maps/                    # Mapeos inteligentes del proyecto
-│   ├── backend_map.json     # Estructura y patrones del backend
-│   ├── frontend_map.json    # Estructura y patrones del frontend
-│   └── database_map.json    # Esquema y relaciones de la BD
-├── prompts/                 # Prompts del agente
-│   └── nexus_agent_prompt.md # Prompt completo del agente NEXUS
-├── config/                  # Configuraciones especiales
-│   ├── mcp_config.yaml      # Configuración MCP para PostgreSQL
-│   └── natural_commands.yaml # Sistema de comandos naturales
-└── README.md               # Esta documentación
+  config/               # Configuraciones por entorno
+  rules/                # Reglas de usuario y de proyecto
+  prompts/              # Prompt del sistema y plantillas de acciones
+  mapping/              # Mapeos YAML (backend, frontend, database)
+  src/                  # Código fuente TypeScript
+    engine/             # Motor de prompts
+    token/              # Optimización de tokens
+    context/            # Gestión de contexto
+    mapping/            # Registro y carga de mapeos
+    nlp/                # Interpretación de lenguaje natural (ES)
+    monitoring/         # Métricas y alertas
+    feedback/           # Bucle de feedback
+  tests/                # Pruebas unitarias e integración
+  cache/                # Persistencia de contexto y métricas
+  manifest.json         # Declaración de compatibilidad con Trae 2.0
+  package.json          # Scripts y dependencias del sistema
+  tsconfig.json         # Configuración TypeScript
+  README.md             # Este documento
 ```
 
-## 🤖 Agente NEXUS
+## Uso
 
-**NEXUS** (Neural EXpert Universal System) es el agente de IA autónomo que:
+1. Instalar dependencias (desde el directorio `.trae/`):
+   - `npm install`
+2. Ejecutar pruebas:
+   - `npm test`
+3. Construir el sistema:
+   - `npm run build`
 
-### ✨ Características Principales
-- **Idioma**: Español obligatorio para todas las interacciones
-- **Ejecución**: Inmediata sin confirmación para tareas estándar
-- **Contexto**: Carga automática desde `.trae/cache/`
-- **Optimización**: Reducción de tokens del 70-90%
+### CLI rápido (recomendado)
 
-### 🧠 Comandos Naturales Detectados Automáticamente
-- `"crear/hacer/generar [componente/funcionalidad]"`
-- `"hay/tengo error/problema en [área]"`
-- `"necesito/quiero [funcionalidad]"`
-- `"optimizar/mejorar [sistema]"`
-- `"probar/testear [funcionalidad]"`
-- `"documentar [componente]"`
+- Construir prompt optimizado:
+  - `npm run prompt -- --env dev --target frontend --command "crear componente para frontend navbar" --details "Accesible con TailwindCSS y mobile-first"`
+  - Flags:
+    - `--env`: dev | test | prod (por defecto dev)
+    - `--target`: backend | frontend | database (opcional; si falta, se deduce con NLP)
+    - `--command`: texto del comando en español (obligatorio si no se usa STDIN)
+    - `--details`: texto adicional (opcional)
+    - `--confirmLast`: true|false (opcional; si true, limpia el contexto al final)
 
-### 🔧 Capacidades Trae 2.0 Integradas
-- ✅ Búsqueda semántica de código
-- ✅ Edición inteligente de archivos
-- ✅ Gestión completa de archivos y directorios
-- ✅ Ejecución de comandos en terminales múltiples
-- ✅ Acceso directo a PostgreSQL via MCP
-- ✅ Gestión automática de tareas
-- ✅ Vista previa de cambios visuales
+- Reporte de métricas de tokens:
+  - `npm run report`
 
-## 📊 Sistema de Mapeos Inteligentes
+## Integración con el chat de IA
 
-### Backend Map (`backend_map.json`)
-Mapea la estructura completa del backend FastAPI:
-- **API Endpoints**: Rutas y controladores
-- **Modelos**: Entidades SQLAlchemy con relaciones
-- **Schemas**: Validación Pydantic
-- **CRUD Operations**: Operaciones de base de datos
-- **Servicios**: Lógica de negocio
-- **Core Modules**: Configuración, seguridad, logging
+- El motor de prompts (`src/engine/PromptEngine.ts`) consume:
+  - Rules (`rules/*.json`)
+  - Mapeos (`mapping/*.yaml`)
+  - Contexto persistido (`cache/context.json`)
+  - Prompts (`prompts/system.md` y plantillas)
+- Exporta funciones para generar prompts coherentes y optimizados.
+- Incluye comportamiento de cierre: al finalizar una petición pregunta si es la última de la tarea; si lo es, limpia el contexto.
 
-### Frontend Map (`frontend_map.json`)
-Mapea la estructura completa del frontend React:
-- **Componentes**: Organización por funcionalidad
-- **Páginas**: Rutas principales de la aplicación
-- **API Layer**: Servicios de comunicación con backend
-- **Context**: Gestión de estado global
-- **Hooks**: Lógica reutilizable
-- **Utils**: Utilidades y helpers
+## Uso desde el chat del IDE de Trae (Agente IA)
 
-### Database Map (`database_map.json`)
-Mapea el esquema completo de PostgreSQL:
-- **Tablas**: Estructura, relaciones, índices
-- **Vistas**: Consultas precompiladas
-- **Procedimientos**: Lógica almacenada
-- **Migraciones**: Historial de cambios
-- **Integración MCP**: Consultas comunes
+Sigue estos pasos para que el agente de chat del IDE de Trae utilice el sistema alojado en `.trae`:
 
-## 🔌 Integración MCP (Model Context Protocol)
+1) Preparación del sistema (una sola vez)
+- En el directorio `.trae/` ejecuta:
+  - `npm install`
+  - `npm test` (debe pasar)
+  - `npm run build` (genera `dist/` y habilita la entrada declarada en `manifest.json`)
+- Verifica que existe `dist/index.js` y que `manifest.json` tiene `"entry": "dist/index.js"`.
 
-### Configuración PostgreSQL
-- **Archivo**: `.trae/config/mcp_config.yaml`
-- **Capacidades**: Consultas SQL directas, análisis de esquema
-- **Seguridad**: Operaciones controladas y auditadas
-- **Performance**: Consultas optimizadas y cacheadas
+2) Configurar el Agente IA del chat
+- Usa el “Prompt Maestro” del sistema como Prompt del Sistema del agente (el contenido de `prompts/system.md`).
+- El agente debe trabajar en español y seguirá las reglas y mapeos que se inyectan automáticamente cuando el motor construye el prompt (TraeAdapter + PromptEngine).
 
-### Consultas Predefinidas
-```sql
--- Estadísticas de órdenes
-SELECT status, COUNT(*) FROM repair_orders GROUP BY status;
+3) Flujo dentro del chat
+- Escribe comandos naturales en español (ejemplos):
+  - `crear componente para frontend navbar responsive`
+  - `hay error en backend api de clientes`
+  - `necesito migración para nueva columna en tickets`
+- El pipeline del chat debe:
+  - Interpretar el comando con NLP (NLPInterpreter).
+  - Construir el prompt con TraeAdapter(`dev`|`test`|`prod`).buildPromptForTrae({ command, target, details }).
+  - Enviar ese prompt optimizado al modelo de IA.
+  - Al finalizar, el agente debe preguntar: “¿Es esta la última petición para esta tarea? Si lo es, limpiaré el contexto y te pediré una nueva tarea.”
+  - Si confirmas que es la última, el sistema limpia el contexto (ContextManager.clear()).
 
--- Historial de cliente
-SELECT * FROM repair_orders WHERE customer_id = $1 ORDER BY created_at DESC;
+4) Selección de entorno
+- Por defecto usamos `dev`. Para producción, instanciar el adaptador como `TraeAdapter('prod')`.
+- Ajusta umbrales de tokens y logging en `config/dev.json`, `config/test.json`, `config/prod.json`.
 
--- Órdenes pendientes
-SELECT * FROM repair_orders WHERE status IN ('pending', 'in_progress');
+5) Verificación de caché y contexto
+- `cache/context.json`: lista de elementos de contexto priorizados por fecha (se limpia al confirmar cierre).
+- `cache/metrics.json`: entradas de métricas por cada prompt (estimatedTokens, length, ts, etc.).
+- `cache/feedback.json` (opcional): observaciones para mejora continua.
+
+6) Solución de problemas
+- Si el chat no parece usar el sistema, asegúrate de haber corrido `npm run build` y de que `dist/index.js` exista.
+- Reinicia el IDE de Trae o recarga el workspace si no detecta el `manifest.json` actualizado.
+- Ejecuta `npm run demo` para validar el flujo completo.
+
+### Integración de favicon y logo desde Supabase
+1) Crea la tabla `system.photos` en el editor de SQL de Supabase:
 ```
-
-## 💾 Sistema de Caché Contextual
-
-### Optimización de Tokens
-- **Objetivo**: Reducción 70-90% de tokens por petición
-- **Método**: Caché inteligente en lugar de archivos completos
-- **Actualización**: Automática después de cada cambio
-- **Limpieza**: Automática de contexto obsoleto
-
-### Plantillas de Contexto
-- **Frontend Component Creation**: Para crear componentes React
-- **Error Debugging**: Para resolución de problemas
-- **Feature Implementation**: Para nuevas funcionalidades
-- **Performance Optimization**: Para mejoras de rendimiento
-- **Testing Setup**: Para configuración de pruebas
-
-## 🗣️ Sistema de Comandos Naturales
-
-### Detección Automática
-El sistema detecta automáticamente patrones en español:
-
-#### 🔨 Creación y Desarrollo
-- **Patrón**: `"crear {tipo} para {propósito}"`
-- **Acción**: Crear componente React o endpoint FastAPI
-- **Contexto**: Cargar mapeos relevantes
-- **Ejecución**: Inmediata con patrones del proyecto
-
-#### 🐛 Debugging
-- **Patrón**: `"hay error en {área}"`
-- **Acción**: Análisis automático de logs y código
-- **Contexto**: Cargar todos los mapeos + logs de error
-- **Ejecución**: Diagnóstico y solución inmediata
-
-#### ⚡ Optimización
-- **Patrón**: `"optimizar {sistema}"`
-- **Acción**: Análisis de performance y mejoras
-- **Contexto**: Cargar métricas y patrones
-- **Ejecución**: Optimización automática
-
-## 🚀 Cómo Usar el Sistema
-
-### 1. Activación Automática
-El agente NEXUS se activa automáticamente al detectar comandos naturales en español. No requiere prefijos especiales.
-
-### 2. Ejemplos de Uso
-
-#### Crear Componente
+create schema if not exists system;
+create table if not exists system.photos (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  mime_type text not null default 'image/png',
+  data_base64 text,
+  url text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 ```
-Usuario: "crear componente para gestión de clientes"
-NEXUS: [Carga frontend_map.json] → [Crea componente en src/components/clients/] → [Actualiza mapeos]
-```
+2) Sube las imágenes:
+- Convierte `photo/FAVICON.png` y `photo/LOGO.png` a base64 y haz `POST` a `/rest/v1/system.photos` con `{ name: 'favicon'|'logo', mime_type: 'image/png', data_base64: '<base64>' }`.
+3) Frontend:
+- Define `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `.env`.
+- El favicon se carga dinámicamente (index.html) desde `system.photos` (`name='favicon'`).
+- El logo del sidebar se carga dinámicamente (Sidebar.jsx) desde `system.photos` (`name='logo'`).
+4) Backend (emails):
+- Define `SUPABASE_URL` y `SUPABASE_ANON_KEY` en el `.env` del backend.
+- El círculo del encabezado del correo usará el logo (`name='logo'`) si está disponible; fallback al ícono 📧.
 
-#### Resolver Error
-```
-Usuario: "hay error en la autenticación"
-NEXUS: [Carga logs + mapeos] → [Analiza flujo JWT] → [Implementa solución] → [Verifica fix]
-```
+### Demo
 
-#### Optimizar Performance
-```
-Usuario: "optimizar consultas de base de datos"
-NEXUS: [Usa MCP] → [Analiza queries] → [Implementa optimizaciones] → [Mide mejoras]
-```
+- `npm run demo` ejecuta un flujo completo con NLP + PromptEngine y muestra métricas y la pregunta de cierre.
 
-### 3. Flujo Automático
-Para cada interacción:
-1. **DETECTAR** intención automáticamente
-2. **CARGAR** contexto desde `.trae/cache/`
-3. **EJECUTAR** acción inmediatamente
-4. **ACTUALIZAR** mapeos automáticamente
-5. **DOCUMENTAR** cambios realizados
+## Compatibilidad
 
-## 📈 Métricas y Optimización
+- `manifest.json` declara compatibilidad con Trae >= 2.0.
+- Los mapeos y reglas siguen convenciones neutras para integrarse con distintas bases de código.
 
-### Objetivos de Performance
-- ⚡ **Tiempo de respuesta**: <30 segundos
-- 🎯 **Cache hit rate**: >80%
-- 🔧 **Errores auto-resueltos**: >70%
-- 💾 **Reducción de tokens**: 70-90%
+## Seguridad y buenas prácticas
 
-### Monitoreo Automático
-- Tracking de patrones de uso más frecuentes
-- Optimización continua de contexto
-- Actualización automática de mapeos
-- Limpieza automática de caché obsoleto
+- Configuración CORS y JWT (solo referencia) en `rules/project.json`.
+- Políticas de contraseñas y rate-limiting documentadas.
+- Documentación concisa y comentarios técnicos en inglés cuando corresponde.
 
-## 🛡️ Seguridad y Mejores Prácticas
+## Mantenimiento
 
-### Validaciones Automáticas
-- Verificación de contexto antes de ejecutar
-- Backup automático para cambios críticos
-- Rollback disponible para errores
-- Auditoría de operaciones sensibles
-
-### Calidad de Código
-- Consistencia con patrones existentes
-- Documentación automática y concisa
-- Testing automático cuando sea posible
-- Seguridad por defecto en implementaciones
-
-## 🔄 Mantenimiento del Sistema
-
-### Actualización Automática
-El sistema se actualiza automáticamente cuando:
-- Se crean nuevos archivos
-- Se modifican archivos existentes
-- Se detectan nuevos patrones de comando
-- Se resuelven errores
-- Cambia el contexto de trabajo
-
-### Limpieza Automática
-- Eliminación de caché obsoleto
-- Optimización de mapeos no utilizados
-- Compresión de logs antiguos
-- Actualización de métricas de performance
-
-## 🎯 Casos de Uso Específicos
-
-### Desarrollo Frontend (React)
-- Crear componentes con hooks y TailwindCSS
-- Implementar rutas y navegación
-- Gestionar estado con Context API
-- Integrar con APIs del backend
-
-### Desarrollo Backend (FastAPI)
-- Crear endpoints REST con validación
-- Implementar modelos SQLAlchemy
-- Configurar autenticación JWT
-- Optimizar consultas de base de datos
-
-### Debugging y Mantenimiento
-- Análisis automático de logs de error
-- Diagnóstico de problemas de performance
-- Resolución de conflictos de dependencias
-- Optimización de consultas SQL
-
-### Testing y Calidad
-- Configuración automática de testing
-- Creación de tests unitarios y de integración
-- Validación de cobertura de código
-- Testing de performance y seguridad
-
-## 📞 Soporte y Extensión
-
-### Personalización
-El sistema puede personalizarse modificando:
-- **Reglas del usuario**: `.trae/rules/user_rules.yaml`
-- **Patrones de comando**: `.trae/config/natural_commands.yaml`
-- **Configuración MCP**: `.trae/config/mcp_config.yaml`
-- **Plantillas de contexto**: `.trae/cache/context_cache.json`
-
-### Extensión
-Para agregar nuevas funcionalidades:
-1. Actualizar mapeos relevantes en `.trae/maps/`
-2. Agregar patrones de comando en `.trae/config/natural_commands.yaml`
-3. Crear plantillas de contexto en `.trae/cache/context_cache.json`
-4. Actualizar el prompt del agente si es necesario
-
----
-
-**Sistema .trae v1.0 - Optimizado para TecnoMundo Repair Management**  
-**Powered by Trae 2.0 Advanced IDE**
+- Métricas de tokens y rendimiento se guardan en `cache/metrics.json`.
+- El bucle de feedback (`src/feedback/FeedbackLoop.ts`) recopila señales para ajuste continuo.

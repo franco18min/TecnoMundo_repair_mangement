@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import ClientOrderStatusPage from './pages/ClientOrderStatusPage';
+import UnsubscribePage from './pages/UnsubscribePage';
 import { useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
@@ -21,6 +22,12 @@ function App() {
             <Route 
               path="/client/order/:orderId" 
               element={<ClientOrderStatusPage />} 
+            />
+
+            {/* Página pública para desuscripción desde correo */}
+            <Route 
+              path="/client/unsubscribe" 
+              element={<UnsubscribePage />} 
             />
             
             {/* Ruta de login */}

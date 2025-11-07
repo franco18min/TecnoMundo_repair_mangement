@@ -13,6 +13,7 @@ class User(Base):
     username = Column(String(50), unique=True, index=True, nullable=False)
     password = Column(String(255), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
+    phone_number = Column(String(30), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     is_active = Column(Boolean, default=True) # <-- AÑADIMOS LA COLUMNA IS_ACTIVE
 
