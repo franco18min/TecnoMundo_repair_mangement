@@ -3,7 +3,7 @@
 // Configuración centralizada de la API con endurecimiento para producción
 const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'development';
 const BASE_URL_ENV = import.meta.env.VITE_API_BASE_URL;
-const DEFAULT_DEV_BASE_URL = 'http://127.0.0.1:8001';
+const DEFAULT_DEV_BASE_URL = 'http://127.0.0.1:9001';
 
 // Determinar BASE_URL según entorno, evitando fallback inseguro en producción
 let BASE_URL;
@@ -31,7 +31,7 @@ if (BASE_URL.startsWith('https://')) {
 } else {
   WS_URL = BASE_URL_ENV
     ? BASE_URL_ENV.replace('https://', 'wss://').replace('http://', 'ws://') + WS_PATH
-    : `ws://127.0.0.1:8001${WS_PATH}`;
+    : `ws://127.0.0.1:9001${WS_PATH}`;
 }
 
 // Configuración exportada

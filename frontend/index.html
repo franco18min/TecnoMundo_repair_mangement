@@ -2,8 +2,9 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <!-- Favicon dinámico desde Supabase (system.photo: name='favicon') -->
-    <link id="app-favicon" rel="icon" type="image/png" href="/vite.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="https://tecnoapp.ar/" />
     <meta property="og:url" content="https://tecnoapp.ar/" />
@@ -12,32 +13,6 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script type="module">
-      // Cargar favicon dinámicamente desde Supabase REST
-      const url = import.meta.env.VITE_SUPABASE_URL;
-      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      async function setFaviconFromSupabase() {
-        try {
-          if (!url || !key) return;
-          const endpoint = `${url.replace(/\/$/, '')}/rest/v1/system.photo?select=data_base64&name=eq.favicon`;
-          const resp = await fetch(endpoint, {
-            headers: {
-              apikey: key,
-              Authorization: `Bearer ${key}`,
-            },
-          });
-          if (!resp.ok) return;
-          const json = await resp.json();
-          const rec = Array.isArray(json) ? json[0] : null;
-          if (rec && rec.data_base64) {
-            const link = document.getElementById('app-favicon');
-            link.href = `data:image/png;base64,${rec.data_base64}`;
-          }
-        } catch (e) {
-          console.warn('No se pudo cargar favicon desde Supabase', e);
-        }
-      }
-      setFaviconFromSupabase();
-    </script>
+    
   </body>
 </html>

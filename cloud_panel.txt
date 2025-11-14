@@ -1,0 +1,669 @@
+TecnoApp - Sistema de Gestión de Órdenes de Reparación
+📋 Índice
+Arquitectura General
+
+Estructura del Servidor
+
+Base de Datos
+
+Backend (API)
+
+Frontend (React)
+
+Despliegue
+
+Comandos Útiles
+
+Solución de Problemas
+
+🏗️ Arquitectura General
+Stack Tecnológico
+Frontend: React + Vite
+
+Backend: FastAPI (Python 3.12)
+
+Base de Datos: PostgreSQL 18
+
+Servidor Web: NGINX (CloudPanel)
+
+Hosting: DonWeb VPS Ubuntu 24.04
+
+Control Panel: CloudPanel
+
+Dominios
+Frontend: https://tecnoapp.ar
+
+Backend API: https://api.tecnoapp.ar
+
+Panel CloudPanel: https://tecnoapp.site
+
+Repositorio
+GitHub: https://github.com/franco18min/TecnoMundo_repair_mangement
+
+📁 Estructura del Servidor
+Backend (API)
+text
+/home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/
+├── .git/                    # Repositorio Git activo
+├── backend/
+│   ├── app/
+│   │   ├── api/            # Endpoints
+│   │   ├── core/           # Configuración
+│   │   ├── crud/           # Operaciones DB
+│   │   ├── models/         # Modelos SQLAlchemy
+│   │   ├── schemas/        # Schemas Pydantic
+│   │   ├── services/       # Servicios (email, etc.)
+│   │   └── db/             # Conexión DB
+│   ├── scripts/            # Scripts de migración
+│   ├── venv/               # Entorno virtual Python
+│   ├── main.py             # Archivo principal
+│   ├── start.sh            # Script de inicio
+│   ├── requirements.txt    # Dependencias
+│   └── .env                # Variables de entorno
+└── frontend/               # Existe pero no se usa aquí
+Frontend (Archivos Estáticos)
+text
+/home/tecnoapp/htdocs/tecnoapp.ar/
+├── index.html              # Punto de entrada
+├── assets/                 # JS, CSS compilados
+│   ├── index-[hash].js
+│   └── index-[hash].css
+├── favicon.ico
+└── [otros archivos estáticos]
+
+Nota: Esta carpeta NO es un repositorio Git.
+Solo contiene archivos compilados (dist/) del build de React.
+Scripts de Gestión
+text
+/home/apitecnoapp/
+├── deploy-full.sh          # Despliegue completo (backend + frontend)
+└── status.sh               # Ver estado de la aplicación
+🗄️ Base de Datos
+PostgreSQL Local
+Host: localhost
+
+Puerto: 5433 (PostgreSQL 18)
+
+Base de datos: tecnodb
+
+Usuario: tecnodb
+
+Contraseña: Tecnodb123*
+
+Clusters PostgreSQL
+text
+Ver Cluster Port Status Owner    Data directory
+16  main    5432 down   postgres /var/lib/postgresql/16/main
+18  main    5433 online postgres /var/lib/postgresql/18/main
+Schemas
+customer: Datos de clientes y órdenes
+
+customer
+
+device_type
+
+device_condition
+
+repair_order
+
+repair_order_photo
+
+status_order
+
+predefined_checklist_item
+
+system: Configuración del sistema
+
+user
+
+roles
+
+branch
+
+notifications
+
+system_config
+
+ticket_config
+
+photo
+
+Conexión a la Base de Datos
+text
+# Conectarse a PostgreSQL local
+psql -U tecnodb -d tecnodb -h localhost -p 5433
+
+# Comandos útiles dentro de psql:
+\dn                  # Listar esquemas
+\dt system.*         # Listar tablas del schema system
+\dt customer.*       # Listar tablas del schema customer
+\d tabla             # Ver estructura de una tabla
+SELECT * FROM tabla; # Ver datos
+\q                   # Salir
+🔧 Backend (API)
+Ubicación
+text
+/home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+Configuración (.env)
+text
+# Base de datos
+DATABASE_URL="postgresql://tecnodb:Tecnodb123*@localhost:5433/tecnodb?sslmode=disable"
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=tecnodb
+DB_USER=tecnodb
+DB_PASSWORD=Tecnodb123*
+DB_SSL=disable
+DB_SSLMODE=disable
+DB_DRIVER=pg8000
+
+# Aplicación
+APP_PORT=9001
+WORKERS=2
+
+# CORS
+ALLOWED_ORIGINS=https://tecnoapp.ar,https://www.tecnoapp.ar,http://localhost:5173,http://localhost:5174
+
+# JWT
+SECRET_KEY=tu-secret-key
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=240
+
+# Email Transaccional (EnvíaloSimple)
+EMAIL_PROVIDER=envialosimple
+EMAIL_API_BASE_URL=https://api.envialosimple.email/api/v1
+EMAIL_API_KEY=tu-api-key
+EMAIL_FROM=notificaciones@tecnoapp.ar
+EMAIL_FROM_NAME=TecnoApp - Notificaciones
+EMAIL_REPLY_TO=no-reply@tecnoapp.ar
+CLIENT_PORTAL_BASE_URL=https://tecnoapp.ar
+Inicio Manual
+text
+# Ir al directorio
+cd /home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+
+# Activar entorno virtual
+source venv/bin/activate
+
+# Iniciar aplicación
+./start.sh
+
+# O en background:
+nohup ./start.sh > /tmp/tecnoapp-backend.log 2>&1 &
+Verificar Estado
+text
+# Ver procesos Python
+ps aux | grep uvicorn
+
+# Ver puerto 9001
+netstat -tulpn | grep :9001
+
+# Ver logs
+tail -f /tmp/tecnoapp-backend.log
+
+# Probar API
+curl -I http://localhost:9001
+curl -I https://api.tecnoapp.ar
+Detener Backend
+text
+# Matar procesos uvicorn
+pkill -f "uvicorn main:app"
+
+# Verificar que se detuvo
+ps aux | grep uvicorn
+🎨 Frontend (React)
+Ubicación de Archivos Compilados
+text
+/home/tecnoapp/htdocs/tecnoapp.ar/
+Características
+SPA (Single Page Application) con React Router
+
+Archivos estáticos servidos por NGINX
+
+NO es repositorio Git (solo archivos del build)
+
+Configuración NGINX (vHost)
+text
+server {
+  server_name tecnoapp.ar www1.tecnoapp.ar;
+  root /home/tecnoapp/htdocs/tecnoapp.ar;
+  
+  index index.html;
+
+  # Fallback para SPA (React Router)
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  # Cache de archivos estáticos
+  location ~* \.(css|js|jpg|jpeg|gif|png|ico|svg|woff|woff2|ttf)$ {
+    add_header Access-Control-Allow-Origin "*";
+    expires max;
+    access_log off;
+  }
+}
+Importante: La regla try_files $uri $uri/ /index.html; es crucial para que React Router funcione al refrescar rutas como /login, /dashboard, etc.
+
+🚀 Despliegue
+Script de Despliegue Completo
+Ubicación: /home/apitecnoapp/deploy-full.sh
+
+Este script maneja:
+
+Actualización del backend (git pull)
+
+Recompilación del frontend (clone → build → rsync)
+
+Reinicio automático de servicios
+
+Flujo de Trabajo
+En Local (Desarrollo)
+text
+# 1. Clonar repositorio
+git clone https://github.com/franco18min/TecnoMundo_repair_mangement.git
+cd TecnoMundo_repair_mangement
+
+# 2. Crear rama de desarrollo
+git checkout -b desarrollo
+
+# 3. Hacer cambios en backend/ o frontend/
+
+# 4. Commit y push
+git add .
+git commit -m "feat: descripción del cambio"
+git push origin desarrollo
+
+# 5. Cuando esté listo para producción
+git checkout main
+git merge desarrollo
+git push origin main
+En Servidor (Producción)
+text
+# Despliegue automático
+/home/apitecnoapp/deploy-full.sh
+Comandos de Despliegue
+Despliegue Completo (Backend + Frontend)
+text
+/home/apitecnoapp/deploy-full.sh
+Solo Backend
+text
+cd /home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+pkill -f uvicorn
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt
+nohup ./start.sh > /tmp/tecnoapp-backend.log 2>&1 &
+Solo Frontend
+text
+# Crear directorio temporal
+TEMP_DIR="/tmp/frontend-build-$(date +%s)"
+git clone https://github.com/franco18min/TecnoMundo_repair_mangement.git $TEMP_DIR
+
+# Compilar
+cd $TEMP_DIR/frontend
+npm ci
+npm run build
+
+# Desplegar
+rsync -av --delete dist/ /home/tecnoapp/htdocs/tecnoapp.ar/
+
+# Limpiar
+rm -rf $TEMP_DIR
+🛠️ Comandos Útiles
+Gestión del Backend
+text
+# Ver estado
+ps aux | grep uvicorn
+netstat -tulpn | grep :9001
+
+# Ver logs en tiempo real
+tail -f /tmp/tecnoapp-backend.log
+
+# Reiniciar
+pkill -f uvicorn
+cd /home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+source venv/bin/activate
+nohup ./start.sh > /tmp/tecnoapp-backend.log 2>&1 &
+
+# Probar API
+curl -I http://localhost:9001
+curl -I https://api.tecnoapp.ar
+Gestión de PostgreSQL
+text
+# Ver clusters
+sudo pg_lsclusters
+
+# Conectarse a la base de datos
+psql -U tecnodb -d tecnodb -h localhost -p 5433
+
+# Backup de la base de datos
+pg_dump -Fc -U tecnodb -h localhost -p 5433 tecnodb > backup_$(date +%Y%m%d).dump
+
+# Restaurar backup
+pg_restore -v -d "postgresql://tecnodb:Tecnodb123*@localhost:5433/tecnodb" backup.dump
+
+# Ver logs de PostgreSQL
+journalctl -u postgresql -f
+Verificación del Sistema
+text
+# Estado general
+/home/apitecnoapp/status.sh
+
+# Servicios
+systemctl status postgresql
+systemctl status nginx
+
+# Espacio en disco
+df -h
+
+# Memoria
+free -h
+
+# Procesos
+htop
+🔥 Solución de Problemas
+Error 502 Bad Gateway
+Causa: Backend no está corriendo
+
+Solución:
+
+text
+# Verificar si el backend está corriendo
+ps aux | grep uvicorn
+
+# Si no está corriendo, reiniciar
+cd /home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+source venv/bin/activate
+nohup ./start.sh > /tmp/tecnoapp-backend.log 2>&1 &
+
+# Ver logs para errores
+tail -f /tmp/tecnoapp-backend.log
+Error: Address Already in Use (Puerto 9001)
+Causa: Ya hay un proceso usando el puerto
+
+Solución:
+
+text
+# Ver qué está usando el puerto
+sudo lsof -i :9001
+
+# Matar el proceso
+pkill -f "uvicorn main:app"
+
+# Reiniciar
+cd /home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+source venv/bin/activate
+nohup ./start.sh > /tmp/tecnoapp-backend.log 2>&1 &
+404 al Refrescar Rutas en el Frontend (/login, /dashboard)
+Causa: Falta configuración de fallback SPA en NGINX
+
+Solución: Agregar en vHost de tecnoapp.ar:
+
+text
+location / {
+    try_files $uri $uri/ /index.html;
+}
+Error SSL al Conectar con PostgreSQL
+Causa: SSL habilitado para conexión local
+
+Solución: En .env agregar:
+
+text
+DATABASE_URL="postgresql://tecnodb:Tecnodb123*@localhost:5433/tecnodb?sslmode=disable"
+DB_SSL=disable
+DB_SSLMODE=disable
+PostgreSQL No Responde
+Causa: Servicio no iniciado
+
+Solución:
+
+text
+# Ver clusters
+sudo pg_lsclusters
+
+# Si el cluster 18 está down
+sudo pg_ctlcluster 18 main start
+
+# Verificar
+sudo netstat -tulpn | grep :5433
+📦 Migración desde Supabase
+Credenciales Supabase (Solo para migración)
+text
+Host: db.zshbhslyzclpovyngryf.supabase.co
+Port: 5432
+Database: postgres
+User: postgres
+Password: X8fJRji3Yd4PFCLI
+Exportar Datos desde Supabase
+text
+# Exportar schemas completos
+pg_dump -Fc -v --schema=system --schema=customer \
+  "postgresql://postgres:X8fJRji3Yd4PFCLI@db.zshbhslyzclpovyngryf.supabase.co:5432/postgres" \
+  > supabase_backup.dump
+
+# Exportar tabla específica
+pg_dump -Fc -v --schema=customer --table=repair_order \
+  "postgresql://postgres:X8fJRji3Yd4PFCLI@db.zshbhslyzclpovyngryf.supabase.co:5432/postgres" \
+  > tabla_backup.dump
+Importar a Base Local
+text
+# Restaurar backup completo
+pg_restore -v -d "postgresql://tecnodb:Tecnodb123*@localhost:5433/tecnodb" supabase_backup.dump
+
+# Restaurar tabla específica
+pg_restore -v -d "postgresql://tecnodb:Tecnodb123*@localhost:5433/tecnodb" tabla_backup.dump
+Sincronizar Tabla Específica con CSV
+text
+# 1. Exportar desde Supabase
+psql "postgresql://postgres:X8fJRji3Yd4PFCLI@db.zshbhslyzclpovyngryf.supabase.co:5432/postgres" \
+  -c "\copy system.photo TO '/tmp/photo_export.csv' CSV HEADER"
+
+# 2. Limpiar tabla local
+psql -U tecnodb -d tecnodb -h localhost -p 5433 -c "TRUNCATE TABLE system.photo CASCADE;"
+
+# 3. Importar a local
+psql -U tecnodb -d tecnodb -h localhost -p 5433 \
+  -c "\copy system.photo FROM '/tmp/photo_export.csv' CSV HEADER"
+
+# 4. Verificar
+psql -U tecnodb -d tecnodb -h localhost -p 5433 -c "SELECT COUNT(*) FROM system.photo;"
+🔄 Script de Despliegue Completo
+Contenido de /home/apitecnoapp/deploy-full.sh
+text
+#!/bin/bash
+set -e
+
+BACKEND_DIR="/home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend"
+FRONTEND_TEMP_DIR="/tmp/frontend-build-$(date +%s)"
+FRONTEND_DEST="/home/tecnoapp/htdocs/tecnoapp.ar"
+REPO_URL="https://github.com/franco18min/TecnoMundo_repair_mangement.git"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+echo "🚀 ======== DESPLIEGUE COMPLETO TECNOAPP ========"
+
+# === BACKEND ===
+echo "🔧 === DESPLEGANDO BACKEND ==="
+pkill -f "uvicorn main:app" || true
+sleep 3
+
+cd $BACKEND_DIR
+cp .env .env.backup.$TIMESTAMP
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt --quiet
+cp .env.backup.$TIMESTAMP .env
+
+nohup ./start.sh > /tmp/tecnoapp-backend.log 2>&1 &
+sleep 5
+
+if netstat -tulpn | grep -q :9001; then
+    echo "✅ Backend iniciado en puerto 9001"
+else
+    echo "⚠️ Backend no responde"
+fi
+
+# === FRONTEND ===
+echo "🎨 === DESPLEGANDO FRONTEND ==="
+rm -rf $FRONTEND_TEMP_DIR
+git clone $REPO_URL $FRONTEND_TEMP_DIR
+
+cd $FRONTEND_TEMP_DIR/frontend
+npm ci --silent
+
+if [ -f ".env.production.example" ]; then
+    cp .env.production.example .env.production
+fi
+
+npm run build
+rsync -av --delete --progress dist/ $FRONTEND_DEST/
+rm -rf $FRONTEND_TEMP_DIR
+
+echo "🎉 ======== DESPLIEGUE COMPLETADO ========"
+echo "🌐 Backend: https://api.tecnoapp.ar"
+echo "🌐 Frontend: https://tecnoapp.ar"
+Ejecución
+text
+# Dar permisos (solo primera vez)
+chmod +x /home/apitecnoapp/deploy-full.sh
+
+# Ejecutar despliegue
+/home/apitecnoapp/deploy-full.sh
+📊 Comandos de Verificación Rápida
+text
+# Estado completo
+echo "=== Backend ===" && ps aux | grep uvicorn | grep -v grep
+echo "=== Puerto ===" && netstat -tulpn | grep :9001
+echo "=== PostgreSQL ===" && sudo pg_lsclusters
+echo "=== Últimos logs ===" && tail -10 /tmp/tecnoapp-backend.log
+
+# Test de conectividad
+curl -I http://localhost:9001
+curl -I https://api.tecnoapp.ar
+curl -I https://tecnoapp.ar
+
+# Base de datos
+psql -U tecnodb -d tecnodb -h localhost -p 5433 -c "
+SELECT 'customer.repair_order' as tabla, count(*) FROM customer.repair_order
+UNION ALL
+SELECT 'customer.customer', count(*) FROM customer.customer
+UNION ALL
+SELECT 'system.user', count(*) FROM system.user;
+"
+🔐 Accesos y Credenciales
+SSH
+text
+ssh root@vps-5412843-x.vps.donweb.com
+PostgreSQL Local
+text
+psql -U tecnodb -d tecnodb -h localhost -p 5433
+# Contraseña: Tecnodb123*
+CloudPanel
+URL: https://tecnoapp.site
+
+Usuario: (según configuración)
+
+📝 Notas Importantes
+Backend es repositorio Git activo: Se actualiza con git pull
+
+Frontend NO es repositorio Git: Se actualiza recompilando desde temporal
+
+PostgreSQL corre en puerto 5433 (no el estándar 5432)
+
+Backend corre en puerto 9001 (NGINX hace proxy)
+
+Usar nohup para mantener procesos corriendo después de cerrar SSH
+
+Siempre hacer backup de .env antes de actualizar
+
+🖥️ Apartado: Acceso y Comandos en CloudPanel Hosting
+Lista Esencial de Comandos de Conexión y Navegación (cd /WINDOWS/system32)
+1. Acceso SSH al Server CloudPanel
+bash
+# Conectarse por SSH usando root (o usuario con permisos sudo)
+ssh root@vps-5412843-x.vps.donweb.com
+# O si tienes otro usuario:
+ssh apitecnoapp@vps-5412843-x.vps.donweb.com
+2. Acceso a CloudPanel Web
+URL: https://tecnoapp.site
+
+Ingresar usuario y clave del CloudPanel
+
+3. Navegación por los Directorios Principales
+Backend
+bash
+# Backend principal
+cd /home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+# Para ver archivos
+ls -lh
+# Para ver el script de inicio, entorno virtual y dependencias:
+cat start.sh
+cat requirements.txt
+ls venv/
+Frontend (Archivos Estáticos)
+bash
+# Frontend público
+cd /home/tecnoapp/htdocs/tecnoapp.ar
+ls -lh
+# Para ver el index y assets
+cat index.html
+ls assets/
+Scripts de despliegue y estado
+bash
+# Script de despliegue completo
+cd /home/apitecnoapp
+ls -lh deploy-full.sh status.sh
+cat deploy-full.sh
+cat status.sh
+4. Gestión de NGINX y CloudPanel
+bash
+# Ver configuración de los vHosts
+cd /etc/nginx/sites-enabled
+ls
+cat tecnoapp_ar.conf  # (nombres pueden variar, revisa la lista)
+# Reiniciar NGINX
+sudo systemctl restart nginx
+# Ver logs de NGINX
+sudo tail -f /var/log/nginx/error.log
+5. PostgreSQL (Gestión Base de Datos)
+bash
+# Navegar a clusters de PostgreSQL
+cd /var/lib/postgresql/
+ls
+# Ver versiones y clusters activos
+sudo pg_lsclusters
+# Conectarse a la base tecnodb
+psql -U tecnodb -d tecnodb -h localhost -p 5433
+📁 Principales Directorios en Cloud
+Componente	Ruta principal
+Backend	/home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend
+Frontend	/home/tecnoapp/htdocs/tecnoapp.ar
+Deploy	/home/apitecnoapp/deploy-full.sh
+Estado	/home/apitecnoapp/status.sh
+Config NGINX	/etc/nginx/sites-enabled/tecnoapp_ar.conf (o parecido)
+PostgreSQL	/var/lib/postgresql/18/main (datos cluster 18)
+Venv Python	/home/apitecnoapp/htdocs/api.tecnoapp.ar/TecnoMundo_repair_mangement/backend/venv
+
+
+🆘 Contacto para Soporte
+Repositorio: https://github.com/franco18min/TecnoMundo_repair_mangement
+
+Issues: https://github.com/franco18min/TecnoMundo_repair_mangement/issues
+
+📚 Documentacion de Soporte
+
+* Website:         https://www.cloudpanel.io
+* Documentation:   https://www.cloudpanel.io/docs/v2/
+* Best Practices:  https://www.cloudpanel.io/docs/v2/best-practices/
+* CloudPanel:      https://tecnoapp.site/ 
+* CloudPanel CLI:  clpctl
+
+📅 Historial de Cambios
+2025-10-30: Migración inicial desde Supabase a DonWeb
+
+2025-10-31: Configuración de despliegue automático
+
+2025-11-01: Corrección de fallback SPA en NGINX
+
+2025-11-05: Implementación de sistema de emails automáticos
+
+2025-11-08: Migración de tabla system.photo
