@@ -9,17 +9,15 @@ from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("--- Evento de arranque: Conectando a la base de datos... ---")
     # init_db() # Mantenemos esto comentado ya que tus tablas ya existen
-    print("--- Conexión establecida. El servidor está listo. ---")
     yield
-    print("--- Evento de cierre: Servidor apagándose. ---")
+    pass
 
 app = FastAPI(title="Servicio Técnico Pro API", lifespan=lifespan)
 
 # --- CONFIGURACIÓN DE CORS: ahora toma orígenes desde settings ---
 origins = settings.ALLOWED_ORIGINS
-print(f"[CORS] Allowed origins: {origins}")
+pass
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +34,6 @@ def read_root():
 # Este endpoint de prueba es útil para verificar la conexión básica
 @app.get("/hello")
 def hello_world():
-    print("--- ¡La petición a /hello llegó y fue procesada! ---")
     return {"message": "El backend responde correctamente"}
 
 app.include_router(api_router, prefix="/api/v1")

@@ -12,13 +12,13 @@ from app.models.branch import Branch
 from app.models.user import User
 from app.models.status_order import StatusOrder
 from app.models.device_type import DeviceType
-from app.schemas.repair_order import RepairOrder as RepairOrderSchema
+from app.schemas.repair_order import RepairOrderPublic
 from app.services.email_transaccional import EmailTransactionalService
 from app.crud import crud_email_subscription
 
 router = APIRouter()
 
-@router.get("/client-search")
+@router.get("/client-search", response_model=RepairOrderPublic)
 def search_order_by_client_query(
     q: str = Query(..., description="DNI del cliente o número de orden"),
     db: Session = Depends(get_db)
@@ -59,7 +59,7 @@ def search_order_by_client_query(
     
     return order
 
-@router.get("/client/{order_id}")
+@router.get("/client/{order_id}", response_model=RepairOrderPublic)
 def get_client_order_details(
     order_id: int,
     db: Session = Depends(get_db)

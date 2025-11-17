@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.api.v1.dependencies import get_db
+from app.api.v1 import dependencies as deps
 from app.models.user import User
 from app.models.roles import Role
 from app.models.branch import Branch
@@ -11,7 +12,10 @@ from app.core.security import verify_password, get_password_hash
 router = APIRouter()
 
 @router.get("/db-status")
-def check_database_status(db: Session = Depends(get_db)):
+def check_database_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_admin)
+):
     """Endpoint para verificar el estado de la base de datos"""
     try:
         # Contar usuarios
@@ -51,7 +55,10 @@ def check_database_status(db: Session = Depends(get_db)):
         }
 
 @router.post("/test-auth")
-def test_authentication(db: Session = Depends(get_db)):
+def test_authentication(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_admin)
+):
     """Endpoint para probar la autenticación del usuario admin"""
     try:
         # Buscar usuario admin

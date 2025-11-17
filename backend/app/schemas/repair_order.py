@@ -4,13 +4,13 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 
-from .customer import Customer, CustomerCreate, CustomerUpdate
+from .customer import Customer, CustomerCreate, CustomerUpdate, CustomerPublic
 from .user import User
 from .status_order import StatusOrder
 from .device_type import DeviceType
 from .device_condition import DeviceCondition, DeviceConditionCreate, DeviceConditionUpdate
 from .repair_order_photo import RepairOrderPhoto
-from .branch import Branch # <-- IMPORTAMOS EL NUEVO ESQUEMA
+from .branch import Branch, BranchPublic # <-- IMPORTAMOS EL NUEVO ESQUEMA
 
 
 class RepairOrder(BaseModel):
@@ -75,6 +75,21 @@ class RepairOrderUpdate(BaseModel):
 class RepairOrderTransfer(BaseModel):
     target_branch_id: int = Field(..., description="ID de la sucursal destino")
     
+    class Config:
+        from_attributes = True
+
+# Versión pública de la orden, sin datos sensibles
+class RepairOrderPublic(BaseModel):
+    id: int
+    device_model: Optional[str] = None
+    created_at: datetime
+    status: Optional[StatusOrder] = None
+    device_type: Optional[DeviceType] = None
+    branch: Optional[BranchPublic] = None
+    technician_diagnosis: Optional[str] = None
+    repair_notes: Optional[str] = None
+    photos: List[RepairOrderPhoto] = []
+
     class Config:
         from_attributes = True
 

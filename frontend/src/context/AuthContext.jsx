@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const websocketRef = useRef(null);
     const [branches, setBranches] = useState([]);
-    const [selectedBranchId, setSelectedBranchId] = useState('all');
+    const [selectedBranchId, setSelectedBranchId] = useState(null);
 
     // --- INICIO DE LA MODIFICACIÓN ---
     const getAccessToken = useCallback(() => localStorage.getItem('accessToken'), []);
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
         setNotifications([]);
         setOrders([]);
         setBranches([]);
-        setSelectedBranchId('all'); // Reseteo corregido
+        setSelectedBranchId(null);
     }, []);
 
     useEffect(() => {
@@ -57,11 +57,13 @@ export const AuthProvider = ({ children }) => {
             setNotifications(initialNotifications);
             setBranches(allBranches);
 
-            if (user.role?.role_name !== 'Administrator' && user.branch) {
+            if (user?.branch?.id) {
                 setSelectedBranchId(user.branch.id);
+            } else if (allBranches && allBranches.length > 0) {
+                setSelectedBranchId(allBranches[0].id);
             }
         } catch (error) {
-            console.error('Error cargando datos iniciales:', error);
+            // Suprimir logs de consola en producción/desarrollo
         }
     }, []);
 
@@ -70,8 +72,7 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             try { await loadInitialData(); }
             catch (error) {
-                console.error("Token inválido o expirado.", error);
-                logout(); // Se llama a la función de logout centralizada
+                logout();
             }
         }
         setIsLoading(false);
@@ -93,14 +94,9 @@ export const AuthProvider = ({ children }) => {
             
             websocketRef.current = new WebSocket(wsUrlWithToken);
 
-            websocketRef.current.onopen = () => console.log("WebSocket conectado.");
-            websocketRef.current.onclose = (event) => {
-                // Solo mostrar mensaje si no es un cierre intencional
-                if (event.code !== 1000) {
-                    console.log("WebSocket desconectado inesperadamente. Código:", event.code);
-                }
-            };
-            websocketRef.current.onerror = (error) => console.error("Error en WebSocket:", error);
+            websocketRef.current.onopen = () => {};
+            websocketRef.current.onclose = (event) => {};
+            websocketRef.current.onerror = () => {};
 
             websocketRef.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -118,7 +114,6 @@ export const AuthProvider = ({ children }) => {
                         setNotifications(prev => [data.payload, ...prev]);
                         break;
                     default:
-                        console.warn("Evento de WebSocket desconocido:", data);
                         break;
                 }
             };
@@ -140,12 +135,12 @@ export const AuthProvider = ({ children }) => {
         try {
             await apiMarkAsRead(notificationId);
             setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
-        } catch (error) { console.error("Error al marcar como leída:", error); }
+        } catch (error) { }
     };
 
     const filteredOrders = useMemo(() => {
-        if (selectedBranchId === 'all') {
-            return orders;
+        if (selectedBranchId == null) {
+            return [];
         }
         return orders.filter(order => order.branch_id === selectedBranchId);
     }, [orders, selectedBranchId]);

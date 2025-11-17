@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from app.api.v1.dependencies import get_db
+from app.api.v1 import dependencies as deps
 from app.models.user import User
 from app.models.roles import Role
 from app.models.branch import Branch
@@ -15,7 +16,10 @@ from app.core.security import get_password_hash
 router = APIRouter()
 
 @router.post("/production-data")
-def initialize_production_data(db: Session = Depends(get_db)):
+def initialize_production_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_admin)
+):
     """
     Endpoint para inicializar datos básicos en producción.
     Solo se ejecuta si no existen datos previos.
@@ -137,7 +141,10 @@ def initialize_production_data(db: Session = Depends(get_db)):
         )
 
 @router.get("/health")
-def check_database_health(db: Session = Depends(get_db)):
+def check_database_health(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_admin)
+):
     """
     Endpoint para verificar la salud de la base de datos.
     """

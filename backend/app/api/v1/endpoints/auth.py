@@ -43,7 +43,6 @@ def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2Passw
         return {"access_token": access_token, "token_type": "bearer"}
 
     except Exception as e:
-        traceback.print_exc()
         raise e
 
 @router.post("/register", response_model=UserInDB)

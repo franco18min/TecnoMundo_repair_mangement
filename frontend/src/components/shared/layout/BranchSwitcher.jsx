@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext'; // RUTA CORREGIDA
-import { Building, Globe, ChevronDown } from 'lucide-react';
+import { Building, ChevronDown } from 'lucide-react';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { SidebarContext } from './Sidebar';
 
 export function BranchSwitcher() {
@@ -13,6 +14,7 @@ export function BranchSwitcher() {
     const dropdownRef = useRef(null);
     const buttonRef = useRef(null);
     const { expanded } = useContext(SidebarContext);
+    const { canSwitchBranch } = usePermissions();
     
     // Cerrar dropdown al hacer clic fuera
     useEffect(() => {
@@ -28,16 +30,13 @@ export function BranchSwitcher() {
         };
     }, []);
 
-    // Verificaciones después de todos los hooks
-    const isAdmin = currentUser?.role?.role_name === 'Administrator';
-    
-    // No mostrar el switcher si no es admin o si no hay sucursales cargadas.
-    if (!isAdmin || branches.length === 0) {
+    // No mostrar el switcher si no tiene permiso o si no hay sucursales cargadas.
+    if (!canSwitchBranch || branches.length === 0) {
         return null;
     }
 
     const handleBranchSelect = (branchId) => {
-        setSelectedBranchId(branchId === 'all' ? 'all' : Number(branchId));
+        setSelectedBranchId(Number(branchId));
         setIsOpen(false);
     };
 
@@ -69,14 +68,9 @@ export function BranchSwitcher() {
         setIsOpen(!isOpen);
     };
 
-    const selectedBranch = selectedBranchId === 'all' 
-        ? { branch_name: 'Todas las Sucursales', icon: Globe }
-        : branches.find(b => b.id === selectedBranchId) || { branch_name: 'Seleccionar...', icon: Building };
+    const selectedBranch = branches.find(b => b.id === selectedBranchId) || { branch_name: 'Seleccionar...', icon: Building };
 
-    const dropdownOptions = [
-        { id: 'all', branch_name: 'Todas las Sucursales', icon: Globe },
-        ...branches
-    ];
+    const dropdownOptions = [...branches];
 
     return (
         <motion.div 
@@ -129,10 +123,7 @@ export function BranchSwitcher() {
                                 transition={{ type: "spring", stiffness: 600, damping: 35 }}
                                 className="flex items-center justify-center"
                             >
-                                {selectedBranchId === 'all' ? 
-                                    <Globe size={16} className={isOpen ? "text-indigo-600" : "text-gray-600"} /> : 
-                                    <Building size={16} className={isOpen ? "text-indigo-600" : "text-gray-600"} />
-                                }
+                                <Building size={16} className={isOpen ? "text-indigo-600" : "text-gray-600"} />
                             </motion.div>
                         )}
                     </motion.button>
@@ -152,10 +143,7 @@ export function BranchSwitcher() {
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 600, damping: 35 }}
                         >
-                            {selectedBranchId === 'all' ? 
-                                <Globe size={15} className="text-current" /> : 
-                                <Building size={15} className="text-current" />
-                            }
+                            <Building size={15} className="text-current" />
                         </motion.div>
                     </motion.div>
 
@@ -209,9 +197,8 @@ export function BranchSwitcher() {
                                 transition={{ delay: 0.1, duration: 0.15 }}
                             >
                                 {dropdownOptions.map((option, index) => {
-                                    const isSelected = option.id === selectedBranchId || 
-                                                    (option.id !== 'all' && option.id === selectedBranchId);
-                                    const IconComponent = option.id === 'all' ? Globe : Building;
+                                    const isSelected = option.id === selectedBranchId;
+                                    const IconComponent = Building;
                                     
                                     return (
                                         <motion.button

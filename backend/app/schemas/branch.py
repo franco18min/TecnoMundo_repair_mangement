@@ -23,6 +23,13 @@ class Branch(BaseModel):
     class Config:
         from_attributes = True
 
+class BranchPublic(BaseModel):
+    id: int
+    branch_name: str
+
+    class Config:
+        from_attributes = True
+
 class BranchCreate(BaseModel):
     branch_name: str
     company_name: Optional[str] = None

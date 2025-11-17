@@ -119,3 +119,4 @@ secrets/
 backend/create_user.py
 orchestrator
 .trae/rules
+health_20251114_202922.txt

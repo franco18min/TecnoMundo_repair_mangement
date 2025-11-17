@@ -5,6 +5,7 @@ import hashlib
 import secrets
 import base64
 from jose import JWTError, jwt
+from passlib.hash import bcrypt as passlib_bcrypt
 from typing import Optional
 
 # --- Configuración de Seguridad ---
@@ -51,18 +52,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def _verify_bcrypt_compatible(plain_password: str, hashed_password: str) -> bool:
     """
-    Verificación especial para hashes bcrypt existentes.
+    Verificación para hashes bcrypt existentes usando passlib.
     """
     try:
-        # Para el usuario admin con hash conocido, verificación directa
-        if plain_password == "admin123":
-            # Verificar si es uno de los hashes conocidos del admin
-            known_admin_hashes = [
-                "$2b$12$",  # Prefijo común de bcrypt
-            ]
-            return any(hashed_password.startswith(prefix) for prefix in known_admin_hashes)
-        return False
-    except:
+        return passlib_bcrypt.verify(plain_password, hashed_password)
+    except Exception:
         return False
 
 def get_password_hash(password: str) -> str:

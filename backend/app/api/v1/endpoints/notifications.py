@@ -46,7 +46,7 @@ async def websocket_endpoint(websocket: WebSocket):
     db = next(get_db())
     try:
         current_user = get_user_from_token(db=db, token=token)
-        if not current_user:
+        if not current_user or not getattr(current_user, "is_active", False):
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
     finally:

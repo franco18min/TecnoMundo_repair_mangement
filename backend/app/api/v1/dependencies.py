@@ -63,8 +63,11 @@ def get_current_active_admin(current_user: User = Depends(get_current_active_use
 def get_current_active_admin_or_receptionist(current_user: User = Depends(get_current_active_user)) -> User:
     """
     Verifica que el usuario actual sea un administrador o recepcionista activo.
+    Acepta variantes comunes del nombre del rol para robustez.
     """
-    if not current_user.role or current_user.role.role_name not in ["Administrator", "Receptionist"]:
+    role_name = (current_user.role.role_name if current_user.role else "").lower()
+    allowed = {"administrator", "receptionist", "recepcionist", "recepcionista"}
+    if role_name not in allowed:
         raise HTTPException(status_code=403, detail="No tiene los permisos suficientes para realizar esta acción.")
     return current_user
 

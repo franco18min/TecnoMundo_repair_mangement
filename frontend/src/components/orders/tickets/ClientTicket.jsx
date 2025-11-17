@@ -74,106 +74,78 @@ const processVariables = (content, order) => {
 export const ClientTicket = React.forwardRef(({ order }, ref) => {
   // Cargar configuraciones de forma síncrona
   const getTicketStyle = () => {
-    console.log('🎫 ClientTicket - Cargando estilos de cabecera...');
-    
     // Primero intentar cargar estilos globales de cabecera
     const globalHeaderStyle = localStorage.getItem('globalHeaderStyle_client');
-    console.log('🎫 ClientTicket - globalHeaderStyle_client desde localStorage:', globalHeaderStyle);
     
     if (globalHeaderStyle) {
       try {
         const parsed = JSON.parse(globalHeaderStyle);
-        console.log('🎫 ClientTicket - Usando estilos globales de cabecera:', parsed);
         return parsed;
       } catch (error) {
-        console.error('🎫 ClientTicket - Error parsing global header style:', error);
       }
     }
     
     // Si no hay estilos globales, usar los estilos por sucursal como fallback
     const savedStyle = localStorage.getItem('ticketStyle_client');
-    console.log('🎫 ClientTicket - ticketStyle_client desde localStorage:', savedStyle);
     
     if (savedStyle) {
       try {
         const parsed = JSON.parse(savedStyle);
-        console.log('🎫 ClientTicket - Usando estilos por sucursal:', parsed);
         return parsed;
       } catch (error) {
-        console.error('🎫 ClientTicket - Error parsing saved style:', error);
         return {};
       }
     }
     
-    console.log('🎫 ClientTicket - No se encontraron estilos, usando valores por defecto');
     return {};
   };
 
   const getBodyContent = () => {
-    console.log('🎫 ClientTicket - Cargando contenido de cuerpo...');
-    
     // Primero intentar cargar el contenido global estilizado
     const globalStyledContent = localStorage.getItem('globalTicketBodyStyledContent_client');
-    console.log('🎫 ClientTicket - globalTicketBodyStyledContent_client:', globalStyledContent);
     if (globalStyledContent) {
-      console.log('🎫 ClientTicket - Usando contenido global estilizado');
       return globalStyledContent;
     }
     
     // Luego intentar cargar el contenido global original
     const globalContent = localStorage.getItem('globalTicketBodyContent_client');
-    console.log('🎫 ClientTicket - globalTicketBodyContent_client:', globalContent);
     if (globalContent) {
-      console.log('🎫 ClientTicket - Usando contenido global original');
       return globalContent;
     }
     
     // Si no hay contenido global, usar el contenido por sucursal estilizado
     const styledContent = localStorage.getItem('ticketBodyStyledContent_client');
-    console.log('🎫 ClientTicket - ticketBodyStyledContent_client:', styledContent);
     if (styledContent) {
-      console.log('🎫 ClientTicket - Usando contenido por sucursal estilizado');
       return styledContent;
     }
     
     // Finalmente, usar el contenido original por sucursal
     const originalContent = localStorage.getItem('ticketBodyContent_client') || '';
-    console.log('🎫 ClientTicket - ticketBodyContent_client:', originalContent);
-    console.log('🎫 ClientTicket - Usando contenido original por sucursal');
     return originalContent;
   };
 
   const getClientBodyStyle = () => {
-    console.log('🎫 ClientTicket - Cargando estilos de cuerpo...');
-    
     // Primero intentar cargar estilos globales de cuerpo
     const globalBodyStyle = localStorage.getItem('globalTicketBodyStyle_client');
-    console.log('🎫 ClientTicket - globalTicketBodyStyle_client:', globalBodyStyle);
     if (globalBodyStyle) {
       try {
         const parsed = JSON.parse(globalBodyStyle);
-        console.log('🎫 ClientTicket - Usando estilos globales de cuerpo:', parsed);
         return parsed;
       } catch (error) {
-        console.error('🎫 ClientTicket - Error parsing global client body style:', error);
       }
     }
     
     // Si no hay estilos globales, usar los estilos por sucursal como fallback
     const savedStyle = localStorage.getItem('ticketBodyStyle_client');
-    console.log('🎫 ClientTicket - ticketBodyStyle_client:', savedStyle);
     if (savedStyle) {
       try {
         const parsed = JSON.parse(savedStyle);
-        console.log('🎫 ClientTicket - Usando estilos por sucursal de cuerpo:', parsed);
         return parsed;
       } catch (error) {
-        console.error('🎫 ClientTicket - Error parsing client body style:', error);
         return {};
       }
     }
     
-    console.log('🎫 ClientTicket - No se encontraron estilos de cuerpo, usando valores por defecto');
     return {};
   };
 
@@ -181,10 +153,7 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
   const bodyContent = getBodyContent();
   const clientBodyStyle = getClientBodyStyle();
   
-  console.log('🎫 ClientTicket - Renderizando ticket para orden:', order?.id);
-  console.log('🎫 ClientTicket - Estilo de ticket final:', ticketStyle);
-  console.log('🎫 ClientTicket - Contenido de cuerpo final:', bodyContent);
-  console.log('🎫 ClientTicket - Estilo de cuerpo final:', clientBodyStyle);
+  
 
   if (!order) return null;
 

@@ -10,11 +10,13 @@ export const usePermissions = (mode, order = null) => {
         if (!currentUser) return { isReadOnly: true, canAccessConfig: false };
 
         const role = currentUser.role?.role_name;
-        const isAdmin = role === 'Administrator';
-        const isReceptionist = role === 'Receptionist';
-        const isTechnician = role === 'Technical';
+        const raw = (role || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const isAdmin = ['administrator', 'administrador', 'admin'].includes(raw);
+        const isReceptionist = ['receptionist', 'recepcionist', 'recepcionista'].includes(raw);
+        const isTechnician = ['technical', 'technician', 'tecnico'].includes(raw);
 
         const canAccessConfig = isAdmin;
+        const canSwitchBranch = isAdmin || isReceptionist || isTechnician;
 
         const canCreateOrders = isAdmin || isReceptionist;
         const canViewClients = isAdmin || isReceptionist;
@@ -24,7 +26,7 @@ export const usePermissions = (mode, order = null) => {
         const canEditCosts = isAdmin || isReceptionist;
 
         if (!mode) {
-            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig };
+            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig, canSwitchBranch };
         }
 
         if (mode === 'create') {
@@ -43,10 +45,11 @@ export const usePermissions = (mode, order = null) => {
                 canViewClients: canViewClients,
                 canAccessConfig: canAccessConfig,
                 canDeliverOrder: false, // No se puede entregar en modo creación
+                canSwitchBranch: canSwitchBranch,
             };
         }
 
-        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients, canAccessConfig };
+        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients, canAccessConfig, canSwitchBranch };
 
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
@@ -102,6 +105,7 @@ export const usePermissions = (mode, order = null) => {
             canViewClients: canViewClients,
             canAccessConfig: canAccessConfig,
             canDeliverOrder: canDeliverOrder, // <-- Permiso añadido
+            canSwitchBranch: canSwitchBranch,
         };
     }, [currentUser, mode, order]);
 

@@ -32,3 +32,11 @@ class Customer(BaseModel):
 
     class Config:
         from_attributes = True
+
+# Versión pública, sin datos sensibles
+class CustomerPublic(BaseModel):
+    first_name: str
+    last_name: str
+
+    class Config:
+        from_attributes = True
