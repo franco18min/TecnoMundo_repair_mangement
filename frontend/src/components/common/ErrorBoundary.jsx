@@ -1,10 +1,11 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Send } from 'lucide-react';
+import { API_CONFIG } from '../../config/api';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, error: null, errorInfo: null, reportSent: false, reporting: false, userMessage: '', reportRequestId: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -19,12 +20,38 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
 
-    // Aquí podrías enviar el error a un servicio de logging
     console.error('ErrorBoundary capturó un error:', error, errorInfo);
   }
 
   handleRetry = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
+  };
+
+  handleReport = async () => {
+    if (this.state.reporting) return;
+    this.setState({ reporting: true });
+    try {
+      const body = {
+        route: window.location.pathname,
+        user_message: this.state.userMessage,
+        client_context: {
+          componentStack: this.state.errorInfo?.componentStack,
+          error: this.state.error?.toString()
+        },
+        user_agent: navigator.userAgent
+      };
+      const res = await fetch(`${API_CONFIG.API_V1_URL}/error-reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json().catch(() => ({}));
+      this.setState({ reportSent: true, reportRequestId: data?.request_id || null });
+    } catch (e) {
+      console.error('Error al enviar reporte', e);
+    } finally {
+      this.setState({ reporting: false });
+    }
   };
 
   render() {
@@ -52,6 +79,23 @@ class ErrorBoundary extends React.Component {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Intentar de nuevo
               </button>
+              <textarea
+                value={this.state.userMessage}
+                onChange={(e) => this.setState({ userMessage: e.target.value })}
+                placeholder="Opcional: describe qué estabas haciendo"
+                className="w-full border border-gray-300 rounded-lg p-3 text-gray-800"
+              />
+              <button
+                onClick={this.handleReport}
+                disabled={this.state.reporting || this.state.reportSent}
+                className={`w-full ${this.state.reportSent ? 'bg-purple-300' : 'bg-purple-600 hover:bg-purple-700'} text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center`}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {this.state.reportSent ? 'Reporte enviado' : (this.state.reporting ? 'Enviando...' : 'Enviar reporte')}
+              </button>
+              {this.state.reportSent && (
+                <div className="text-xs text-gray-500">ID del reporte: {this.state.reportRequestId || 'N/D'}</div>
+              )}
               
               <button
                 onClick={() => window.location.reload()}

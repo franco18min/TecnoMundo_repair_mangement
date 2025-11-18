@@ -27,6 +27,7 @@ const getApiClient = (getAccessToken, logout) => {
 
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+            const requestId = response.headers.get('X-Request-Id');
 
             if (response.status === 401 && logout) {
                 // Si la petición falla por autenticación y tenemos la función logout, la llamamos.
@@ -36,8 +37,12 @@ const getApiClient = (getAccessToken, logout) => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                const error = new Error(errorData.detail || `Error en la solicitud: ${response.status}`);
+                const message = errorData.message || errorData.detail || `Error en la solicitud: ${response.status}`;
+                const error = new Error(message);
                 error.status = response.status;
+                error.code = errorData.code;
+                error.details = errorData.details;
+                error.requestId = requestId;
                 throw error;
             }
 

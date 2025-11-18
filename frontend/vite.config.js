@@ -21,6 +21,11 @@ export default defineConfig({
             fs.writeFileSync(dstPng, buf)
             fs.writeFileSync(dstIco, buf)
           }
+          const srcLogo = path.resolve(__dirname, '..', 'photo', 'logo.png')
+          const dstLogo = path.resolve(pub, 'logo.png')
+          if (fs.existsSync(srcLogo)) {
+            fs.writeFileSync(dstLogo, fs.readFileSync(srcLogo))
+          }
         } catch {}
       }
     },
@@ -38,6 +43,11 @@ export default defineConfig({
             const buf = fs.readFileSync(src)
             fs.writeFileSync(dstPng, buf)
             fs.writeFileSync(dstIco, buf)
+          }
+          const srcLogo = path.resolve(__dirname, '..', 'photo', 'logo.png')
+          const dstLogo = path.resolve(pub, 'logo.png')
+          if (fs.existsSync(srcLogo)) {
+            fs.writeFileSync(dstLogo, fs.readFileSync(srcLogo))
           }
         } catch {}
       }

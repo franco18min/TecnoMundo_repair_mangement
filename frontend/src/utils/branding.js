@@ -29,3 +29,20 @@ export async function setFaviconFromSupabase() {
     console.warn('No se pudo cargar favicon desde Supabase', e);
   }
 }
+
+// Base de branding: sirve archivos desde /public en dev y prod
+export function getBrandingBaseUrl() {
+  const base = (typeof window !== 'undefined' && window.location) ? window.location.origin : '';
+  return `${base}/`;
+}
+
+// Verifica si existe el asset en el servidor (public)
+export async function checkBrandingAsset(file) {
+  const base = getBrandingBaseUrl();
+  try {
+    const resp = await fetch(base + file, { method: 'HEAD' });
+    return resp.ok;
+  } catch {
+    return false;
+  }
+}

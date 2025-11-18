@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronsLeft, ChevronsRight, LogOut, Building } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { BranchSwitcher } from './BranchSwitcher';
+import BrandLogo from '../../shared/BrandLogo';
 
 const SidebarContext = createContext();
 export { SidebarContext };
@@ -32,7 +33,7 @@ export function Sidebar({ onLogout, children }) {
                 <div className={`p-4 pb-2 flex items-center ${expanded ? 'justify-between' : 'justify-center'}`}>
                     {/* Logo dinámico desde Supabase (system.photos: name='logo'), fallback al texto */}
                     <motion.div
-                        className="overflow-hidden"
+                        className="overflow-hidden flex-1"
                         initial={false}
                         animate={{ 
                             opacity: expanded ? 1 : 0, 
@@ -44,11 +45,11 @@ export function Sidebar({ onLogout, children }) {
                             ease: [0.4, 0, 0.2, 1] 
                         }}
                     >
-                        <BrandLogoOrText />
+                        <BrandLogo className="w-full h-auto sm:h-auto object-contain" alt="TecnoMundo" />
                     </motion.div>
                     <motion.button 
                         onClick={() => setExpanded(curr => !curr)} 
-                        className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors duration-200"
+                        className={`${expanded ? 'p-1 sm:p-1.5 ml-2' : 'p-1.5'} rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors duration-200`}
                         whileHover={{ scale: 1.1, backgroundColor: "#e5e7eb" }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -57,7 +58,7 @@ export function Sidebar({ onLogout, children }) {
                     >
                         {/* Importante: no rotamos el ícono para que siempre apunte correctamente */}
                         <motion.div initial={false} animate={{ rotate: 0 }}>
-                            {expanded ? <ChevronsLeft /> : <ChevronsRight />}
+                            {expanded ? <ChevronsLeft size={18} /> : <ChevronsRight />}
                         </motion.div>
                     </motion.button>
                 </div>
@@ -231,35 +232,4 @@ export function SidebarItem({ icon, text, active, alert, onClick }) {
     );
 }
 
-// --- Logo dinámico ---
-function BrandLogoOrText() {
-    const [logoSrc, setLogoSrc] = React.useState(null);
-    React.useEffect(() => {
-        const url = import.meta.env.VITE_SUPABASE_URL;
-        const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        async function load() {
-            try {
-                if (!url || !key) return;
-                const endpoint = `${url.replace(/\/$/, '')}/rest/v1/system.photo?select=data_base64,name&name=eq.logo`;
-                const resp = await fetch(endpoint, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
-                if (!resp.ok) return;
-                const json = await resp.json();
-                const rec = Array.isArray(json) ? json[0] : null;
-                if (rec && rec.data_base64) {
-                    setLogoSrc(`data:image/png;base64,${rec.data_base64}`);
-                }
-            } catch (e) {
-                console.warn('No se pudo cargar logo desde Supabase', e);
-            }
-        }
-        load();
-    }, []);
-    if (logoSrc) {
-        return (
-            <img src={logoSrc} alt="Logo" className="h-8 w-auto" />
-        );
-    }
-    return (
-        <h1 className="font-bold text-2xl text-indigo-600">TecnoMundo</h1>
-    );
-}
+// Se usa BrandLogo compartido

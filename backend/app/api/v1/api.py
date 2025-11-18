@@ -1,7 +1,7 @@
 # backend/app/api/v1/api.py
 
 from fastapi import APIRouter
-from .endpoints import repair_orders, repair_order_photos, auth, customers, device_types, users, notifications, branches, roles, init, debug, predefined_checklist_items, client_orders, email_test
+from .endpoints import repair_orders, repair_order_photos, auth, customers, device_types, users, notifications, branches, roles, init, debug, predefined_checklist_items, client_orders, email_test, error_reports
 
 api_router = APIRouter()
 
@@ -19,3 +19,4 @@ api_router.include_router(predefined_checklist_items.router, prefix="/predefined
 api_router.include_router(init.router, prefix="/init", tags=["initialization"])
 api_router.include_router(debug.router, prefix="/debug", tags=["debug"])
 api_router.include_router(email_test.router, prefix="/email-test", tags=["email-test"])
+api_router.include_router(error_reports.router, prefix="/error-reports", tags=["error-reports"])

@@ -27,6 +27,7 @@ import CostBreakdown from '../components/client/CostBreakdown';
 
 // Componentes compartidos
 import { Toast } from '../components/shared/Toast';
+import BrandLogo from '../components/shared/BrandLogo';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 
 // API
@@ -264,9 +265,7 @@ const ClientOrderStatusPage = () => {
               
               <div className="flex items-center space-x-2">
                 <Home className="w-5 h-5 text-blue-600" />
-                <h1 className="text-lg sm:text-xl font-bold text-gray-800">
-                  TecnoMundo
-                </h1>
+                <BrandLogo className="h-6 w-auto" alt="TecnoMundo" />
               </div>
             </div>
 
