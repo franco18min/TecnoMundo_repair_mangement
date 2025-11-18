@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, KeyRound, Fingerprint, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext'; // 1. IMPORTAMOS EL HOOK DE AUTENTICACIÓN
 import { useNavigate } from 'react-router-dom';
+import BrandLogo from '../components/shared/BrandLogo';
 
 export function LoginPage() {
   const { login } = useAuth(); // 2. USAMOS LA FUNCIÓN 'login' DEL CONTEXTO
@@ -86,8 +87,13 @@ export function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 120, damping: 15 }}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-2">Bienvenido</h2>
-        <p className="text-center text-gray-500 mb-6">Inicia sesión para continuar</p>
+        <BrandLogo className="mx-auto h-14 sm:h-16 md:h-20 w-auto max-w-[190px] sm:max-w-[220px] mb-3" alt="TecnoMundo" />
+
+        {loginType === 'user' ? (
+          <p className="text-center text-gray-500 mb-4">Inicia sesión para continuar</p>
+        ) : (
+          <p className="text-center text-gray-500 mb-4">Ingresa tu DNI o N° de orden para encontrar tu reparación</p>
+        )}
 
         {error && <p className="text-red-500 text-center text-sm mb-4 animate-pulse">{error}</p>}
 

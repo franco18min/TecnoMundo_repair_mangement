@@ -263,8 +263,7 @@ const ClientOrderStatusPage = () => {
               
               <div className="h-6 w-px bg-gray-300" />
               
-              <div className="flex items-center space-x-2">
-                <Home className="w-5 h-5 text-blue-600" />
+              <div className="flex items-center">
                 <BrandLogo className="h-6 w-auto" alt="TecnoMundo" />
               </div>
             </div>
