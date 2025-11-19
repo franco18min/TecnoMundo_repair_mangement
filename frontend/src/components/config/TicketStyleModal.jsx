@@ -17,6 +17,12 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
         branchIcon: 'Building2',
         showContactInfo: true,
         showDivider: true,
+
+        // Logo
+        showLogo: true,
+        logoPosition: 'top', // top | left | right
+        logoHeightPx: 28,
+        logoMarginBottomPx: 2,
         
         // Estilos de cabecera
         headerFontFamily: '"Courier New", monospace',
@@ -140,11 +146,27 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                 {/* Cabecera */}
                 {styleConfig.showHeader && (
                     <header style={headerStyle} className="mb-2">
-                        {styleConfig.showCompanyName && (
-                            <div className="font-bold tracking-widest mb-1" style={{ fontSize: styleConfig.companyNameFontSize }}>
-                                {branch?.company_name || 'TECNO MUNDO'}
-                            </div>
+                        {styleConfig.showLogo ? (
+                            <>
+                                {styleConfig.logoPosition === 'top' && (
+                                    <div className="flex justify-center" style={{ marginBottom: styleConfig.logoMarginBottomPx }}>
+                                        <img src="/logo.png" alt="Logo" style={{ height: styleConfig.logoHeightPx }} />
+                                    </div>
+                                )}
+                                {styleConfig.logoPosition !== 'top' && (
+                                    <div className={`flex ${styleConfig.logoPosition === 'right' ? 'justify-end' : 'justify-start'}`} style={{ marginBottom: styleConfig.logoMarginBottomPx }}>
+                                        <img src="/logo.png" alt="Logo" style={{ height: styleConfig.logoHeightPx }} />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            styleConfig.showCompanyName && (
+                                <div className="font-bold tracking-widest mb-1" style={{ fontSize: styleConfig.companyNameFontSize }}>
+                                    {branch?.company_name || 'TECNO MUNDO'}
+                                </div>
+                            )
                         )}
+                        {/* company name duplicado eliminado */}
                         
                         {styleConfig.showContactInfo && (
                             <div className="space-y-1" style={{ fontSize: styleConfig.contactInfoFontSize }}>
@@ -275,9 +297,10 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                                 <div>
                                     <h4 className="font-medium text-gray-700 mb-3">Elementos de cabecera</h4>
                                     <div className="space-y-2">
-                                        {[
+                                        {([
                                             { key: 'showHeader', label: 'Mostrar cabecera completa' },
-                                            { key: 'showCompanyName', label: 'Nombre de la empresa' },
+                                            { key: 'showLogo', label: 'Logo' },
+                                            ...(branch ? [{ key: 'showCompanyName', label: 'Nombre de la empresa' }] : []),
                                             { key: 'showContactInfo', label: 'Información de contacto' },
                                             { key: 'showAddress', label: 'Dirección' },
                                             { key: 'showPhone', label: 'Teléfono' },
@@ -285,7 +308,7 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                                             { key: 'showBranchName', label: 'Nombre de sucursal' },
                                             { key: 'showIcon', label: 'Icono de sucursal' },
                                             { key: 'showDivider', label: 'Línea divisoria' }
-                                        ].map(({ key, label }) => (
+                                        ]).map(({ key, label }) => (
                                             <label key={key} className="flex items-center gap-2">
                                                 <input
                                                     type="checkbox"
@@ -303,6 +326,42 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                                 <div>
                                     <h4 className="font-medium text-gray-700 mb-3">Estilos de cabecera</h4>
                                     <div className="space-y-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Posición del logo</label>
+                                                <select
+                                                    value={styleConfig.logoPosition}
+                                                    onChange={(e) => updateConfig('logoPosition', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                                                >
+                                                    <option value="top">Arriba (centrado)</option>
+                                                    <option value="left">Izquierda (junto al nombre)</option>
+                                                    <option value="right">Derecha (junto al nombre)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Altura del logo (px)</label>
+                                                <input
+                                                    type="number"
+                                                    min="16"
+                                                    max="64"
+                                                    value={styleConfig.logoHeightPx}
+                                                    onChange={(e) => updateConfig('logoHeightPx', Number(e.target.value))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Margen inferior logo (px)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="24"
+                                                    value={styleConfig.logoMarginBottomPx}
+                                                    onChange={(e) => updateConfig('logoMarginBottomPx', Number(e.target.value))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                                                />
+                                            </div>
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                                 Fuente de cabecera
@@ -337,22 +396,20 @@ export function TicketStyleModal({ isOpen, onClose, branch, ticketType = 'client
                                             </select>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Tamaño nombre empresa
-                                            </label>
-                                            <select
-                                                value={styleConfig.companyNameFontSize}
-                                                onChange={(e) => updateConfig('companyNameFontSize', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                                            >
-                                                {fontSizeOptions.map(option => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                        {branch && styleConfig.showCompanyName && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño nombre empresa</label>
+                                                <select
+                                                    value={styleConfig.companyNameFontSize}
+                                                    onChange={(e) => updateConfig('companyNameFontSize', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                                                >
+                                                    {fontSizeOptions.map(option => (
+                                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
 
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">

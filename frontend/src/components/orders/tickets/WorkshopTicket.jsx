@@ -1,6 +1,7 @@
 // frontend/src/components/tickets/WorkshopTicket.jsx
 
 import React from 'react';
+import { getLogoDataUrlCached } from '../../../utils/branding';
 import { Building2, MapPin, Phone, Mail, Store, Home, Globe } from 'lucide-react';
 
 // Componentes internos para un código más limpio
@@ -213,8 +214,11 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
       {/* Encabezado personalizable por sucursal */}
       {ticketStyle.showHeader !== false && (
         <header className="mb-2" style={headerStyle}>
+          {ticketStyle.showLogo && (
+            <HeaderLogo ticketStyle={ticketStyle} />
+          )}
           {/* Nombre de la empresa */}
-          {ticketStyle.showCompanyName !== false && (
+          {ticketStyle.showCompanyName !== false && !ticketStyle.showLogo && (
             <div style={companyNameStyle}>
               {order.branch?.company_name || 'TECNO MUNDO'}
             </div>
@@ -283,3 +287,34 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
     </div>
   );
 });
+
+function HeaderLogo({ ticketStyle }) {
+  const [src, setSrc] = React.useState('');
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const h = Number(ticketStyle.logoHeightPx || 28);
+      const dataUrl = await getLogoDataUrlCached(h);
+      if (mounted) setSrc(dataUrl);
+    })();
+    return () => { mounted = false; };
+  }, [ticketStyle.logoHeightPx]);
+  if (!src) return null;
+  const mb = typeof ticketStyle.logoMarginBottomPx === 'number' ? ticketStyle.logoMarginBottomPx : 4;
+  const pos = ticketStyle.logoPosition || 'top';
+  if (pos === 'top') {
+    return (
+      <div className="flex justify-center" style={{ marginBottom: mb }}>
+        <img src={src} alt="Logo" style={{ height: ticketStyle.logoHeightPx || 28 }} />
+      </div>
+    );
+  }
+  if (pos === 'left' || pos === 'right') {
+    return (
+      <div className={`flex items-center justify-center gap-2 ${pos === 'right' ? 'flex-row-reverse' : ''}`} style={{ marginBottom: mb }}>
+        <img src={src} alt="Logo" style={{ height: ticketStyle.logoHeightPx || 28 }} />
+      </div>
+    );
+  }
+  return null;
+}
