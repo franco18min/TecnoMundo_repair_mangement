@@ -1,8 +1,7 @@
 // frontend/src/components/tickets/ClientTicket.jsx
 
 import React from 'react';
-import { getLogoDataUrlCached } from '../../../utils/branding';
-import { Building2, MapPin, Phone, Mail, Store, Home, Globe } from 'lucide-react';
+import { TicketHeader } from './shared/TicketHeader';
 
 // Componentes internos para un código más limpio
 const Section = ({ title, children, className = '', style = {} }) => (
@@ -12,23 +11,7 @@ const Section = ({ title, children, className = '', style = {} }) => (
     </div>
 );
 
-const HeaderLine = ({ children, style = {} }) => (
-    <p className="text-center text-sm" style={style}>{children}</p>
-);
-
-// Función para obtener el componente de icono
-const getIconComponent = (iconName, size = 16) => {
-  const iconMap = {
-    'Building': Building2,
-    'Building2': Building2,
-    'Store': Store,
-    'MapPin': MapPin,
-    'Home': Home,
-    'Globe': Globe
-  };
-  const IconComponent = iconMap[iconName] || Building2;
-  return <IconComponent size={size} />;
-};
+ 
 
 // Función para procesar variables en el contenido
 const processVariables = (content, order) => {
@@ -42,7 +25,7 @@ const processVariables = (content, order) => {
     '[NOMBRE_CLIENTE]': order.customer ? `${order.customer.first_name || ''} ${order.customer.last_name || ''}`.trim() : 'N/A',
     '[TELEFONO_CLIENTE]': order.customer?.phone_number || 'N/A',
     '[DNI_CLIENTE]': order.customer?.dni || 'N/A',
-    '[TIPO_DISPOSITIVO]': order.device_type?.name || 'N/A',
+    '[TIPO_DISPOSITIVO]': (order.device_type?.type_name || order.device_type?.name) || 'N/A',
     '[MODELO_DISPOSITIVO]': order.device_model || 'N/A',
     '[NUMERO_SERIE]': order.serial_number || 'N/A',
     '[ACCESORIOS]': order.accesories || 'Ninguno',
@@ -215,43 +198,7 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
         ${generateSelectedTextStyles()}
       `}</style>
 
-      {/* Encabezado personalizable por sucursal */}
-      {ticketStyle.showHeader !== false && (
-        <header className="mb-2" style={headerStyle}>
-          {ticketStyle.showLogo && (
-            <HeaderLogo ticketStyle={ticketStyle} />
-          )}
-          {/* Nombre de la empresa */}
-          {ticketStyle.showCompanyName !== false && !ticketStyle.showLogo && (
-            <div style={companyNameStyle}>
-              {order.branch?.company_name || 'TECNO MUNDO'}
-            </div>
-          )}
-          
-          {/* Información de contacto */}
-          {ticketStyle.showContactInfo !== false && (
-            <div className="mt-2 space-y-1" style={contactInfoStyle}>
-              {ticketStyle.showAddress !== false && order.branch?.address && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.address}</HeaderLine>
-              )}
-              {ticketStyle.showPhone !== false && order.branch?.phone && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.phone}</HeaderLine>
-              )}
-              {ticketStyle.showEmail !== false && order.branch?.email && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.email}</HeaderLine>
-              )}
-            </div>
-          )}
-          
-          {/* Nombre de sucursal con icono */}
-          {ticketStyle.showBranchName !== false && order.branch?.branch_name && (
-            <div className="mt-2 flex items-center justify-center gap-1 font-medium" style={contactInfoStyle}>
-              {ticketStyle.showIcon !== false && getIconComponent(order.branch.icon_name, 12)}
-              <span>{order.branch.branch_name}</span>
-            </div>
-          )}
-        </header>
-      )}
+      <TicketHeader ticketStyle={ticketStyle} branch={order.branch} order={order} />
 
       {ticketStyle.showDivider !== false && (
         <hr className="border-t border-dashed border-black my-2" />
@@ -300,33 +247,4 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
   );
 });
 
-function HeaderLogo({ ticketStyle }) {
-  const [src, setSrc] = React.useState('');
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const h = Number(ticketStyle.logoHeightPx || 28);
-      const dataUrl = await getLogoDataUrlCached(h);
-      if (mounted) setSrc(dataUrl);
-    })();
-    return () => { mounted = false; };
-  }, [ticketStyle.logoHeightPx]);
-  if (!src) return null;
-  const mb = typeof ticketStyle.logoMarginBottomPx === 'number' ? ticketStyle.logoMarginBottomPx : 4;
-  const pos = ticketStyle.logoPosition || 'top';
-  if (pos === 'top') {
-    return (
-      <div className="flex justify-center" style={{ marginBottom: mb }}>
-        <img src={src} alt="Logo" style={{ height: ticketStyle.logoHeightPx || 28 }} />
-      </div>
-    );
-  }
-  if (pos === 'left' || pos === 'right') {
-    return (
-      <div className={`flex items-center justify-center gap-2 ${pos === 'right' ? 'flex-row-reverse' : ''}`} style={{ marginBottom: mb }}>
-        <img src={src} alt="Logo" style={{ height: ticketStyle.logoHeightPx || 28 }} />
-      </div>
-    );
-  }
-  return null;
-}
+// Encabezado compartido

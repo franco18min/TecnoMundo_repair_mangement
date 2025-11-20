@@ -1,7 +1,7 @@
 // frontend/src/components/tickets/WorkshopTicket.jsx
 
 import React from 'react';
-import { getLogoDataUrlCached } from '../../../utils/branding';
+import { TicketHeader } from './shared/TicketHeader';
 import { Building2, MapPin, Phone, Mail, Store, Home, Globe } from 'lucide-react';
 
 // Componentes internos para un código más limpio
@@ -73,27 +73,15 @@ const processVariables = (content, order) => {
 export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
   // Cargar configuraciones de forma síncrona
   const getTicketStyle = () => {
-    // Primero intentar cargar estilos globales de header
-    const globalHeaderStyle = localStorage.getItem('globalHeaderStyle_workshop');
-    if (globalHeaderStyle) {
-      try {
-        const parsed = JSON.parse(globalHeaderStyle);
-        return parsed;
-      } catch (error) {
-      }
-    }
-    
-    // Si no hay estilos globales, usar los estilos por sucursal como fallback
-    const savedStyle = localStorage.getItem('ticketStyle_workshop');
-    if (savedStyle) {
-      try {
-        const parsed = JSON.parse(savedStyle);
-        return parsed;
-      } catch (error) {
-        return {};
-      }
-    }
-    
+    // Global workshop -> Global client -> Sucursal workshop -> Sucursal client
+    const gW = localStorage.getItem('globalHeaderStyle_workshop');
+    if (gW) { try { return JSON.parse(gW); } catch {} }
+    const gC = localStorage.getItem('globalHeaderStyle_client');
+    if (gC) { try { return JSON.parse(gC); } catch {} }
+    const sW = localStorage.getItem('ticketStyle_workshop');
+    if (sW) { try { return JSON.parse(sW); } catch { return {}; } }
+    const sC = localStorage.getItem('ticketStyle_client');
+    if (sC) { try { return JSON.parse(sC); } catch { return {}; } }
     return {};
   };
 
@@ -146,7 +134,10 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
     return {};
   };
 
-  const ticketStyle = getTicketStyle();
+  let ticketStyle = getTicketStyle();
+  if (typeof ticketStyle.showLogo === 'undefined') {
+    ticketStyle = { ...ticketStyle, showLogo: true };
+  }
   const bodyContent = getBodyContent();
   const workshopBodyStyle = getWorkshopBodyStyle();
   
@@ -211,42 +202,9 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
         ${generateSelectedTextStyles()}
       `}</style>
 
-      {/* Encabezado personalizable por sucursal */}
+      {/* Encabezado unificado */}
       {ticketStyle.showHeader !== false && (
-        <header className="mb-2" style={headerStyle}>
-          {ticketStyle.showLogo && (
-            <HeaderLogo ticketStyle={ticketStyle} />
-          )}
-          {/* Nombre de la empresa */}
-          {ticketStyle.showCompanyName !== false && !ticketStyle.showLogo && (
-            <div style={companyNameStyle}>
-              {order.branch?.company_name || 'TECNO MUNDO'}
-            </div>
-          )}
-          
-          {/* Información de contacto */}
-          {ticketStyle.showContactInfo !== false && (
-            <div className="mt-2 space-y-1" style={contactInfoStyle}>
-              {ticketStyle.showAddress !== false && order.branch?.address && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.address}</HeaderLine>
-              )}
-              {ticketStyle.showPhone !== false && order.branch?.phone && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.phone}</HeaderLine>
-              )}
-              {ticketStyle.showEmail !== false && order.branch?.email && (
-                <HeaderLine style={contactInfoStyle}>{order.branch.email}</HeaderLine>
-              )}
-            </div>
-          )}
-          
-          {/* Nombre de sucursal con icono */}
-          {ticketStyle.showBranchName !== false && order.branch?.branch_name && (
-            <div className="mt-2 flex items-center justify-center gap-1 font-medium" style={contactInfoStyle}>
-              {ticketStyle.showIcon !== false && getIconComponent(order.branch.icon_name, 12)}
-              <span>{order.branch.branch_name}</span>
-            </div>
-          )}
-        </header>
+        <TicketHeader ticketStyle={ticketStyle} branch={order.branch} order={order} />
       )}
 
       {ticketStyle.showDivider !== false && (
@@ -288,33 +246,4 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
   );
 });
 
-function HeaderLogo({ ticketStyle }) {
-  const [src, setSrc] = React.useState('');
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const h = Number(ticketStyle.logoHeightPx || 28);
-      const dataUrl = await getLogoDataUrlCached(h);
-      if (mounted) setSrc(dataUrl);
-    })();
-    return () => { mounted = false; };
-  }, [ticketStyle.logoHeightPx]);
-  if (!src) return null;
-  const mb = typeof ticketStyle.logoMarginBottomPx === 'number' ? ticketStyle.logoMarginBottomPx : 4;
-  const pos = ticketStyle.logoPosition || 'top';
-  if (pos === 'top') {
-    return (
-      <div className="flex justify-center" style={{ marginBottom: mb }}>
-        <img src={src} alt="Logo" style={{ height: ticketStyle.logoHeightPx || 28 }} />
-      </div>
-    );
-  }
-  if (pos === 'left' || pos === 'right') {
-    return (
-      <div className={`flex items-center justify-center gap-2 ${pos === 'right' ? 'flex-row-reverse' : ''}`} style={{ marginBottom: mb }}>
-        <img src={src} alt="Logo" style={{ height: ticketStyle.logoHeightPx || 28 }} />
-      </div>
-    );
-  }
-  return null;
-}
+// Encabezado compartido

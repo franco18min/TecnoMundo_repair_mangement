@@ -79,12 +79,21 @@ export function TicketHeaderStyleModal({ isOpen, onClose, ticketType = 'client',
             <div className="bg-white border-2 border-dashed border-gray-300 p-6 rounded-lg">
                 {styleConfig.showHeader && (
                     <header style={headerStyle} className="mb-2">
-                        {styleConfig.showCompanyName && (
-                            <div className="font-bold tracking-widest mb-1" style={{ fontSize: styleConfig.companyNameFontSize }}>
-                                TECNO MUNDO
-                            </div>
-                        )}
-                        
+                        {styleConfig.showLogo ? (
+                            <>
+                                {styleConfig.logoPosition === 'top' && (
+                                    <div className="flex justify-center" style={{ marginBottom: styleConfig.logoMarginBottomPx || 2 }}>
+                                        <img src="/logo.png" alt="Logo" style={{ height: styleConfig.logoHeightPx || 28 }} />
+                                    </div>
+                                )}
+                                {styleConfig.logoPosition !== 'top' && (
+                                    <div className={`flex ${styleConfig.logoPosition === 'right' ? 'justify-end' : 'justify-start'}`} style={{ marginBottom: styleConfig.logoMarginBottomPx || 2 }}>
+                                        <img src="/logo.png" alt="Logo" style={{ height: styleConfig.logoHeightPx || 28 }} />
+                                    </div>
+                                )}
+                            </>
+                        ) : null}
+
                         {styleConfig.showContactInfo && (
                             <div className="space-y-1" style={{ fontSize: styleConfig.contactInfoFontSize }}>
                                 {styleConfig.showAddress && <div>Av. Principal 123, Ciudad</div>}
@@ -92,7 +101,7 @@ export function TicketHeaderStyleModal({ isOpen, onClose, ticketType = 'client',
                                 {styleConfig.showEmail && <div>info@tecnomundo.com</div>}
                             </div>
                         )}
-                        
+
                         {styleConfig.showBranchName && (
                             <div className="flex items-center justify-center gap-1 font-medium mt-2" style={{ fontSize: styleConfig.branchNameFontSize }}>
                                 {styleConfig.showIcon && (
@@ -184,9 +193,9 @@ export function TicketHeaderStyleModal({ isOpen, onClose, ticketType = 'client',
                                 <div>
                                     <h4 className="font-medium text-gray-700 mb-3">Elementos a mostrar</h4>
                                     <div className="space-y-2">
-                                        {[
+                                        {([
                                             { key: 'showHeader', label: 'Mostrar cabecera completa' },
-                                            { key: 'showCompanyName', label: 'Nombre de la empresa' },
+                                            { key: 'showLogo', label: 'Logo' },
                                             { key: 'showContactInfo', label: 'Información de contacto' },
                                             { key: 'showAddress', label: 'Dirección' },
                                             { key: 'showPhone', label: 'Teléfono' },
@@ -194,7 +203,7 @@ export function TicketHeaderStyleModal({ isOpen, onClose, ticketType = 'client',
                                             { key: 'showBranchName', label: 'Nombre de sucursal' },
                                             { key: 'showIcon', label: 'Icono de sucursal' },
                                             { key: 'showDivider', label: 'Línea divisoria' }
-                                        ].map(({ key, label }) => (
+                                        ]).map(({ key, label }) => (
                                             <label key={key} className="flex items-center gap-2">
                                                 <input
                                                     type="checkbox"
@@ -235,17 +244,41 @@ export function TicketHeaderStyleModal({ isOpen, onClose, ticketType = 'client',
                                                 ))}
                                             </select>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño nombre empresa</label>
-                                            <select
-                                                value={styleConfig.companyNameFontSize || ''}
-                                                onChange={(e) => updateConfig('companyNameFontSize', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                            >
-                                                {fontSizeOptions.map(option => (
-                                                    <option key={option.value} value={option.value}>{option.label}</option>
-                                                ))}
-                                            </select>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Posición del logo</label>
+                                                <select
+                                                    value={styleConfig.logoPosition || 'top'}
+                                                    onChange={(e) => updateConfig('logoPosition', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                >
+                                                    <option value="top">Arriba (centrado)</option>
+                                                    <option value="left">Izquierda</option>
+                                                    <option value="right">Derecha</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Altura del logo (px)</label>
+                                                <input
+                                                    type="number"
+                                                    min="16"
+                                                    max="64"
+                                                    value={styleConfig.logoHeightPx || 28}
+                                                    onChange={(e) => updateConfig('logoHeightPx', Number(e.target.value))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Margen inferior del logo (px)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="24"
+                                                    value={styleConfig.logoMarginBottomPx || 2}
+                                                    onChange={(e) => updateConfig('logoMarginBottomPx', Number(e.target.value))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño info. contacto</label>
