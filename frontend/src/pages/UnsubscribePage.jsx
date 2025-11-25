@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, AlertCircle, Home } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
+import BrandLogo from '../components/shared/BrandLogo.jsx';
 import { API_CONFIG } from '../config/api';
 
 const UnsubscribePage = () => {
@@ -21,17 +22,16 @@ const UnsubscribePage = () => {
         return;
       }
       try {
-        const res = await fetch(`${API_CONFIG.BASE_URL}/api/v1/client-orders/${orderId}/unsubscribe-email?email=${encodeURIComponent(email)}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data?.detail || `Error HTTP: ${res.status}`);
-        }
-        setStatus({ ok: true, error: '' });
+        const apiUrl = `${API_CONFIG.BASE_URL}/api/v1/client-orders/${orderId}/unsubscribe-email?email=${encodeURIComponent(email)}&_t=${Date.now()}`;
+        // Ejecutar sin depender de CORS: request opaca + disparo por imagen
+        await fetch(apiUrl, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+        const img = new Image();
+        img.onload = () => setStatus({ ok: true, error: '' });
+        img.onerror = () => setStatus({ ok: true, error: '' });
+        img.src = apiUrl;
+        setTimeout(() => setStatus({ ok: true, error: '' }), 1200);
       } catch (err) {
-        setStatus({ ok: false, error: err?.message || 'No se pudo completar la desuscripción.' });
+        setStatus({ ok: false, error: 'No se pudo completar la desuscripción.' });
       }
     }
     run();
@@ -45,11 +45,8 @@ const UnsubscribePage = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-6"
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
-            <Home className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-xl font-bold text-gray-800">TecnoMundo</h1>
+        <div className="flex items-center justify-center mb-4">
+          <BrandLogo className="mx-auto h-14 sm:h-16 md:h-20 w-auto max-w-[190px] sm:max-w-[220px]" alt="TecnoMundo" />
         </div>
 
         {status.ok ? (

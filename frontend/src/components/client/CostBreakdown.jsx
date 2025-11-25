@@ -26,24 +26,27 @@ const CostBreakdown = ({ order }) => {
   }
 
   const formatCurrency = (amount) => {
+    const n = typeof amount === 'number' ? amount : Number(amount || 0);
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0
-    }).format(amount);
+    }).format(n);
   };
 
   // Calcular datos de cotización desde repair_order
+  const toNum = (v) => (typeof v === 'number' ? v : Number(v || 0));
   const costBreakdown = {
-    total: order.total_cost || 0,
-    deposit: order.deposit || 0,
-    balance: order.balance || 0,
+    total: toNum(order.total_cost),
+    deposit: toNum(order.deposit),
+    balance: toNum(order.balance),
     partsUsed: order.parts_used || 'No especificado'
   };
 
-  const hasEstimate = order.total_cost && order.total_cost > 0;
-  const isPaid = order.status?.name === 'Entregado';
-  const isApproved = order.status?.name !== 'En Diagnóstico' && order.status?.name !== 'Recibido';
+  const hasEstimate = toNum(order.total_cost) > 0 || toNum(order.deposit) > 0 || toNum(order.balance) > 0;
+  const statusName = order.status?.status_name;
+  const isPaid = statusName === 'Entregado';
+  const isApproved = !!statusName && statusName !== 'En Diagnóstico' && statusName !== 'Recibido';
 
   if (!hasEstimate) {
     return (

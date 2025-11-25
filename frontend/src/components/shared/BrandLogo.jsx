@@ -7,7 +7,7 @@ export default function BrandLogo({ className = 'h-6 w-auto', alt = 'TecnoMundo'
   useEffect(() => {
     ;(async () => {
       const base = getBrandingBaseUrl()
-      const candidates = ['logo.png', 'logo.svg', 'logo.jpg', 'logo.jpeg']
+      const candidates = ['email-logo-trimmed.png', 'logo.png', 'logo.svg', 'logo.jpg', 'logo.jpeg']
       for (const file of candidates) {
         const ok = await checkBrandingAsset(file)
         if (ok) {

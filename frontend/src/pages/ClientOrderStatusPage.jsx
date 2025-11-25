@@ -326,8 +326,8 @@ const ClientOrderStatusPage = () => {
               <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
                 <h4 className="font-semibold text-white mb-2">Dispositivo</h4>
                 <p className="text-blue-100 break-words">{orderData?.device_model || 'No especificado'}</p>
-                {orderData?.device_type?.name && (
-                  <p className="text-sm text-blue-200 mt-1 break-words">Tipo: {orderData?.device_type.name}</p>
+                {orderData?.device_type?.type_name && (
+                  <p className="text-sm text-blue-200 mt-1 break-words">Tipo: {orderData?.device_type.type_name}</p>
                 )}
               </div>
               
@@ -415,24 +415,29 @@ const ClientOrderStatusPage = () => {
                 <span className="font-medium text-gray-800 break-words">{orderData?.branch?.branch_name}</span>
               </div>
               
-              {/* Teléfono */}
-              {orderData?.branch?.phone && (
+              {/* Teléfono (único, técnico o sucursal) */}
+              {(orderData?.technician?.phone_number || orderData?.branch?.phone) && (
                 <div className="flex items-center space-x-2">
                   <button 
                     onClick={() => {
-                      const phoneNumber = orderData.branch.phone.replace(/\D/g, '');
-                      const formattedPhone = `+549${phoneNumber}`;
+                      const fallback = '+5493884087444';
+                      const raw = (orderData?.technician?.phone_number || orderData?.branch?.phone || fallback).replace(/\D/g, '');
+                      const base = raw.startsWith('549') ? raw : `549${raw}`;
+                      const formattedPhone = `+${base}`;
                       const orderNumber = String(orderData.id).padStart(8, '0');
-                      const message = `Hola, me comunico por la orden N° ${orderNumber}. Me gustaria hacer una consulta adicional sobre los detalles de mi orden.`;
-                      const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+                      const message = `Hola, me comunico por la orden N° ${orderNumber}. Me gustaría hacer una consulta adicional sobre los detalles de mi orden.`;
+                      const whatsappUrl = `https://api.whatsapp.com/send/?phone=${encodeURIComponent(formattedPhone)}&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
                       window.open(whatsappUrl, '_blank');
                     }}
                     className="flex items-center justify-center w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full transition-colors duration-200"
                     title="Contactar por WhatsApp"
+                    aria-label="Contactar por WhatsApp"
                   >
                     <MessageCircle className="w-4 h-4 text-white" />
                   </button>
-                  <span className="text-gray-700 break-words">{orderData.branch.phone}</span>
+                  <span className="text-gray-700 break-words">
+                    {orderData?.technician?.phone_number || orderData?.branch?.phone}
+                  </span>
                 </div>
               )}
               
@@ -443,6 +448,21 @@ const ClientOrderStatusPage = () => {
                   <span className="text-gray-700 break-words">{orderData.branch.address}</span>
                 </div>
               )}
+
+              {/* Contacto del técnico: nombre opcional (sin duplicar teléfono) */}
+              {orderData?.technician && (() => {
+                const first = (orderData.technician.first_name || '').trim();
+                const last = (orderData.technician.last_name || '').trim();
+                const username = (orderData.technician.username || '').trim();
+                const showName = (first || last) || (username.toLowerCase() !== 'admin');
+                return showName ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-700 font-medium break-words">
+                      {`${first} ${last}`.trim() || username || 'Técnico'}
+                    </span>
+                  </div>
+                ) : null;
+              })()}
             </div>
           </motion.div>
         </motion.div>

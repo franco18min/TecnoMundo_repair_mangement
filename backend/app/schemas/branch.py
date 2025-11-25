@@ -26,6 +26,9 @@ class Branch(BaseModel):
 class BranchPublic(BaseModel):
     id: int
     branch_name: str
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
 
     class Config:
         from_attributes = True

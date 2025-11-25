@@ -86,6 +86,12 @@ class RepairOrderPublic(BaseModel):
     status: Optional[StatusOrder] = None
     device_type: Optional[DeviceType] = None
     branch: Optional[BranchPublic] = None
+    customer: Optional[CustomerPublic] = None
+    technician: Optional[User] = None
+    total_cost: Optional[float] = None
+    deposit: Optional[float] = None
+    balance: Optional[float] = None
+    parts_used: Optional[str] = None
     technician_diagnosis: Optional[str] = None
     repair_notes: Optional[str] = None
     photos: List[RepairOrderPhoto] = []

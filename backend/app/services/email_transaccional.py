@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from app.crud.crud_repair_order import get_repair_order
 import json
+from pathlib import Path
 
 
 class EmailTransactionalService:
@@ -100,36 +101,107 @@ class EmailTransactionalService:
 
     def _email_footer(self, order, to_email: str) -> str:
         wa = self._wa_link_for_order(order)
-        wapp = f"<p>Contacto por WhatsApp: <a href='{wa}' target='_blank'>WhatsApp del taller</a></p>" if wa else ''
+        wapp = f"<p style='margin:0'>Contacto por WhatsApp: <a href='{wa}' target='_blank'>WhatsApp del taller</a></p>" if wa else ''
         unsub = self._unsubscribe_link(order.id, to_email)
         return (
-            "<hr>"
-            "<p style='color:#6b7280;font-size:12px'>Este es un correo automático. Por favor, no respondas a este mensaje.</p>"
             f"{wapp}"
-            f"<p style='font-size:12px;color:#6b7280'>Si no deseas seguir recibiendo correos sobre esta orden, <a href='{unsub}' target='_blank'>haz clic aquí para desuscribirte</a>.</p>"
+            f"<p style='font-size:12px;color:#6b7280;margin:0'>Si no deseas seguir recibiendo correos sobre esta orden, <a href='{unsub}' target='_blank'>haz clic aquí para desuscribirte</a>.</p>"
         )
 
-    def _get_logo_base64(self) -> Optional[str]:
-        """Obtiene el logo desde Supabase REST (system.photos, name='logo').
-        Retorna base64 o None si no disponible.
+    def _get_logo_base64_from_public(self) -> Optional[str]:
+        """Obtiene el logo desde public/logo.png y lo convierte a base64.
+        Primero intenta leer localmente, luego desde URL.
         """
-        if not settings.SUPABASE_URL or not settings.SUPABASE_ANON_KEY:
-            return None
         try:
-            endpoint = f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/system.photo?select=data_base64,name&name=eq.logo"
-            headers = {
-                "apikey": settings.SUPABASE_ANON_KEY,
-                "Authorization": f"Bearer {settings.SUPABASE_ANON_KEY}",
-            }
-            resp = requests.get(endpoint, headers=headers, timeout=8)
-            if resp.status_code >= 200 and resp.status_code < 300:
-                rows = resp.json()
-                if isinstance(rows, list) and rows:
-                    data_b64 = rows[0].get("data_base64")
-                    return data_b64 if isinstance(data_b64, str) and data_b64 else None
+            candidates = ['logo.png', 'logo.svg', 'logo.jpg', 'logo.jpeg']
+            
+            logging.info(f"[Email] Buscando logo en candidatos: {candidates}")
+            
+            # Primero: intentar leer localmente desde frontend/public
+            for candidate in candidates:
+                # La ruta correcta: desde backend/app/services/ -> ../../frontend/public/
+                local_path = Path(__file__).parent.parent.parent.parent / "frontend" / "public" / candidate
+                logging.info(f"[Email] Verificando logo local: {local_path}")
+                
+                if local_path.exists():
+                    logging.info(f"[Email] Logo encontrado localmente: {local_path}")
+                    try:
+                        import base64
+                        with open(local_path, 'rb') as f:
+                            image_data = f.read()
+                            image_base64 = base64.b64encode(image_data).decode('utf-8')
+                            
+                            # Detectar tipo MIME
+                            if candidate.endswith('.svg'):
+                                mime_type = 'image/svg+xml'
+                            elif candidate.endswith('.jpg') or candidate.endswith('.jpeg'):
+                                mime_type = 'image/jpeg'
+                            else:
+                                mime_type = 'image/png'
+                            
+                            logging.info(f"[Email] Logo cargado localmente: {candidate}")
+                            return f"data:{mime_type};base64,{image_base64}"
+                    except Exception as e:
+                        logging.warning(f"[Email] Error leyendo logo local {candidate}: {e}")
+                        continue
+                else:
+                    logging.info(f"[Email] Logo no encontrado en: {local_path}")
+            
+            logging.info("[Email] No se encontraron logos locales, intentando desde URL...")
+            
+            # Segundo: intentar desde URL (como fallback)
+            base_url = settings.CLIENT_PORTAL_BASE_URL.rstrip('/')
+            
+            for candidate in candidates:
+                logo_url = f"{base_url}/{candidate}"
+                try:
+                    # Descargar el logo
+                    resp = requests.get(logo_url, timeout=10)
+                    if resp.status_code == 200:
+                        import base64
+                        image_base64 = base64.b64encode(resp.content).decode('utf-8')
+                        
+                        # Detectar tipo MIME
+                        if candidate.endswith('.svg'):
+                            mime_type = 'image/svg+xml'
+                        elif candidate.endswith('.jpg') or candidate.endswith('.jpeg'):
+                            mime_type = 'image/jpeg'
+                        else:
+                            mime_type = 'image/png'
+                        
+                        logging.info(f"[Email] Logo descargado desde URL: {candidate}")
+                        return f"data:{mime_type};base64,{image_base64}"
+                except Exception as e:
+                    logging.warning(f"[Email] Error descargando logo desde URL {logo_url}: {e}")
+                    continue
+                    
         except Exception as e:
-            logging.warning(f"[Email] No se pudo obtener logo desde Supabase: {e}")
+            logging.warning(f"[Email] Error al obtener logo base64: {e}")
+        
+        logging.warning("[Email] No se pudo obtener ningún logo")
         return None
+
+    def _get_logo_url_or_fallback(self) -> str:
+        try:
+            base_site = self.client_portal_base.replace('/client/order', '')
+            candidates = [
+                'email-logo-trimmed.png',
+                'logo.png',
+                'logo.svg',
+                'logo.jpg',
+                'logo.jpeg',
+            ]
+            for candidate in candidates:
+                logo_url = f"{base_site}/{candidate}"
+                try:
+                    resp = requests.head(logo_url, timeout=5)
+                    if resp.status_code == 200:
+                        return logo_url
+                except:
+                    continue
+        except Exception as e:
+            logging.warning(f"[Email] Error al obtener logo: {e}")
+        return f"<span style='font-size: 28px; font-weight: bold; color: #111111; font-family: Arial, sans-serif;'>{self.from_name or 'TecnoMundo'}</span>"
 
     def _status_info(self, order) -> tuple[str, str]:
         """Retorna nombre de estado (ES) y una descripción breve en español."""
@@ -149,58 +221,114 @@ class EmailTransactionalService:
         return (fallback_name, "Tu orden ha cambiado de estado. Ingresa al portal para ver el detalle y los próximos pasos.")
 
     def _render_template(self, title: str, body_html: str, order, to_email: str) -> str:
-        """Aplica un diseño consistente (similar al sitio) con estilos inline seguros para email."""
-        # Paleta inspirada en Tailwind (emerald/teal) pero inline para emails
-        # Colores del Dashboard (indigo)
-        header_bg = "#4f46e5"  # indigo-600
-        header_bg2 = "#4338ca"  # indigo-700
-        card_bg = "#ffffff"
-        border_color = "#e5e7eb"  # gray-200
-        text_main = "#111827"  # gray-900
-        text_muted = "#6b7280"  # gray-500
+        """Aplica un diseño consistente inspirado en el template proporcionado, adaptado a TecnoMundo."""
+        # Color scheme de TecnoMundo (indigo)
+        primary_color = "#4f46e5"  # indigo-600
+        primary_dark = "#4338ca"  # indigo-700
+        background_color = "#f6f6f6"
+        card_background = "#ffffff"
+        border_color = "#e0e0e0"
+        text_main = "#333333"
+        text_header = "#111111"
+        text_muted = "#888888"
+        link_color = "#4f46e5"
+        
         brand = self.from_name or "TecnoMundo"
         order_no = str(order.id).zfill(8)
         portal_link = f"{self.client_portal_base}/{order.id}"
-        footer_html = self._email_footer(order, to_email)
+        
         # Saludo con nombre del cliente
         first_name = getattr(getattr(order, 'customer', None), 'first_name', '') or ''
         last_name = getattr(getattr(order, 'customer', None), 'last_name', '') or ''
         full_name = (first_name + ' ' + last_name).strip() or 'Cliente'
-
-        # Intentar logo desde Supabase (base64)
-        logo_b64 = self._get_logo_base64()
-        logo_circle = (
-            f"<img src='data:image/png;base64,{logo_b64}' alt='Logo' style='width:40px;height:40px;border-radius:20px;object-fit:contain;background-color:rgba(255,255,255,0.2);' />"
-            if logo_b64 else "<div style='width:40px;height:40px;border-radius:20px;background-color:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;'>📧</div>"
-        )
+        device_model = getattr(order, 'device_model', 'Dispositivo')
+        
+        logo_url_or_html = self._get_logo_url_or_fallback()
+        if logo_url_or_html.startswith('http'):
+            logo_html = f"<img src='{logo_url_or_html}' alt='Logo' style='height: 168px; max-height: 168px; width: auto; display:block; margin: 0 auto;' />"
+        else:
+            logo_b64 = self._get_logo_base64_from_public()
+            if logo_b64:
+                logo_html = f"<img src='{logo_b64}' alt='Logo' style='height: 168px; max-height: 168px; width: auto; display:block; margin: 0 auto;' />"
+            else:
+                logo_html = f"<span style='font-size: 28px; font-weight: bold; color: {text_header}; font-family: Arial, sans-serif;'>{brand}</span>"
+        
+        # Footer con WhatsApp y desuscripción
+        footer_html = self._email_footer(order, to_email)
 
         return f"""
-        <div style='background:#f8fafc;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;'>
-          <div style='max-width:680px;margin:0 auto;'>
-            <div style='background:{header_bg};background-image:linear-gradient(90deg,{header_bg},{header_bg2});color:#fff;border-radius:12px 12px 0 0;padding:16px 20px;'>
-              <div style='display:flex;align-items:center;justify-content:space-between;'>
-                <div style='display:flex;align-items:center;gap:12px;'>
-                  {logo_circle}
-                  <div>
-                    <div style='font-size:18px;font-weight:700'>{brand}</div>
-                    <div style='font-size:12px;opacity:0.85'>Orden #{order_no}</div>
-                  </div>
-                </div>
-                <a href='{portal_link}' target='_blank' style='color:#fff;text-decoration:none;font-size:12px;border:1px solid rgba(255,255,255,0.5);padding:6px 10px;border-radius:8px;'>Ver en el portal</a>
-              </div>
-            </div>
-            <div style='background:{card_bg};border:1px solid {border_color};border-top:none;border-radius:0 0 12px 12px;padding:20px;color:{text_main}'>
-              <h2 style='margin:0 6px 4px 0;font-size:18px;font-weight:700'>¡Hola, {full_name}!</h2>
-              <div style='margin:0 0 10px 0;font-size:15px;font-weight:600;color:{text_main}'>{title}</div>
-              <div style='font-size:14px;line-height:1.6;color:{text_main}'>
-                {body_html}
-              </div>
-              <div style='margin-top:16px;font-size:13px;color:{text_muted}'>
-                {footer_html}
-              </div>
-            </div>
-          </div>
-        </div>
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>{title}</title>
+            <style>
+                body {{
+                    margin: 0;
+                    padding: 0;
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    background-color: {background_color};
+                }}
+                a {{
+                    color: {link_color};
+                    text-decoration: none;
+                }}
+                a:hover {{
+                    text-decoration: underline;
+                }}
+            </style>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: {background_color};">
+        
+            <!-- Contenedor principal del correo -->
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 20px auto; background-color: {card_background}; border: 1px solid {border_color}; border-radius: 8px; overflow: hidden;">
+                
+                <!-- 1. Cabecera (Logo/Nombre de la Empresa) -->
+                <tr>
+                    <td style="padding: 12px 30px 10px 30px; text-align: center; border-bottom: 2px solid {primary_color}; line-height:0;">
+                        {logo_html}
+                    </td>
+                </tr>
+        
+                <!-- 2. Cuerpo del Mensaje -->
+                <tr>
+                    <td style="padding: 20px 40px 40px 40px; font-family: Arial, sans-serif; color: {text_main}; font-size: 16px; line-height: 1.6;">
+                        
+                        <h1 style="font-size: 24px; color: {text_header}; margin: 0 0 25px 0; font-weight: 600;">
+                            {title}
+                        </h1>
+                        
+                        <p style="margin: 0 0 20px 0;">
+                            Hola <strong>{full_name}</strong>,
+                        </p>
+                        
+                        {body_html}
+        
+                        <!-- Botón de Acción (CTA) -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px;">
+                            <tr>
+                                <td align="center">
+                                    <a href="{portal_link}" style="background-color: {primary_color}; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; display: inline-block;">
+                                        Ver Detalles de la Orden
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+        
+                <!-- 3. Pie de Página (Footer) -->
+                <tr>
+                    <td style="padding: 12px 20px; background-color: {card_background}; font-family: Arial, sans-serif; color: {text_muted}; font-size: 12px; text-align: center; line-height: 1.4;">
+                        <div style="margin:0">{footer_html}</div>
+                    </td>
+                </tr>
+            </table>
+        
+        </body>
+        </html>
         """
 
     # -------------- Notificaciones por evento --------------
