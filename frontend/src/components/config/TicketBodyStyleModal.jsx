@@ -125,36 +125,26 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             }
 
             const branchConfig = await getBranchTicketConfig(branch.id);
-            
-            // Determinar qué campo usar según el tipo de ticket
-            const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
-            
-            if (branchConfig[fieldName]) {
-                const parsedData = JSON.parse(branchConfig[fieldName]);
-                
-                // Si el dato guardado tiene la estructura nueva (con config y styledContent)
+            const styleField = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+            const contentField = ticketType === 'client' ? 'client_body_content' : 'workshop_body_content';
+
+            const originalContentFromApi = branchConfig[contentField] || '';
+
+            if (branchConfig[styleField]) {
+                const parsedData = JSON.parse(branchConfig[styleField]);
                 if (parsedData && typeof parsedData === 'object' && parsedData.config) {
                     setConfig(parsedData.config);
                     if (parsedData.styledContent && parsedData.styledContent.trim() !== '') {
-                        console.log('Cargando contenido estilizado desde API:', parsedData.styledContent);
                         setStyledContent(parsedData.styledContent);
                     } else {
-                        console.log('No hay contenido estilizado en API, usando contenido original');
-                        // Fallback al contenido original si no hay contenido estilizado guardado
-                        const content = getCurrentBodyContent();
-                        setStyledContent(content);
+                        setStyledContent(originalContentFromApi || getCurrentBodyContent());
                     }
                 } else {
-                    // Compatibilidad con formato anterior (solo configuración)
                     setConfig(parsedData);
-                    console.log('Formato anterior detectado, usando contenido original');
-                    const content = getCurrentBodyContent();
-                    setStyledContent(content);
+                    setStyledContent(originalContentFromApi || getCurrentBodyContent());
                 }
             } else {
-                // Si no hay configuración guardada, cargar contenido original
-                const content = getCurrentBodyContent();
-                setStyledContent(content);
+                setStyledContent(originalContentFromApi || getCurrentBodyContent());
             }
             
         } catch (error) {
