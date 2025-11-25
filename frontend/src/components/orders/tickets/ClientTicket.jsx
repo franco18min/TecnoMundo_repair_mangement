@@ -133,7 +133,10 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
     return {};
   };
 
-  const ticketStyle = getTicketStyle();
+  let ticketStyle = getTicketStyle();
+  if (typeof ticketStyle.showLogo === 'undefined') {
+    ticketStyle = { ...ticketStyle, showLogo: true };
+  }
   const bodyContent = getBodyContent();
   const clientBodyStyle = getClientBodyStyle();
   
