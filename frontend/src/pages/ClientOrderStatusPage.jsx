@@ -43,6 +43,7 @@ const ClientOrderStatusPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  const showEmailSubscription = import.meta.env?.VITE_SHOW_CLIENT_EMAIL_SUBSCRIPTION === 'true';
 
   // Animaciones
   const containerVariants = {
@@ -389,14 +390,15 @@ const ClientOrderStatusPage = () => {
             </motion.div>
           </div>
 
-          {/* Suscripción por email */}
-          <motion.div variants={itemVariants} className="overflow-hidden">
-            <EmailSubscription 
-              customerEmail={orderData?.customer?.email || orderData?.customer?.phone_number}
-              orderId={orderData?.id}
-              onSubscriptionChange={handleSubscriptionChange}
-            />
-          </motion.div>
+          {showEmailSubscription && (
+            <motion.div variants={itemVariants} className="overflow-hidden">
+              <EmailSubscription 
+                customerEmail={orderData?.customer?.email || orderData?.customer?.phone_number}
+                orderId={orderData?.id}
+                onSubscriptionChange={handleSubscriptionChange}
+              />
+            </motion.div>
+          )}
 
           {/* Información de la sucursal */}
           <motion.div 
