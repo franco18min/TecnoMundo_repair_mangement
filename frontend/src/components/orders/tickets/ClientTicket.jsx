@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TicketHeader } from './shared/TicketHeader';
+import { getBranchTicketConfig } from '../../../api/branchApi';
 
 // Componentes internos para un código más limpio
 const Section = ({ title, children, className = '', style = {} }) => (
@@ -132,6 +133,40 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
     
     return {};
   };
+
+  const [rev, setRev] = React.useState(0);
+  React.useEffect(() => {
+    const run = async () => {
+      if (!order?.branch?.id) return;
+      try {
+        const cfg = await getBranchTicketConfig(order.branch.id);
+        let header = {};
+        if (cfg.client_header_style) {
+          try { header = JSON.parse(cfg.client_header_style) || {}; } catch {}
+        }
+        let bodyCfg = {};
+        let styled = '';
+        if (cfg.client_body_style) {
+          try {
+            const parsed = JSON.parse(cfg.client_body_style);
+            if (parsed && parsed.config) bodyCfg = parsed.config; else bodyCfg = parsed || {};
+            if (parsed && parsed.styledContent) styled = parsed.styledContent;
+          } catch {}
+        }
+        const content = styled && styled.trim() !== '' ? styled : (cfg.client_body_content || '');
+        try { localStorage.setItem('ticketStyle_client', JSON.stringify(header)); } catch {}
+        try { localStorage.setItem('ticketBodyStyle_client', JSON.stringify(bodyCfg)); } catch {}
+        if (styled && styled.trim() !== '') {
+          try { localStorage.setItem('ticketBodyStyledContent_client', styled); } catch {}
+        } else {
+          try { localStorage.setItem('ticketBodyContent_client', content || ''); } catch {}
+          try { localStorage.removeItem('ticketBodyStyledContent_client'); } catch {}
+        }
+        setRev(x => x + 1);
+      } catch {}
+    };
+    run();
+  }, [order?.branch?.id]);
 
   let ticketStyle = getTicketStyle();
   if (typeof ticketStyle.showLogo === 'undefined') {
