@@ -18,17 +18,24 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
         bodyFontFamily: 'Arial, sans-serif',
         bodyFontSize: '12px',
         bodyLineHeight: '1.4',
-        bodyTextAlign: 'left',
+        bodyAlignment: 'left',
         selectedTextFontSize: '12px',
         selectedTextFontWeight: 'normal',
         selectedTextFontStyle: 'normal',
-        selectedTextTextDecoration: 'none',
-        selectedTextTextAlign: 'left',
+        selectedTextDecoration: 'none',
+        selectedTextAlignment: 'left',
         selectedTextColor: '#000000'
     };
 
     // Configuración de estilos
     const [config, setConfig] = useState(defaultConfig);
+    const normalizeConfig = (c) => {
+        const cfg = { ...c };
+        if (cfg.bodyAlignment == null && cfg.bodyTextAlign) cfg.bodyAlignment = cfg.bodyTextAlign;
+        if (cfg.selectedTextAlignment == null && cfg.selectedTextTextAlign) cfg.selectedTextAlignment = cfg.selectedTextTextAlign;
+        if (cfg.selectedTextDecoration == null && cfg.selectedTextTextDecoration) cfg.selectedTextDecoration = cfg.selectedTextTextDecoration;
+        return cfg;
+    };
 
     // Opciones de configuración
     const fontFamilyOptions = [
@@ -108,7 +115,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 const savedConfig = localStorage.getItem(storageKey);
                 if (savedConfig) {
                     const parsedConfig = JSON.parse(savedConfig);
-                    setConfig(parsedConfig);
+                    setConfig(normalizeConfig(parsedConfig));
                 }
                 
                 // Priorizar contenido estilizado guardado
@@ -125,26 +132,36 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             }
 
             const branchConfig = await getBranchTicketConfig(branch.id);
-            const styleField = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+            
+            // Determinar qué campo usar según el tipo de ticket
+            const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
             const contentField = ticketType === 'client' ? 'client_body_content' : 'workshop_body_content';
-
-            const originalContentFromApi = branchConfig[contentField] || '';
-
-            if (branchConfig[styleField]) {
-                const parsedData = JSON.parse(branchConfig[styleField]);
+            
+            if (branchConfig[fieldName]) {
+                const parsedData = JSON.parse(branchConfig[fieldName]);
+                
+                // Si el dato guardado tiene la estructura nueva (con config y styledContent)
                 if (parsedData && typeof parsedData === 'object' && parsedData.config) {
-                    setConfig(parsedData.config);
+                    setConfig(normalizeConfig(parsedData.config));
                     if (parsedData.styledContent && parsedData.styledContent.trim() !== '') {
+                        console.log('Cargando contenido estilizado desde API:', parsedData.styledContent);
                         setStyledContent(parsedData.styledContent);
                     } else {
-                        setStyledContent(originalContentFromApi || getCurrentBodyContent());
+                        console.log('No hay contenido estilizado en API, usando contenido de API o contenido original');
+                        const content = branchConfig[contentField] || getCurrentBodyContent();
+                        setStyledContent(content);
                     }
                 } else {
-                    setConfig(parsedData);
-                    setStyledContent(originalContentFromApi || getCurrentBodyContent());
+                    // Compatibilidad con formato anterior (solo configuración)
+                    setConfig(normalizeConfig(parsedData));
+                    console.log('Formato anterior detectado, usando contenido de API o contenido original');
+                    const content = branchConfig[contentField] || getCurrentBodyContent();
+                    setStyledContent(content);
                 }
             } else {
-                setStyledContent(originalContentFromApi || getCurrentBodyContent());
+                // Si no hay configuración guardada, cargar contenido original
+                const content = branchConfig[contentField] || getCurrentBodyContent();
+                setStyledContent(content);
             }
             
         } catch (error) {
@@ -162,7 +179,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 const storageKey = `globalTicketBodyStyle_${ticketType}`;
                 const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
                 
-                localStorage.setItem(storageKey, JSON.stringify(config));
+                localStorage.setItem(storageKey, JSON.stringify(normalizeConfig(config)));
                 localStorage.setItem(styledContentKey, styledContent || '');
                 return;
             }
@@ -172,7 +189,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             
             // Preparar datos para enviar a la API con la estructura correcta
             const dataToSave = {
-                config: config,
+                config: normalizeConfig(config),
                 styledContent: styledContent || ''
             };
             
@@ -222,7 +239,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
         if (selectedText && styledContent && selectionRange) {
             try {
                 // Crear el span con estilos aplicados usando estilos inline para garantizar que se mantengan al imprimir
-                const styledSpan = `<span style="font-size: ${config.selectedTextFontSize}; font-weight: ${config.selectedTextFontWeight}; font-style: ${config.selectedTextFontStyle}; text-decoration: ${config.selectedTextTextDecoration}; text-align: ${config.selectedTextTextAlign}; color: ${config.selectedTextColor || 'inherit'};">${selectedText}</span>`;
+                const styledSpan = `<span style="font-size: ${config.selectedTextFontSize}; font-weight: ${config.selectedTextFontWeight}; font-style: ${config.selectedTextFontStyle}; text-decoration: ${config.selectedTextDecoration}; text-align: ${config.selectedTextAlignment}; color: ${config.selectedTextColor || 'inherit'};">${selectedText}</span>`;
                 
                 // Escapar caracteres especiales para regex
                 const escapedText = selectedText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -259,8 +276,8 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 font-size: ${config.selectedTextFontSize} !important;
                 font-weight: ${config.selectedTextFontWeight} !important;
                 font-style: ${config.selectedTextFontStyle} !important;
-                text-decoration: ${config.selectedTextTextDecoration} !important;
-                text-align: ${config.selectedTextTextAlign} !important;
+                text-decoration: ${config.selectedTextDecoration} !important;
+                text-align: ${config.selectedTextAlignment} !important;
             }
         `;
     };
@@ -391,7 +408,7 @@ CONTROL DE CALIDAD:
             fontFamily: config.bodyFontFamily,
             fontSize: config.bodyFontSize,
             lineHeight: config.bodyLineHeight,
-            textAlign: config.bodyTextAlign
+            textAlign: config.bodyAlignment
         };
 
         // Forzar re-render cuando styledContent cambia
@@ -555,9 +572,9 @@ CONTROL DE CALIDAD:
                                                     {alignmentOptions.map(option => (
                                                         <motion.button
                                                             key={option.value}
-                                                            onClick={() => updateConfig('bodyTextAlign', option.value)}
+                                                            onClick={() => updateConfig('bodyAlignment', option.value)}
                                                             className={`flex-1 p-2 rounded-lg border transition-colors ${
-                                                                config.bodyTextAlign === option.value
+                                                                config.bodyAlignment === option.value
                                                                     ? 'bg-blue-100 border-blue-300 text-blue-700'
                                                                     : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                                                             }`}

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { TicketHeader } from './shared/TicketHeader';
-import { getBranchTicketConfig } from '../../../api/branchApi';
 
 // Componentes internos para un código más limpio
 const Section = ({ title, children, className = '', style = {} }) => (
@@ -57,7 +56,6 @@ const processVariables = (content, order) => {
 
 // Componente principal del ticket del cliente
 export const ClientTicket = React.forwardRef(({ order }, ref) => {
-  const [branchOverrides, setBranchOverrides] = React.useState({ bodyContent: null, bodyStyle: null });
   // Cargar configuraciones de forma síncrona
   const getTicketStyle = () => {
     // Primero intentar cargar estilos globales de cabecera
@@ -135,44 +133,12 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
     return {};
   };
 
-  React.useEffect(() => {
-    const bid = order?.branch?.id;
-    if (!bid) {
-      setBranchOverrides({ bodyContent: null, bodyStyle: null });
-      return;
-    }
-    (async () => {
-      try {
-        const cfg = await getBranchTicketConfig(bid);
-        let bc = null;
-        let bs = null;
-        if (cfg?.client_body_style) {
-          try {
-            const p = JSON.parse(cfg.client_body_style);
-            if (p && typeof p === 'object') {
-              bs = p.config || null;
-              if (p.styledContent && p.styledContent.trim() !== '') {
-                bc = p.styledContent;
-              }
-            }
-          } catch {}
-        }
-        if (!bc && cfg?.client_body_content) {
-          bc = cfg.client_body_content;
-        }
-        setBranchOverrides({ bodyContent: bc, bodyStyle: bs });
-      } catch {
-        setBranchOverrides({ bodyContent: null, bodyStyle: null });
-      }
-    })();
-  }, [order?.branch?.id]);
-
   let ticketStyle = getTicketStyle();
   if (typeof ticketStyle.showLogo === 'undefined') {
     ticketStyle = { ...ticketStyle, showLogo: true };
   }
-  const bodyContent = branchOverrides.bodyContent ?? getBodyContent();
-  const clientBodyStyle = branchOverrides.bodyStyle ?? getClientBodyStyle();
+  const bodyContent = getBodyContent();
+  const clientBodyStyle = getClientBodyStyle();
   
   
 
@@ -202,26 +168,24 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
     fontFamily: clientBodyStyle.bodyFontFamily || 'monospace',
     fontSize: clientBodyStyle.bodyFontSize || '12px',
     lineHeight: clientBodyStyle.bodyLineHeight || '1.4',
-    textAlign: clientBodyStyle.bodyTextAlign || clientBodyStyle.bodyAlignment || 'left'
+    textAlign: clientBodyStyle.bodyAlignment || 'left'
   };
 
   // Generar estilos CSS dinámicos para texto seleccionado
   const generateSelectedTextStyles = () => {
-    const selSize = clientBodyStyle.selectedTextFontSize;
-    const selWeight = clientBodyStyle.selectedTextFontWeight;
-    const selStyle = clientBodyStyle.selectedTextFontStyle;
-    const selDecor = clientBodyStyle.selectedTextDecoration ?? clientBodyStyle.selectedTextTextDecoration;
-    const selAlign = clientBodyStyle.selectedTextAlignment ?? clientBodyStyle.selectedTextTextAlign;
-    if (!selSize && !selWeight && !selStyle && !selDecor && !selAlign) {
+    if (!clientBodyStyle.selectedTextFontSize && !clientBodyStyle.selectedTextFontWeight && 
+        !clientBodyStyle.selectedTextFontStyle && !clientBodyStyle.selectedTextDecoration && 
+        !clientBodyStyle.selectedTextAlignment) {
       return '';
     }
+
     return `
       .selected-text {
-        ${selSize ? `font-size: ${selSize} !important;` : ''}
-        ${selWeight ? `font-weight: ${selWeight} !important;` : ''}
-        ${selStyle ? `font-style: ${selStyle} !important;` : ''}
-        ${selDecor ? `text-decoration: ${selDecor} !important;` : ''}
-        ${selAlign ? `text-align: ${selAlign} !important;` : ''}
+        ${clientBodyStyle.selectedTextFontSize ? `font-size: ${clientBodyStyle.selectedTextFontSize} !important;` : ''}
+        ${clientBodyStyle.selectedTextFontWeight ? `font-weight: ${clientBodyStyle.selectedTextFontWeight} !important;` : ''}
+        ${clientBodyStyle.selectedTextFontStyle ? `font-style: ${clientBodyStyle.selectedTextFontStyle} !important;` : ''}
+        ${clientBodyStyle.selectedTextDecoration ? `text-decoration: ${clientBodyStyle.selectedTextDecoration} !important;` : ''}
+        ${clientBodyStyle.selectedTextAlignment ? `text-align: ${clientBodyStyle.selectedTextAlignment} !important;` : ''}
       }
     `;
   };

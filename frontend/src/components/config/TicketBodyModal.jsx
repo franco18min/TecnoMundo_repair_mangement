@@ -473,30 +473,30 @@ Tel: [TELEFONO_SUCURSAL]`
     const TicketPreview = () => {
         // Obtener configuración de estilos actual
         const getBodyStyleConfig = () => {
-            const storageKey = `ticketBodyStyle_${ticketType}`;
-            const savedConfig = localStorage.getItem(storageKey);
-            if (savedConfig) {
-                try {
-                    return JSON.parse(savedConfig);
-                } catch (error) {
-                    console.error('Error parsing body style config:', error);
-                    return {};
-                }
+            const globalKey = `globalTicketBodyStyle_${ticketType}`;
+            const branchKey = `ticketBodyStyle_${ticketType}`;
+            const savedGlobal = localStorage.getItem(globalKey);
+            if (savedGlobal) {
+                try { return JSON.parse(savedGlobal); } catch (error) { console.error('Error parsing global body style config:', error); }
+            }
+            const savedBranch = localStorage.getItem(branchKey);
+            if (savedBranch) {
+                try { return JSON.parse(savedBranch); } catch (error) { console.error('Error parsing branch body style config:', error); }
             }
             return {};
         };
 
         // Obtener configuración de cabecera actual
         const getHeaderStyleConfig = () => {
-            const storageKey = `ticketStyle_${ticketType}`;
-            const savedConfig = localStorage.getItem(storageKey);
-            if (savedConfig) {
-                try {
-                    return JSON.parse(savedConfig);
-                } catch (error) {
-                    console.error('Error parsing header style config:', error);
-                    return {};
-                }
+            const globalKey = `globalHeaderStyle_${ticketType}`;
+            const branchKey = `ticketStyle_${ticketType}`;
+            const savedGlobal = localStorage.getItem(globalKey);
+            if (savedGlobal) {
+                try { return JSON.parse(savedGlobal); } catch (error) { console.error('Error parsing global header style config:', error); }
+            }
+            const savedBranch = localStorage.getItem(branchKey);
+            if (savedBranch) {
+                try { return JSON.parse(savedBranch); } catch (error) { console.error('Error parsing branch header style config:', error); }
             }
             return {};
         };

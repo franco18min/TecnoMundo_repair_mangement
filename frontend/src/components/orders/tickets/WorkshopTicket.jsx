@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { TicketHeader } from './shared/TicketHeader';
-import { getBranchTicketConfig } from '../../../api/branchApi';
 import { Building2, MapPin, Phone, Mail, Store, Home, Globe } from 'lucide-react';
 
 // Componentes internos para un código más limpio
@@ -72,7 +71,6 @@ const processVariables = (content, order) => {
 
 // Componente principal del ticket del taller
 export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
-  const [branchOverrides, setBranchOverrides] = React.useState({ bodyContent: null, bodyStyle: null });
   // Cargar configuraciones de forma síncrona
   const getTicketStyle = () => {
     // Global workshop -> Global client -> Sucursal workshop -> Sucursal client
@@ -136,44 +134,12 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
     return {};
   };
 
-  React.useEffect(() => {
-    const bid = order?.branch?.id;
-    if (!bid) {
-      setBranchOverrides({ bodyContent: null, bodyStyle: null });
-      return;
-    }
-    (async () => {
-      try {
-        const cfg = await getBranchTicketConfig(bid);
-        let bc = null;
-        let bs = null;
-        if (cfg?.workshop_body_style) {
-          try {
-            const p = JSON.parse(cfg.workshop_body_style);
-            if (p && typeof p === 'object') {
-              bs = p.config || null;
-              if (p.styledContent && p.styledContent.trim() !== '') {
-                bc = p.styledContent;
-              }
-            }
-          } catch {}
-        }
-        if (!bc && cfg?.workshop_body_content) {
-          bc = cfg.workshop_body_content;
-        }
-        setBranchOverrides({ bodyContent: bc, bodyStyle: bs });
-      } catch {
-        setBranchOverrides({ bodyContent: null, bodyStyle: null });
-      }
-    })();
-  }, [order?.branch?.id]);
-
   let ticketStyle = getTicketStyle();
   if (typeof ticketStyle.showLogo === 'undefined') {
     ticketStyle = { ...ticketStyle, showLogo: true };
   }
-  const bodyContent = branchOverrides.bodyContent ?? getBodyContent();
-  const workshopBodyStyle = branchOverrides.bodyStyle ?? getWorkshopBodyStyle();
+  const bodyContent = getBodyContent();
+  const workshopBodyStyle = getWorkshopBodyStyle();
   
   
 
@@ -203,26 +169,24 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
     fontFamily: workshopBodyStyle.bodyFontFamily || 'monospace',
     fontSize: workshopBodyStyle.bodyFontSize || '12px',
     lineHeight: workshopBodyStyle.bodyLineHeight || '1.4',
-    textAlign: workshopBodyStyle.bodyTextAlign || workshopBodyStyle.bodyAlignment || 'left'
+    textAlign: workshopBodyStyle.bodyAlignment || 'left'
   };
 
   // Generar estilos CSS dinámicos para texto seleccionado
   const generateSelectedTextStyles = () => {
-    const selSize = workshopBodyStyle.selectedTextFontSize;
-    const selWeight = workshopBodyStyle.selectedTextFontWeight;
-    const selStyle = workshopBodyStyle.selectedTextFontStyle;
-    const selDecor = workshopBodyStyle.selectedTextDecoration ?? workshopBodyStyle.selectedTextTextDecoration;
-    const selAlign = workshopBodyStyle.selectedTextAlignment ?? workshopBodyStyle.selectedTextTextAlign;
-    if (!selSize && !selWeight && !selStyle && !selDecor && !selAlign) {
+    if (!workshopBodyStyle.selectedTextFontSize && !workshopBodyStyle.selectedTextFontWeight && 
+        !workshopBodyStyle.selectedTextFontStyle && !workshopBodyStyle.selectedTextDecoration && 
+        !workshopBodyStyle.selectedTextAlignment) {
       return '';
     }
+
     return `
       .selected-text {
-        ${selSize ? `font-size: ${selSize} !important;` : ''}
-        ${selWeight ? `font-weight: ${selWeight} !important;` : ''}
-        ${selStyle ? `font-style: ${selStyle} !important;` : ''}
-        ${selDecor ? `text-decoration: ${selDecor} !important;` : ''}
-        ${selAlign ? `text-align: ${selAlign} !important;` : ''}
+        ${workshopBodyStyle.selectedTextFontSize ? `font-size: ${workshopBodyStyle.selectedTextFontSize} !important;` : ''}
+        ${workshopBodyStyle.selectedTextFontWeight ? `font-weight: ${workshopBodyStyle.selectedTextFontWeight} !important;` : ''}
+        ${workshopBodyStyle.selectedTextFontStyle ? `font-style: ${workshopBodyStyle.selectedTextFontStyle} !important;` : ''}
+        ${workshopBodyStyle.selectedTextDecoration ? `text-decoration: ${workshopBodyStyle.selectedTextDecoration} !important;` : ''}
+        ${workshopBodyStyle.selectedTextAlignment ? `text-align: ${workshopBodyStyle.selectedTextAlignment} !important;` : ''}
       }
     `;
   };
