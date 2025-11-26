@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FileText, Loader, Eye, Save, AlertCircle, Plus, Check, Search } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { getBranchTicketConfig, updateBranchTicketConfig } from '../../api/branchApi';
+import { getBranchTicketConfig, updateBranchTicketConfig, fetchBranches } from '../../api/branchApi';
 
 export function TicketBodyModal({ isOpen, onClose, ticketType, onSave, branch = null }) {
     const [bodyContent, setBodyContent] = useState('');
@@ -197,10 +197,33 @@ Tel: [TELEFONO_SUCURSAL]`
             if (!branch) {
                 const globalKey = `globalTicketBodyContent_${ticketType}`;
                 localStorage.setItem(globalKey, bodyContent);
-                // Limpiar contenido estilizado global obsoleto para evitar desincronización
                 const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
                 localStorage.removeItem(styledContentKey);
-                showToast('Configuración global guardada exitosamente', 'success');
+
+                try {
+                    const branches = await fetchBranches();
+                    const fieldName = ticketType === 'client' ? 'client_body_content' : 'workshop_body_content';
+                    for (const b of branches || []) {
+                        await updateBranchTicketConfig(b.id, { [fieldName]: bodyContent });
+                        // Al propagar contenido, vaciar styledContent manteniendo config si existe
+                        const styleField = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+                        try {
+                            const current = await getBranchTicketConfig(b.id);
+                            let existingConfig = {};
+                            if (current[styleField]) {
+                                try {
+                                    const parsed = JSON.parse(current[styleField]);
+                                    existingConfig = parsed && parsed.config ? parsed.config : parsed || {};
+                                } catch {}
+                            }
+                            await updateBranchTicketConfig(b.id, { [styleField]: JSON.stringify({ config: existingConfig, styledContent: '' }) });
+                        } catch {}
+                    }
+                } catch (e) {
+                    console.error('Error propagando contenido global a sucursales', e);
+                }
+
+                showToast('Contenido global guardado y propagado a todas las sucursales', 'success');
                 onClose();
                 return;
             }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader, Eye, Palette, Type, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, RotateCcw } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { getBranchTicketConfig, updateBranchTicketConfig } from '../../api/branchApi';
+import { getBranchTicketConfig, updateBranchTicketConfig, fetchBranches } from '../../api/branchApi';
 
 export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, branch = null }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,15 +118,18 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                     setConfig(normalizeConfig(parsedConfig));
                 }
                 
-                // Priorizar contenido estilizado guardado
-                const savedStyledContent = localStorage.getItem(styledContentKey);
-                if (savedStyledContent && savedStyledContent.trim() !== '') {
-                    console.log('Cargando contenido estilizado desde localStorage:', savedStyledContent);
-                    setStyledContent(savedStyledContent);
+                // Priorizar SIEMPRE el contenido actual; usar styled sólo si no existe contenido
+                const currentContent = getCurrentBodyContent();
+                if (currentContent && currentContent.trim() !== '') {
+                    setStyledContent(currentContent);
                 } else {
-                    console.log('No hay contenido estilizado guardado, usando contenido original');
-                    const content = getCurrentBodyContent();
-                    setStyledContent(content);
+                    const savedStyledContent = localStorage.getItem(styledContentKey);
+                    if (savedStyledContent && savedStyledContent.trim() !== '') {
+                        console.log('Cargando contenido estilizado desde localStorage:', savedStyledContent);
+                        setStyledContent(savedStyledContent);
+                    } else {
+                        setStyledContent('');
+                    }
                 }
                 return;
             }
@@ -181,6 +184,17 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 
                 localStorage.setItem(storageKey, JSON.stringify(normalizeConfig(config)));
                 localStorage.setItem(styledContentKey, styledContent || '');
+
+                try {
+                    const branches = await fetchBranches();
+                    const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+                    const payload = JSON.stringify({ config: normalizeConfig(config), styledContent: styledContent || '' });
+                    for (const b of branches || []) {
+                        await updateBranchTicketConfig(b.id, { [fieldName]: payload });
+                    }
+                } catch (e) {
+                    console.error('Error propagando estilo global a sucursales', e);
+                }
                 return;
             }
 
