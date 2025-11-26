@@ -197,6 +197,9 @@ Tel: [TELEFONO_SUCURSAL]`
             if (!branch) {
                 const globalKey = `globalTicketBodyContent_${ticketType}`;
                 localStorage.setItem(globalKey, bodyContent);
+                // Limpiar contenido estilizado global obsoleto para evitar desincronización
+                const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
+                localStorage.removeItem(styledContentKey);
                 showToast('Configuración global guardada exitosamente', 'success');
                 onClose();
                 return;
@@ -209,6 +212,21 @@ Tel: [TELEFONO_SUCURSAL]`
             };
 
             await updateBranchTicketConfig(branch.id, updateData);
+
+            // Limpiar contenido estilizado en API (manteniendo config existente)
+            try {
+                const current = await getBranchTicketConfig(branch.id);
+                const styleField = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
+                let existingConfig = {};
+                if (current[styleField]) {
+                    try {
+                        const parsed = JSON.parse(current[styleField]);
+                        existingConfig = parsed && parsed.config ? parsed.config : parsed || {};
+                    } catch {}
+                }
+                const payload = { [styleField]: JSON.stringify({ config: existingConfig, styledContent: '' }) };
+                await updateBranchTicketConfig(branch.id, payload);
+            } catch {}
             showToast('Configuración de contenido guardada exitosamente', 'success');
             
             if (onSave) {
