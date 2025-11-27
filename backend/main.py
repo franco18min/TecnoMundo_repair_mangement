@@ -41,11 +41,22 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(RequestIdMiddleware)
 
+def _to_serializable(obj):
+    if isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+    if isinstance(obj, list):
+        return [_to_serializable(x) for x in obj]
+    if isinstance(obj, tuple):
+        return tuple(_to_serializable(x) for x in obj)
+    if isinstance(obj, dict):
+        return {k: _to_serializable(v) for k, v in obj.items()}
+    return str(obj)
+
 def error_payload(code: str, message: str, request: Request, details: dict | None = None, status_code: int = 400):
     payload = {
         "code": code,
         "message": message,
-        "details": details or {},
+        "details": _to_serializable(details or {}),
         "request_id": getattr(request.state, "request_id", None),
         "detail": message
     }

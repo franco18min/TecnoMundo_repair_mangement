@@ -111,7 +111,6 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             if (!branch) {
                 const storageKey = `globalTicketBodyStyle_${ticketType}`;
                 const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
-                const styledSourceKey = `globalTicketBodyStyledSource_${ticketType}`;
                 
                 const savedConfig = localStorage.getItem(storageKey);
                 if (savedConfig) {
@@ -121,8 +120,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 
                 const currentContent = getCurrentBodyContent();
                 const savedStyledContent = localStorage.getItem(styledContentKey);
-                const savedSource = localStorage.getItem(styledSourceKey);
-                if (savedStyledContent && savedStyledContent.trim() !== '' && savedSource === currentContent) {
+                if (savedStyledContent && savedStyledContent.trim() !== '') {
                     setStyledContent(savedStyledContent);
                 } else {
                     setStyledContent(currentContent || '');
@@ -143,9 +141,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
                 if (parsedData && typeof parsedData === 'object' && parsedData.config) {
                     setConfig(normalizeConfig(parsedData.config));
                     const content = branchConfig[contentField] || getCurrentBodyContent();
-                    const sourceOk = parsedData.sourceContent && parsedData.sourceContent === content;
-                    if (parsedData.styledContent && parsedData.styledContent.trim() !== '' && sourceOk) {
-                        console.log('Cargando contenido estilizado desde API:', parsedData.styledContent);
+                    if (parsedData.styledContent && parsedData.styledContent.trim() !== '') {
                         setStyledContent(parsedData.styledContent);
                     } else {
                         setStyledContent(content);
@@ -176,16 +172,14 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             if (!branch) {
                 const storageKey = `globalTicketBodyStyle_${ticketType}`;
                 const styledContentKey = `globalTicketBodyStyledContent_${ticketType}`;
-                const styledSourceKey = `globalTicketBodyStyledSource_${ticketType}`;
                 
                 localStorage.setItem(storageKey, JSON.stringify(normalizeConfig(config)));
                 localStorage.setItem(styledContentKey, styledContent || '');
-                localStorage.setItem(styledSourceKey, getCurrentBodyContent() || '');
 
                 try {
                     const branches = await fetchBranches();
                     const fieldName = ticketType === 'client' ? 'client_body_style' : 'workshop_body_style';
-                    const payload = JSON.stringify({ config: normalizeConfig(config), styledContent: styledContent || '', sourceContent: getCurrentBodyContent() || '' });
+                    const payload = JSON.stringify({ config: normalizeConfig(config), styledContent: styledContent || '' });
                     for (const b of branches || []) {
                         await updateBranchTicketConfig(b.id, { [fieldName]: payload });
                     }
@@ -201,8 +195,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
             // Preparar datos para enviar a la API con la estructura correcta
             const dataToSave = {
                 config: normalizeConfig(config),
-                styledContent: styledContent || '',
-                sourceContent: getCurrentBodyContent() || ''
+                styledContent: styledContent || ''
             };
             
             const updateData = {

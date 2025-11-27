@@ -132,7 +132,7 @@ class StructuredLogger:
         
         # Guardar archivo actualizado
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(existing_data, f, indent=2, ensure_ascii=False)
+            json.dump(existing_data, f, indent=2, ensure_ascii=False, default=str)
     
     def get_error_summary(self, days: int = 7) -> Dict[str, Any]:
         """

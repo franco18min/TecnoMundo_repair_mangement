@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Edit, ToggleLeft, ToggleRight, Loader, UserX, UserCheck, Users } from 'lucide-react';
-import { getUsers, updateUser } from '../../api/userApi';
+import { getUsers, updateUser, createUser } from '../../api/userApi';
+import { getRoles } from '../../api/rolesApi';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import UserModal from './UserModal';
@@ -51,8 +52,9 @@ export const UserConfigSection = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [confirm, setConfirm] = useState({ isOpen: false });
+    const [roles, setRoles] = useState([]);
     const { showToast } = useToast();
-    const { currentUser } = useAuth();
+    const { currentUser, branches, selectedBranchId } = useAuth();
 
     const loadUsers = useCallback(async () => {
         if (!currentUser) {
@@ -76,6 +78,18 @@ export const UserConfigSection = () => {
     useEffect(() => {
         loadUsers();
     }, [loadUsers]);
+
+    useEffect(() => {
+        const loadRoles = async () => {
+            try {
+                const fetchedRoles = await getRoles();
+                setRoles(fetchedRoles || []);
+            } catch (err) {
+                setRoles([]);
+            }
+        };
+        loadRoles();
+    }, []);
 
     const handleOpenModal = (user = null) => {
         setSelectedUser(user);
@@ -113,6 +127,41 @@ export const UserConfigSection = () => {
             showToast(`Usuario ${user.username} ${updatedUser.is_active ? 'activado' : 'desactivado'}`, 'success');
         } catch (err) {
             showToast(err.message || 'Error al cambiar el estado del usuario', 'error');
+        }
+    };
+
+    const findRoleId = (value) => {
+        if (!value) return undefined;
+        if (typeof value === 'number') return value;
+        const raw = String(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const match = roles.find(r => {
+            const name = String(r.role_name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return name.includes(raw) || raw.includes(name);
+        });
+        return match?.id;
+    };
+
+    const saveUser = async (data) => {
+        try {
+            const mode = selectedUser ? 'edit' : 'create';
+            const payload = { ...data };
+            if (payload.role_id == null) {
+                payload.role_id = findRoleId(payload.role);
+                delete payload.role;
+            }
+            let savedUser;
+            if (mode === 'create') {
+                savedUser = await createUser(payload);
+                handleSave(savedUser, 'create');
+                showToast('Usuario creado correctamente', 'success');
+            } else {
+                savedUser = await updateUser(selectedUser.id, payload);
+                handleSave(savedUser, 'edit');
+                showToast('Usuario actualizado correctamente', 'success');
+            }
+            handleCloseModal();
+        } catch (err) {
+            showToast(err.message || 'Error al guardar usuario', 'error');
         }
     };
 
@@ -261,7 +310,10 @@ export const UserConfigSection = () => {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 user={selectedUser}
-                onSave={handleSave}
+                onSave={saveUser}
+                roles={roles}
+                branches={branches}
+                defaultBranchId={selectedBranchId}
             />
 
             <ConfirmationModal

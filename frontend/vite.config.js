@@ -60,10 +60,15 @@ export default defineConfig({
     sourcemap: false
   },
   
-  // Configuración del servidor de desarrollo
   server: {
-    port: 5173,
-    host: true
+    port: 5174,
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:9001',
+        changeOrigin: true
+      }
+    }
   },
   
   // Base path para producción

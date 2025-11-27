@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Mail, Shield, Eye, EyeOff } from 'lucide-react';
 
-const UserModal = ({ isOpen, onClose, user, onSave }) => {
+const UserModal = ({ isOpen, onClose, user, onSave, roles = [], branches = [], defaultBranchId }) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    role: 'technician'
+    role_id: undefined,
+    branch_id: undefined
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const isEditing = !!user;
 
   useEffect(() => {
@@ -18,27 +20,42 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
         username: user.username || '',
         email: user.email || '',
         password: '',
-        role: user.role || 'technician'
+        role_id: user.role?.id ?? roles[0]?.id,
+        branch_id: user.branch?.id ?? defaultBranchId ?? branches[0]?.id
       });
     } else {
       setFormData({
         username: '',
         email: '',
         password: '',
-        role: 'technician'
+        role_id: roles[0]?.id,
+        branch_id: defaultBranchId ?? branches[0]?.id
       });
     }
-  }, [user, isOpen]);
+  }, [user, isOpen, roles, branches, defaultBranchId]);
 
   const handleChange = (e) => {
-    setFormData({
+    const { name, value } = e.target;
+    const next = {
       ...formData,
-      [e.target.name]: e.target.value
-    });
+      [name]: name === 'role_id' || name === 'branch_id' ? Number(value) : value
+    };
+    if (name === 'password') {
+      const pwd = value || '';
+      let err = '';
+      if (!(isEditing && pwd === '')) {
+        if (pwd.length < 8) err = 'La contraseña debe tener al menos 8 caracteres';
+        else if (!/[A-Za-z]/.test(pwd)) err = 'La contraseña debe contener al menos una letra';
+        else if (!/\d/.test(pwd)) err = 'La contraseña debe contener al menos un número';
+      }
+      setPasswordError(err);
+    }
+    setFormData(next);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if ((!isEditing && passwordError) || (isEditing && formData.password && passwordError)) return;
     onSave(formData);
   };
 
@@ -134,6 +151,9 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {passwordError && (
+                  <p className="text-red-600 text-sm mt-1">{passwordError}</p>
+                )}
               </div>
 
               <div>
@@ -142,13 +162,34 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                   Rol
                 </label>
                 <select
-                  name="role"
-                  value={formData.role}
+                  name="role_id"
+                  value={formData.role_id ?? ''}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  required
                 >
-                  <option value="technician">Técnico</option>
-                  <option value="admin">Administrador</option>
+                  <option value="" disabled>Seleccionar rol</option>
+                  {roles.map(r => (
+                    <option key={r.id} value={r.id}>{r.role_name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sucursal
+                </label>
+                <select
+                  name="branch_id"
+                  value={formData.branch_id ?? ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  required
+                >
+                  <option value="" disabled>Seleccionar sucursal</option>
+                  {branches.map(b => (
+                    <option key={b.id} value={b.id}>{b.branch_name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -164,7 +205,8 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                 </motion.button>
                 <motion.button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  className={`px-4 py-2 rounded-lg transition-colors ${passwordError && !isEditing ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                  disabled={passwordError && !isEditing}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >

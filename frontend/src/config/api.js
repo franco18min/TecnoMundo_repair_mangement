@@ -19,7 +19,7 @@ if (ENVIRONMENT === 'production') {
   BASE_URL = BASE_URL_ENV || DEFAULT_DEV_BASE_URL;
 }
 
-const API_V1_URL = `${BASE_URL}/api/v1`;
+const API_V1_URL = ENVIRONMENT === 'production' ? `${BASE_URL}/api/v1` : '/api/v1';
 
 // Construir URL de WebSocket en función de BASE_URL (ruta del backend: /api/v1/notifications/ws)
 let WS_URL;

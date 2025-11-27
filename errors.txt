@@ -1,188 +1,238 @@
-(venv) PS C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend> venv\Scripts\activate
->> uvicorn main:app --reload --port 8001
-INFO:     Will watch for changes in these directories: ['C:\\Users\\tc\\Desktop\\TecnoMundo_repair_mangement\\backend']
-INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
-INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)        driver: pg8000, url: postgresql+pg8000://postgres.zshbhslyz
-INFO:     Started reloader process [18928] using WatchFiles
-[DB] Using driver: pg8000, url: postgresql+pg8000://postgres.zshbhslyzclpovyngryf:X8fJRji3Yd4PFCLI@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
-[DB] SSL mode: require
-[CORS] Allowed origins: ['http://localhost:5173', 'http://localhost:5174', 'http://192.168.1.28:5173', 'http://192.168.1.28:5174']
-INFO:     Started server process [7484]
-INFO:     Waiting for application startup.
---- Evento de arranque: Conectando a la base de datos... ---
---- Conexión establecida. El servidor está listo. ---
-INFO:     Application startup complete.
-INFO:     127.0.0.1:60632 - "OPTIONS /api/v1/users/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55204 - "OPTIONS /api/v1/users/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55204 - "GET /api/v1/users/me HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:55204 - "GET /api/v1/users/me HTTP/1.1" 401 Unauthorized
-Traceback (most recent call last):
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 256, in execute
-    self._context = self._c.execute_unnamed(
-                    ~~~~~~~~~~~~~~~~~~~~~~~^
-        statement, vals=vals, oids=self._input_oids, stream=stream    
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 704, in execute_unnamed        
-    self.handle_messages(context)
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 844, in handle_messages        
-    raise context.error
-pg8000.exceptions.DatabaseError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column user.phone_number does not exist', 'P': '182', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
+sigo teniendo el mismo problema , tengo este msj en la consola de navegador :
+chunk-SVG7M4VJ.js?v=c8712c11:21607 Download the React DevTools for a better development experience: 
+authApi.js:39  GET http://127.0.0.1:9001/api/v1/users/me net::ERR_CONNECTION_REFUSED
+getCurrentUser @ authApi.js:39
+(anonymous) @ AuthContext.jsx:47
+(anonymous) @ AuthContext.jsx:73
+(anonymous) @ AuthContext.jsx:82
+commitHookEffectListMount @ chunk-SVG7M4VJ.js?v=c8712c11:16961
+commitPassiveMountOnFiber @ chunk-SVG7M4VJ.js?v=c8712c11:18204
+commitPassiveMountEffects_complete @ chunk-SVG7M4VJ.js?v=c8712c11:18177
+commitPassiveMountEffects_begin @ chunk-SVG7M4VJ.js?v=c8712c11:18167
+commitPassiveMountEffects @ chunk-SVG7M4VJ.js?v=c8712c11:18157
+flushPassiveEffectsImpl @ chunk-SVG7M4VJ.js?v=c8712c11:19541
+flushPassiveEffects @ chunk-SVG7M4VJ.js?v=c8712c11:19498
+(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:19379
+workLoop @ chunk-SVG7M4VJ.js?v=c8712c11:195
+flushWork @ chunk-SVG7M4VJ.js?v=c8712c11:174
+performWorkUntilDeadline @ chunk-SVG7M4VJ.js?v=c8712c11:382
+authApi.js:39  GET http://127.0.0.1:9001/api/v1/users/me net::ERR_CONNECTION_REFUSED
+getCurrentUser @ authApi.js:39
+(anonymous) @ AuthContext.jsx:47
+(anonymous) @ AuthContext.jsx:73
+(anonymous) @ AuthContext.jsx:82
+commitHookEffectListMount @ chunk-SVG7M4VJ.js?v=c8712c11:16961
+invokePassiveEffectMountInDEV @ chunk-SVG7M4VJ.js?v=c8712c11:18372
+invokeEffectsInDev @ chunk-SVG7M4VJ.js?v=c8712c11:19752
+commitDoubleInvokeEffectsInDEV @ chunk-SVG7M4VJ.js?v=c8712c11:19737
+flushPassiveEffectsImpl @ chunk-SVG7M4VJ.js?v=c8712c11:19554
+flushPassiveEffects @ chunk-SVG7M4VJ.js?v=c8712c11:19498
+(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:19379
+workLoop @ chunk-SVG7M4VJ.js?v=c8712c11:195
+flushWork @ chunk-SVG7M4VJ.js?v=c8712c11:174
+performWorkUntilDeadline @ chunk-SVG7M4VJ.js?v=c8712c11:382
+authApi.js:14  POST http://127.0.0.1:9001/api/v1/auth/login net::ERR_CONNECTION_REFUSED
+loginUser @ authApi.js:14
+login @ AuthContext.jsx:130
+handleSubmit @ LoginPage.jsx:59
+callCallback2 @ chunk-SVG7M4VJ.js?v=c8712c11:3678
+invokeGuardedCallbackDev @ chunk-SVG7M4VJ.js?v=c8712c11:3703
+invokeGuardedCallback @ chunk-SVG7M4VJ.js?v=c8712c11:3737
+invokeGuardedCallbackAndCatchFirstError @ chunk-SVG7M4VJ.js?v=c8712c11:3740
+executeDispatch @ chunk-SVG7M4VJ.js?v=c8712c11:7044
+processDispatchQueueItemsInOrder @ chunk-SVG7M4VJ.js?v=c8712c11:7064
+processDispatchQueue @ chunk-SVG7M4VJ.js?v=c8712c11:7073
+dispatchEventsForPlugins @ chunk-SVG7M4VJ.js?v=c8712c11:7081
+(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:7204
+batchedUpdates$1 @ chunk-SVG7M4VJ.js?v=c8712c11:18964
+batchedUpdates @ chunk-SVG7M4VJ.js?v=c8712c11:3583
+dispatchEventForPluginEventSystem @ chunk-SVG7M4VJ.js?v=c8712c11:7203
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SVG7M4VJ.js?v=c8712c11:5482
+dispatchEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5476
+dispatchDiscreteEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5453
+main.jsx:22 Error de inicio de sesión: TypeError: Failed to fetch
+    at loginUser (authApi.js:14:26)
+    at login (AuthContext.jsx:130:15)
+    at handleSubmit (LoginPage.jsx:59:15)
+    at HTMLUnknownElement.callCallback2 (chunk-SVG7M4VJ.js?v=c8712c11:3678:22)
+    at Object.invokeGuardedCallbackDev (chunk-SVG7M4VJ.js?v=c8712c11:3703:24)
+    at invokeGuardedCallback (chunk-SVG7M4VJ.js?v=c8712c11:3737:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-SVG7M4VJ.js?v=c8712c11:3740:33)
+    at executeDispatch (chunk-SVG7M4VJ.js?v=c8712c11:7044:11)
+    at processDispatchQueueItemsInOrder (chunk-SVG7M4VJ.js?v=c8712c11:7064:15)
+    at processDispatchQueue (chunk-SVG7M4VJ.js?v=c8712c11:7073:13)
+console.error @ main.jsx:22
+handleSubmit @ LoginPage.jsx:71
+await in handleSubmit
+callCallback2 @ chunk-SVG7M4VJ.js?v=c8712c11:3678
+invokeGuardedCallbackDev @ chunk-SVG7M4VJ.js?v=c8712c11:3703
+invokeGuardedCallback @ chunk-SVG7M4VJ.js?v=c8712c11:3737
+invokeGuardedCallbackAndCatchFirstError @ chunk-SVG7M4VJ.js?v=c8712c11:3740
+executeDispatch @ chunk-SVG7M4VJ.js?v=c8712c11:7044
+processDispatchQueueItemsInOrder @ chunk-SVG7M4VJ.js?v=c8712c11:7064
+processDispatchQueue @ chunk-SVG7M4VJ.js?v=c8712c11:7073
+dispatchEventsForPlugins @ chunk-SVG7M4VJ.js?v=c8712c11:7081
+(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:7204
+batchedUpdates$1 @ chunk-SVG7M4VJ.js?v=c8712c11:18964
+batchedUpdates @ chunk-SVG7M4VJ.js?v=c8712c11:3583
+dispatchEventForPluginEventSystem @ chunk-SVG7M4VJ.js?v=c8712c11:7203
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SVG7M4VJ.js?v=c8712c11:5482
+dispatchEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5476
+dispatchDiscreteEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5453
+apiClient.js:29  POST http://localhost:5174/api/v1/users/ 500 (Internal Server Error)
+(anonymous) @ apiClient.js:29
+createUser @ userApi.js:9
+saveUser @ UserConfigSection.jsx:154
+handleSubmit @ UserModal.jsx:43
+callCallback2 @ chunk-SVG7M4VJ.js?v=c8712c11:3678
+invokeGuardedCallbackDev @ chunk-SVG7M4VJ.js?v=c8712c11:3703
+invokeGuardedCallback @ chunk-SVG7M4VJ.js?v=c8712c11:3737
+invokeGuardedCallbackAndCatchFirstError @ chunk-SVG7M4VJ.js?v=c8712c11:3740
+executeDispatch @ chunk-SVG7M4VJ.js?v=c8712c11:7044
+processDispatchQueueItemsInOrder @ chunk-SVG7M4VJ.js?v=c8712c11:7064
+processDispatchQueue @ chunk-SVG7M4VJ.js?v=c8712c11:7073
+dispatchEventsForPlugins @ chunk-SVG7M4VJ.js?v=c8712c11:7081
+(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:7204
+batchedUpdates$1 @ chunk-SVG7M4VJ.js?v=c8712c11:18964
+batchedUpdates @ chunk-SVG7M4VJ.js?v=c8712c11:3583
+dispatchEventForPluginEventSystem @ chunk-SVG7M4VJ.js?v=c8712c11:7203
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SVG7M4VJ.js?v=c8712c11:5482
+dispatchEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5476
+dispatchDiscreteEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5453
+main.jsx:22 Error en apiClient: Error: Error interno del servidor
+    at apiClient.js:41:31
+    at async saveUser (UserConfigSection.jsx:154:29)
+console.error @ main.jsx:22
+(anonymous) @ apiClient.js:55
+await in (anonymous)
+createUser @ userApi.js:9
+saveUser @ UserConfigSection.jsx:154
+handleSubmit @ UserModal.jsx:43
+callCallback2 @ chunk-SVG7M4VJ.js?v=c8712c11:3678
+invokeGuardedCallbackDev @ chunk-SVG7M4VJ.js?v=c8712c11:3703
+invokeGuardedCallback @ chunk-SVG7M4VJ.js?v=c8712c11:3737
+invokeGuardedCallbackAndCatchFirstError @ chunk-SVG7M4VJ.js?v=c8712c11:3740
+executeDispatch @ chunk-SVG7M4VJ.js?v=c8712c11:7044
+processDispatchQueueItemsInOrder @ chunk-SVG7M4VJ.js?v=c8712c11:7064
+processDispatchQueue @ chunk-SVG7M4VJ.js?v=c8712c11:7073
+dispatchEventsForPlugins @ chunk-SVG7M4VJ.js?v=c8712c11:7081
+(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:7204
+batchedUpdates$1 @ chunk-SVG7M4VJ.js?v=c8712c11:18964
+batchedUpdates @ chunk-SVG7M4VJ.js?v=c8712c11:3583
+dispatchEventForPluginEventSystem @ chunk-SVG7M4VJ.js?v=c8712c11:7203
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SVG7M4VJ.js?v=c8712c11:5482
+dispatchEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5476
+dispatchDiscreteEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5453
 
-During handling of the above exception, another exception occurred:   
 
-Traceback (most recent call last):
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
-    self.dialect.do_execute(
-    ~~~~~~~~~~~~~~~~~~~~~~~^
-        cursor, str_statement, effective_parameters, context
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
-    cursor.execute(statement, parameters)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
-    raise cls(msg)
-pg8000.dbapi.ProgrammingError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column user.phone_number does not exist', 'P': '182', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
-
-The above exception was the direct cause of the following exception:  
-
-Traceback (most recent call last):
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\auth.py", line 22, in login_for_access_token
-    user = crud_user.get_by_username(db, username=form_data.username) 
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\crud\crud_user.py", line 15, in get_by_username
-    return db.query(User).filter(User.username == username).first()   
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^   
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first        
-    return self.limit(1)._iter().first()  # type: ignore
-           ~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter        
-    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
-                                                  ~~~~~~~~~~~~~~~~~~~~^
-        statement,
-        ^^^^^^^^^^
-        params,
-        ^^^^^^^
-        execution_options={"_sa_orm_load_options": self.load_options},
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute    
-    return self._execute_internal(
-           ~~~~~~~~~~~~~~~~~~~~~~^
-        statement,
-        ^^^^^^^^^^
-    ...<4 lines>...
-        _add_event=_add_event,
-        ^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
-    result: Result[Any] = compile_state_cls.orm_execute_statement(    
-                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^    
-        self,
-        ^^^^^
-    ...<4 lines>...
-        conn,
-        ^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
-    result = conn.execute(
-        statement, params or {}, execution_options=execution_options  
-    )
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute    
-    return meth(
-        self,
-        distilled_parameters,
-        execution_options or NO_OPTIONS,
-    )
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
-    return connection._execute_clauseelement(
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self, distilled_params, execution_options
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
-    ret = self._execute_context(
-        dialect,
-    ...<8 lines>...
-        cache_hit=cache_hit,
-    )
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
-    return self._exec_single_context(
-           ~~~~~~~~~~~~~~~~~~~~~~~~~^
-        dialect, context, statement, parameters
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
-    self._handle_dbapi_exception(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        e, str_statement, effective_parameters, cursor, context       
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e     
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
-    self.dialect.do_execute(
-    ~~~~~~~~~~~~~~~~~~~~~~~^
-        cursor, str_statement, effective_parameters, context
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
-    cursor.execute(statement, parameters)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
-    raise cls(msg)
-sqlalchemy.exc.ProgrammingError: (pg8000.dbapi.ProgrammingError) {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column user.phone_number does not exist', 'P': '182', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
-[SQL: SELECT system."user".id AS system_user_id, system."user".username AS system_user_username, system."user".password AS system_user_password, system."user".email AS system_user_email, system."user".phone_number AS system_user_phone_number, system."user".created_at AS system_user_created_at, system."user".is_active AS system_user_is_active, system."user".role_id AS system_user_role_id, system."user".branch_id AS system_user_branch_id
-FROM system."user"
-WHERE system."user".username = %s::VARCHAR
- LIMIT %s::INTEGER]
-[parameters: ('admin', 1)]
-(Background on this error at: https://sqlalche.me/e/20/f405)
-INFO:     127.0.0.1:52623 - "POST /api/v1/auth/login HTTP/1.1" 500 Internal Server Error
+en la consola del backend tengo esto
+INFO:     127.0.0.1:56055 - "POST /api/v1/users/ HTTP/1.1" 500 Internal Server Error
 ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 256, in execute
-    self._context = self._c.execute_unnamed(
-                    ~~~~~~~~~~~~~~~~~~~~~~~^
-        statement, vals=vals, oids=self._input_oids, stream=stream    
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 704, in execute_unnamed        
-    self.handle_messages(context)
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 844, in handle_messages        
-    raise context.error
-pg8000.exceptions.DatabaseError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column user.phone_number does not exist', 'P': '182', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_utils.py", line 79, in collapse_excgroups
+  |     yield
+  |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 183, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |                ~~~~~~~~~~~~~~~~~~~~~~~^^
+  |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  |         "unhandled errors in a TaskGroup", self._exceptions
+  |     ) from None
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 399, in run_asgi       
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         self.scope, self.receive, self.send
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 70, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    |     raise exc
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 182, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |                                    ~~~~~~~~~~~~~~~~~~^^
+    |   File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    |     self.gen.throw(value)
+    |     ~~~~~~~~~~~~~~^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 184, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\main.py", line 38, in dispatch
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    |     raise app_exc
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    |     await self.simple_response(scope, receive, send, request_headers=headers)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 78, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)  
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 59, in wrapped_app
+    |     response = await handler(conn, exc)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\main.py", line 57, in validation_exception_handler
+    |     return error_payload("validation_error", "Datos inválidos", request, {"errors": exc.errors()}, 422)
+    |            ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\main.py", line 52, in error_payload
+    |     return JSONResponse(status_code=status_code, content=payload)
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\responses.py", line 190, in __init__
+    |     super().__init__(content, status_code, headers, media_type, background) 
+    |     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\responses.py", line 47, in __init__
+    |     self.body = self.render(content)
+    |                 ~~~~~~~~~~~^^^^^^^^^
+    |   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\responses.py", line 193, in render
+    |     return json.dumps(
+    |            ~~~~~~~~~~^
+    |         content,
+    |         ^^^^^^^^
+    |     ...<3 lines>...
+    |         separators=(",", ":"),
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |     ).encode("utf-8")
+    |     ^
+    |   File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 238, in dumps
+    |     **kw).encode(obj)
+    |           ~~~~~~^^^^^
+    |   File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 200, in encode
+    |     chunks = self.iterencode(o, _one_shot=True)
+    |   File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 261, in iterencode
+    |     return _iterencode(o, 0)
+    |   File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 180, in default
+    |     raise TypeError(f'Object of type {o.__class__.__name__} '
+    |                     f'is not JSON serializable')
+    | TypeError: Object of type ValueError is not JSON serializable
+    +------------------------------------
 
-During handling of the above exception, another exception occurred:   
-
-Traceback (most recent call last):
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
-    self.dialect.do_execute(
-    ~~~~~~~~~~~~~~~~~~~~~~~^
-        cursor, str_statement, effective_parameters, context
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
-    cursor.execute(statement, parameters)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
-    raise cls(msg)
-pg8000.dbapi.ProgrammingError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column user.phone_number does not exist', 'P': '182', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
-
-The above exception was the direct cause of the following exception:  
+During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 399, in run_asgi
@@ -195,20 +245,38 @@ Traceback (most recent call last):
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 70, in __call__
     return await self.app(scope, receive, send)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__     
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
     await super().__call__(scope, receive, send)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__    
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
     await self.middleware_stack(scope, receive, send)
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
     raise exc
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
     await self.app(scope, receive, _send)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__  
-    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\main.py", line 38, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    raise app_exc
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)     
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
     await self.app(scope, receive, send)
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)      
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
     raise exc
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
@@ -220,134 +288,39 @@ Traceback (most recent call last):
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
     await self.app(scope, receive, send)
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 78, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\routing.py", line 75, in app
-    response = await f(request)
-               ^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\fastapi\routing.py", line 302, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)        
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 59, in wrapped_app
+    response = await handler(conn, exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\main.py", line 57, in validation_exception_handler
+    return error_payload("validation_error", "Datos inválidos", request, {"errors": exc.errors()}, 422)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\main.py", line 52, in error_payload
+    return JSONResponse(status_code=status_code, content=payload)
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\responses.py", line 190, in __init__
+    super().__init__(content, status_code, headers, media_type, background)       
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\responses.py", line 47, in __init__
+    self.body = self.render(content)
+                ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\responses.py", line 193, in render
+    return json.dumps(
+           ~~~~~~~~~~^
+        content,
+        ^^^^^^^^
     ...<3 lines>...
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\fastapi\routing.py", line 215, in run_endpoint_function
-    return await run_in_threadpool(dependant.call, **values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
-    return await anyio.to_thread.run_sync(func)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
-    return await get_async_backend().run_sync_in_worker_thread(       
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
-        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2476, in run_sync_in_worker_thread
-    return await future
-           ^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run       
-    result = context.run(func, *args)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\auth.py", line 47, in login_for_access_token
-    raise e
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\auth.py", line 22, in login_for_access_token
-    user = crud_user.get_by_username(db, username=form_data.username) 
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\crud\crud_user.py", line 15, in get_by_username
-    return db.query(User).filter(User.username == username).first()   
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^   
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first        
-    return self.limit(1)._iter().first()  # type: ignore
-           ~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter        
-    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
-                                                  ~~~~~~~~~~~~~~~~~~~~^
-        statement,
-        ^^^^^^^^^^
-        params,
-        ^^^^^^^
-        execution_options={"_sa_orm_load_options": self.load_options},
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute    
-    return self._execute_internal(
-           ~~~~~~~~~~~~~~~~~~~~~~^
-        statement,
-        ^^^^^^^^^^
-    ...<4 lines>...
-        _add_event=_add_event,
+        separators=(",", ":"),
         ^^^^^^^^^^^^^^^^^^^^^^
-    )
+    ).encode("utf-8")
     ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
-    result: Result[Any] = compile_state_cls.orm_execute_statement(    
-                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^    
-        self,
-        ^^^^^
-    ...<4 lines>...
-        conn,
-        ^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
-    result = conn.execute(
-        statement, params or {}, execution_options=execution_options  
-    )
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute    
-    return meth(
-        self,
-        distilled_parameters,
-        execution_options or NO_OPTIONS,
-    )
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
-    return connection._execute_clauseelement(
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self, distilled_params, execution_options
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
-    ret = self._execute_context(
-        dialect,
-    ...<8 lines>...
-        cache_hit=cache_hit,
-    )
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
-    return self._exec_single_context(
-           ~~~~~~~~~~~~~~~~~~~~~~~~~^
-        dialect, context, statement, parameters
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
-    self._handle_dbapi_exception(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        e, str_statement, effective_parameters, cursor, context       
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e     
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
-    self.dialect.do_execute(
-    ~~~~~~~~~~~~~~~~~~~~~~~^
-        cursor, str_statement, effective_parameters, context
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
-    cursor.execute(statement, parameters)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
-    raise cls(msg)
-sqlalchemy.exc.ProgrammingError: (pg8000.dbapi.ProgrammingError) {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column user.phone_number does not exist', 'P': '182', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
-[SQL: SELECT system."user".id AS system_user_id, system."user".username AS system_user_username, system."user".password AS system_user_password, system."user".email AS system_user_email, system."user".phone_number AS system_user_phone_number, system."user".created_at AS system_user_created_at, system."user".is_active AS system_user_is_active, system."user".role_id AS system_user_role_id, system."user".branch_id AS system_user_branch_id
-FROM system."user"
-WHERE system."user".username = %s::VARCHAR
- LIMIT %s::INTEGER]
-[parameters: ('admin', 1)]
-(Background on this error at: https://sqlalche.me/e/20/f405)
+  File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\tc\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type ValueError is not JSON serializable
