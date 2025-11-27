@@ -14,6 +14,12 @@ def get_by_username(db: Session, *, username: str) -> Optional[User]:
     """
     return db.query(User).filter(User.username == username).first()
 
+def get_by_email(db: Session, *, email: str) -> Optional[User]:
+    """
+    Busca un usuario por su email.
+    """
+    return db.query(User).filter(User.email == email).first()
+
 
 def get_multi(db: Session, *, skip: int = 0, limit: int = 100, status: str = 'all') -> List[User]:
     """
@@ -57,7 +63,11 @@ def create(db: Session, *, obj_in: UserCreateByAdmin) -> User:
         is_active=obj_in.is_active
     )
     db.add(db_obj)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(db_obj)
     return db_obj
 
@@ -81,7 +91,11 @@ def update(db: Session, *, db_obj: User, obj_in: UserUpdateByAdmin, admin_user: 
         setattr(db_obj, field, value)
 
     db.add(db_obj)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(db_obj)
     return db_obj
 
