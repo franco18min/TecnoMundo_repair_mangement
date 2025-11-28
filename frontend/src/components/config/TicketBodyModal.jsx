@@ -624,16 +624,14 @@ Tel: [TELEFONO_SUCURSAL]`
                 <div style={bodyStyle}>
                     {bodyContent || 'El contenido del ticket aparecerá aquí...'}
                     <div className="mt-3 flex flex-col items-center justify-center">
-                        <p className="text-xs mb-1" style={{ fontSize: (bodyStyleConfig.qrTextSizePx || 11) }}>
-                            {bodyStyleConfig.qrTopText || 'Escaneá para ver tu orden'}
-                        </p>
+                        <p className="text-xs mb-1" style={{ fontSize: (bodyStyleConfig.qrTextSizePx || 11) }}>{bodyStyleConfig.qrTopText || 'Escaneá para ver tu orden'}</p>
                         <img
                           alt="QR Orden"
                           src={getQrImageUrl(getOrderUrl(123456), Number(bodyStyleConfig.qrSizePx || 96))}
                           style={{ height: bodyStyleConfig.qrSizePx || 96 }}
                         />
                         <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: (bodyStyleConfig.qrTextSizePx || 11) }}>
-                          {bodyStyleConfig.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+                          {bodyStyleConfig.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span>{bodyStyleConfig.qrBottomText ? '' : ' (Clientes)'}
                         </p>
                     </div>
                 </div>

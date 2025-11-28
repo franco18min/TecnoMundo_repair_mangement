@@ -57,8 +57,7 @@ export default defineConfig({
   // Configuración básica para CloudPanel hosting
   build: {
     outDir: 'dist',
-    sourcemap: true,
-    chunkSizeWarningLimit: 1024
+    sourcemap: false
   },
   
   server: {

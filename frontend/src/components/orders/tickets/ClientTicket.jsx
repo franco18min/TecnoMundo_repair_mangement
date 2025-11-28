@@ -179,10 +179,10 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
   React.useEffect(() => {
     if (!order?.id) return;
     const link = getOrderUrl(order.id);
-    const size = Number(clientBodyStyle.qrSizePx || 96);
+    const size = Number(ticketStyle.qrSizePx || 96);
     const url = getQrImageUrl(link, size);
     setQrSrc(url);
-  }, [order?.id, clientBodyStyle.qrSizePx]);
+  }, [order?.id, ticketStyle.qrSizePx]);
   
   
 
@@ -295,12 +295,10 @@ export const ClientTicket = React.forwardRef(({ order }, ref) => {
         <p className="text-xs mt-1 text-center w-3/4 mx-auto">Firma del Cliente</p>
         {qrSrc && (
           <div className="mt-3 flex flex-col items-center justify-center">
-            <p className="text-xs mb-1" style={{ fontSize: (clientBodyStyle.qrTextSizePx || 11) }}>
-              {clientBodyStyle.qrTopText || 'Escaneá para ver tu orden'}
-            </p>
+            <p className="text-xs mb-1" style={{ fontSize: (clientBodyStyle.qrTextSizePx || 11) }}>{clientBodyStyle.qrTopText || 'Escaneá para ver tu orden'}</p>
             <img src={qrSrc} alt="QR Orden" style={{ height: clientBodyStyle.qrSizePx || 96 }} />
             <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: (clientBodyStyle.qrTextSizePx || 11) }}>
-              {clientBodyStyle.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+              {clientBodyStyle.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span>{clientBodyStyle.qrBottomText ? '' : ' (Clientes)'}
             </p>
           </div>
         )}

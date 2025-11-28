@@ -65,7 +65,7 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
         { value: '22px', label: '22px - XL' },
         { value: '24px', label: '24px - XXL' },
         { value: '28px', label: '28px - XXXL' },
-        { value: '32px', label: '32px - Gigante' }
+        { value: '32px', label: '32px - Enorme' }
     ];
 
     const lineHeightOptions = [
@@ -444,16 +444,14 @@ CONTROL DE CALIDAD:
                     dangerouslySetInnerHTML={{ __html: styledContent || '' }}
                 />
                 <div className="mt-3 flex flex-col items-center justify-center">
-                    <p className="text-xs mb-1" style={{ fontSize: (config.qrTextSizePx || 11) }}>
-                        {config.qrTopText || 'Escaneá para ver tu orden'}
-                    </p>
+                    <p className="text-xs mb-1">Escaneá para ver tu orden</p>
                     <img
                       alt="QR Orden"
                       src={getQrImageUrl(getOrderUrl(123456), Number(config.qrSizePx || 96))}
                       style={{ height: config.qrSizePx || 96 }}
                     />
                     <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: (config.qrTextSizePx || 11) }}>
-                      {config.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+                      O ingrese N° de orden en <span className="font-bold underline">tecnoapp.ar</span> (Clientes)
                     </p>
                 </div>
             </div>
@@ -775,27 +773,27 @@ CONTROL DE CALIDAD:
 
                                     {/* Configuración de QR */}
                                     <div>
-                                        <h4 className="font-medium text-gray-700 mb-3">Configuración de QR</h4>
+                                        <h4 className="font-medium text-gray-700 mb-3">QR</h4>
                                         <div className="space-y-3">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño QR (px)</label>
                                                     <input
                                                         type="number"
                                                         min="64"
-                                                        max="256"
-                                                        value={config.qrSizePx || 96}
+                                                        max="200"
+                                                        value={config.qrSizePx}
                                                         onChange={(e) => updateConfig('qrSizePx', Number(e.target.value))}
                                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño texto QR (px)</label>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño texto (px)</label>
                                                     <input
                                                         type="number"
                                                         min="9"
-                                                        max="24"
-                                                        value={config.qrTextSizePx || 11}
+                                                        max="18"
+                                                        value={config.qrTextSizePx}
                                                         onChange={(e) => updateConfig('qrTextSizePx', Number(e.target.value))}
                                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                     />
