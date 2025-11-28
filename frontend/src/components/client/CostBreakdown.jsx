@@ -36,14 +36,19 @@ const CostBreakdown = ({ order }) => {
 
   // Calcular datos de cotización desde repair_order
   const toNum = (v) => (typeof v === 'number' ? v : Number(v || 0));
+  const total = toNum(order.total_cost);
+  const deposit = toNum(order.deposit);
+  const balance = (order.balance !== undefined && order.balance !== null)
+    ? toNum(order.balance)
+    : Math.max(0, total - deposit);
   const costBreakdown = {
-    total: toNum(order.total_cost),
-    deposit: toNum(order.deposit),
-    balance: toNum(order.balance),
+    total,
+    deposit,
+    balance,
     partsUsed: order.parts_used || 'No especificado'
   };
 
-  const hasEstimate = toNum(order.total_cost) > 0 || toNum(order.deposit) > 0 || toNum(order.balance) > 0;
+  const hasEstimate = total > 0 || deposit > 0 || balance > 0;
   const statusName = order.status?.status_name;
   const isPaid = statusName === 'Entregado';
   const isApproved = !!statusName && statusName !== 'En Diagnóstico' && statusName !== 'Recibido';

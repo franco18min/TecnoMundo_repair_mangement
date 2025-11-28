@@ -51,7 +51,14 @@ const mapClientOrderData = (order) => ({
   },
   total_cost: order.total_cost || 0,
   deposit: order.deposit || 0,
-  balance: order.balance || 0,
+  balance: (() => {
+    const tot = Number(order.total_cost || 0);
+    const dep = Number(order.deposit || 0);
+    const bal = order.balance;
+    if (typeof bal === 'number' && !Number.isNaN(bal)) return bal;
+    const computed = tot - dep;
+    return computed >= 0 ? computed : 0;
+  })(),
   parts_used: order.parts_used || '',
   created_at: order.created_at,
   updated_at: order.updated_at,
