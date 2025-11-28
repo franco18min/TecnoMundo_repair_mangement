@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getOrderUrl, getQrImageUrl } from '../../utils/qr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FileText, Loader, Eye, Save, AlertCircle, Plus, Check, Search } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
@@ -622,6 +623,17 @@ Tel: [TELEFONO_SUCURSAL]`
                 {/* Cuerpo del ticket */}
                 <div style={bodyStyle}>
                     {bodyContent || 'El contenido del ticket aparecerá aquí...'}
+                    <div className="mt-3 flex flex-col items-center justify-center">
+                        <p className="text-xs mb-1">Escaneá para ver tu orden</p>
+                        <img
+                          alt="QR Orden"
+                          src={getQrImageUrl(getOrderUrl(123456), Number(headerStyleConfig.qrSizePx || 96))}
+                          style={{ height: headerStyleConfig.qrSizePx || 96 }}
+                        />
+                        <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: '10px' }}>
+                          O ingrese N° de orden en <span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+                        </p>
+                    </div>
                 </div>
             </div>
         );

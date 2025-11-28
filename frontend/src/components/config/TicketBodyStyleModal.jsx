@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader, Eye, Palette, Type, AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, RotateCcw } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { getBranchTicketConfig, updateBranchTicketConfig, fetchBranches } from '../../api/branchApi';
+import { getOrderUrl, getQrImageUrl } from '../../utils/qr';
 
 export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, branch = null }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -434,6 +435,17 @@ CONTROL DE CALIDAD:
                     className="whitespace-pre-line select-text cursor-text"
                     dangerouslySetInnerHTML={{ __html: styledContent || '' }}
                 />
+                <div className="mt-3 flex flex-col items-center justify-center">
+                    <p className="text-xs mb-1">Escaneá para ver tu orden</p>
+                    <img
+                      alt="QR Orden"
+                      src={getQrImageUrl(getOrderUrl(123456), Number(config.qrSizePx || 96))}
+                      style={{ height: config.qrSizePx || 96 }}
+                    />
+                    <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: '10px' }}>
+                      O ingrese N° de orden en <span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+                    </p>
+                </div>
             </div>
         );
     });
