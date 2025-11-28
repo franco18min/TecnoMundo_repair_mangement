@@ -103,7 +103,7 @@ export function Sidebar({ onLogout, children }) {
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     />
                     <motion.div 
-                        className="flex justify-between items-center overflow-hidden"
+                        className="flex justify-between items-center overflow-hidden gap-2"
                         initial={false}
                         animate={{ 
                             width: expanded ? 208 : 0, 
@@ -115,22 +115,23 @@ export function Sidebar({ onLogout, children }) {
                             ease: [0.4, 0, 0.2, 1] 
                         }}
                     >
-                        <div className="leading-4">
-                            <h4 className="font-semibold text-gray-800">{currentUser.username}</h4>
-                            <span className="text-xs text-gray-500">{currentUser.email}</span>
+                        <div className="leading-4 min-w-0 flex-1 pr-1">
+                            <h4 className="font-semibold text-gray-800 truncate max-w-[140px]">{currentUser.username}</h4>
+                            <span className="text-xs text-gray-500 truncate max-w-[120px] inline-block" title={currentUser.email}>{currentUser.email}</span>
                             {currentUser.branch?.branch_name && (
                                 <motion.div 
-                                    className='flex items-center gap-1 mt-1'
+                                    className='flex items-center gap-1 mt-1 truncate'
                                     initial={{ opacity: 0, y: 5 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 }}
                                 >
                                     <Building size={12} className='text-gray-400' />
-                                    <span className="text-xs text-gray-500">{currentUser.branch.branch_name}</span>
+                                    <span className="text-xs text-gray-500 truncate">{currentUser.branch.branch_name}</span>
                                 </motion.div>
                             )}
                         </div>
                         <motion.div
+                            className="shrink-0 relative z-10"
                             whileHover={{ scale: 1.1, color: "#ef4444" }}
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 25 }}

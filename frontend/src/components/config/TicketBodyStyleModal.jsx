@@ -25,7 +25,11 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
         selectedTextFontStyle: 'normal',
         selectedTextDecoration: 'none',
         selectedTextAlignment: 'left',
-        selectedTextColor: '#000000'
+        selectedTextColor: '#000000',
+        qrSizePx: 96,
+        qrTextSizePx: 11,
+        qrTopText: 'Escaneá para ver tu orden',
+        qrBottomText: 'O ingrese N° de orden en tecnoapp.ar (Clientes)'
     };
 
     // Configuración de estilos
@@ -57,7 +61,11 @@ export const TicketBodyStyleModal = ({ isOpen, onClose, ticketType, onSave, bran
         { value: '14px', label: '14px - Mediano' },
         { value: '16px', label: '16px - Grande' },
         { value: '18px', label: '18px - Muy grande' },
-        { value: '20px', label: '20px - Extra grande' }
+        { value: '20px', label: '20px - Extra grande' },
+        { value: '22px', label: '22px - XL' },
+        { value: '24px', label: '24px - XXL' },
+        { value: '28px', label: '28px - XXXL' },
+        { value: '32px', label: '32px - Gigante' }
     ];
 
     const lineHeightOptions = [
@@ -436,14 +444,16 @@ CONTROL DE CALIDAD:
                     dangerouslySetInnerHTML={{ __html: styledContent || '' }}
                 />
                 <div className="mt-3 flex flex-col items-center justify-center">
-                    <p className="text-xs mb-1">Escaneá para ver tu orden</p>
+                    <p className="text-xs mb-1" style={{ fontSize: (config.qrTextSizePx || 11) }}>
+                        {config.qrTopText || 'Escaneá para ver tu orden'}
+                    </p>
                     <img
                       alt="QR Orden"
                       src={getQrImageUrl(getOrderUrl(123456), Number(config.qrSizePx || 96))}
                       style={{ height: config.qrSizePx || 96 }}
                     />
-                    <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: '10px' }}>
-                      O ingrese N° de orden en <span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+                    <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: (config.qrTextSizePx || 11) }}>
+                      {config.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span> (Clientes)
                     </p>
                 </div>
             </div>
@@ -760,6 +770,57 @@ CONTROL DE CALIDAD:
                                                     Aplicar estilos al texto seleccionado: "{selectedText.substring(0, 30)}..."
                                                 </motion.button>
                                             )}
+                                        </div>
+                                    </div>
+
+                                    {/* Configuración de QR */}
+                                    <div>
+                                        <h4 className="font-medium text-gray-700 mb-3">Configuración de QR</h4>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño QR (px)</label>
+                                                    <input
+                                                        type="number"
+                                                        min="64"
+                                                        max="256"
+                                                        value={config.qrSizePx || 96}
+                                                        onChange={(e) => updateConfig('qrSizePx', Number(e.target.value))}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño texto QR (px)</label>
+                                                    <input
+                                                        type="number"
+                                                        min="9"
+                                                        max="24"
+                                                        value={config.qrTextSizePx || 11}
+                                                        onChange={(e) => updateConfig('qrTextSizePx', Number(e.target.value))}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Texto superior</label>
+                                                <input
+                                                    type="text"
+                                                    value={config.qrTopText || ''}
+                                                    onChange={(e) => updateConfig('qrTopText', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    placeholder="Escaneá para ver tu orden"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Texto inferior</label>
+                                                <input
+                                                    type="text"
+                                                    value={config.qrBottomText || ''}
+                                                    onChange={(e) => updateConfig('qrBottomText', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    placeholder="O ingrese N° de orden en tecnoapp.ar (Clientes)"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -178,10 +178,10 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
   React.useEffect(() => {
     if (!order?.id) return;
     const link = getOrderUrl(order.id);
-    const size = Number(ticketStyle.qrSizePx || 96);
+    const size = Number(workshopBodyStyle.qrSizePx || 96);
     const url = getQrImageUrl(link, size);
     setQrSrc(url);
-  }, [order?.id, ticketStyle.qrSizePx]);
+  }, [order?.id, workshopBodyStyle.qrSizePx]);
   const bodyContent = getBodyContent();
   const workshopBodyStyle = getWorkshopBodyStyle();
   
@@ -287,10 +287,12 @@ export const WorkshopTicket = React.forwardRef(({ order }, ref) => {
         <p className="text-xs mt-1 text-center w-3/4 mx-auto">Firma del Cliente</p>
         {qrSrc && (
           <div className="mt-3 flex flex-col items-center justify-center">
-            <p className="text-xs mb-1">Escaneá para ver tu orden</p>
-            <img src={qrSrc} alt="QR Orden" style={{ height: ticketStyle.qrSizePx || 96 }} />
-            <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: '10px' }}>
-              O ingrese N° de orden en <span className="font-bold underline">tecnoapp.ar</span> (Clientes)
+            <p className="text-xs mb-1" style={{ fontSize: (workshopBodyStyle.qrTextSizePx || 11) }}>
+              {workshopBodyStyle.qrTopText || 'Escaneá para ver tu orden'}
+            </p>
+            <img src={qrSrc} alt="QR Orden" style={{ height: workshopBodyStyle.qrSizePx || 96 }} />
+            <p className="text-xs mt-1" style={{ whiteSpace: 'nowrap', fontSize: (workshopBodyStyle.qrTextSizePx || 11) }}>
+              {workshopBodyStyle.qrBottomText || 'O ingrese N° de orden en '}<span className="font-bold underline">tecnoapp.ar</span> (Clientes)
             </p>
           </div>
         )}
