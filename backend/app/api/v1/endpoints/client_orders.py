@@ -18,6 +18,19 @@ from app.crud import crud_email_subscription
 
 router = APIRouter()
 
+def _ensure_balance(order: RepairOrder):
+    try:
+        tot = float(order.total_cost or 0.0)
+        dep = float(order.deposit or 0.0)
+        bal = order.balance
+        expected = max(tot - dep, 0.0)
+        if bal is None or (isinstance(bal, (int, float)) and (bal < 0 or abs(bal - expected) > 1e-9)):
+            order.balance = expected
+    except Exception:
+        # Si ocurre algún problema de tipo, asegurar balance no negativo
+        order.balance = max(float(order.total_cost or 0.0) - float(order.deposit or 0.0), 0.0)
+    return order
+
 @router.get("/client-search", response_model=RepairOrderPublic)
 def search_order_by_client_query(
     q: str = Query(..., description="DNI del cliente o número de orden"),
@@ -57,7 +70,7 @@ def search_order_by_client_query(
             detail="No se encontró ninguna orden con ese DNI o número de orden"
         )
     
-    return order
+    return _ensure_balance(order)
 
 @router.get("/client/{order_id}", response_model=RepairOrderPublic)
 def get_client_order_details(
@@ -84,7 +97,7 @@ def get_client_order_details(
             detail="Orden no encontrada"
         )
     
-    return order
+    return _ensure_balance(order)
 
 @router.post("/{order_id}/subscribe")
 def subscribe_to_order_notifications(
