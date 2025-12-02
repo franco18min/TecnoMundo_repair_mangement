@@ -73,7 +73,7 @@ def complete_order(
     current_user: User = Depends(deps.get_current_active_technician_or_admin)
 ):
     updated_order = crud_repair_order.complete_technician_work(
-        db=db, order_id=order_id, order_update=order_update, background_tasks=background_tasks
+        db=db, order_id=order_id, order_update=order_update, background_tasks=background_tasks, user_id=current_user.id
     )
     if updated_order is None:
         raise HTTPException(status_code=404, detail="Orden no encontrada para completar.")

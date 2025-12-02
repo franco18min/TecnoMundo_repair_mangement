@@ -9,6 +9,7 @@ import { Loader } from 'lucide-react';
 import { initializeUserApi } from '../api/userApi';
 import { initializeRolesApi } from '../api/rolesApi';
 import { initializeBranchApi } from '../api/branchApi';
+import { initializeRecordsApi } from '../api/recordsApi';
 // --- FIN DE LA MODIFICACIÓN ---
 
 const AuthContext = createContext(null);
@@ -39,6 +40,7 @@ export const AuthProvider = ({ children }) => {
         initializeUserApi(getAccessToken, logout);
         initializeRolesApi(getAccessToken, logout);
         initializeBranchApi(getAccessToken, logout);
+        initializeRecordsApi(getAccessToken, logout);
     }, [getAccessToken, logout]);
     // --- FIN DE LA MODIFICACIÓN ---
 

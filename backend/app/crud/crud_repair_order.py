@@ -8,6 +8,8 @@ import logging # <--- Añadido para diagnóstico
 
 from app.core.websockets import manager
 from app.crud import crud_customer, crud_notification, crud_user
+from app.crud import crud_record
+from app.core.logger import structured_logger, ErrorCategory, ErrorSeverity
 from app.models.repair_order import RepairOrder as RepairOrderModel
 from app.models.device_condition import DeviceCondition as DeviceConditionModel
 from app.models.user import User as UserModel
@@ -189,6 +191,10 @@ def create_repair_order(db: Session, order: RepairOrderCreate, background_tasks:
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
+    try:
+        crud_record.log_order_event(db, event_type="ORDER_CREATED", order_id=db_order.id, actor_user_id=user_id, origin_branch_id=creating_user.branch_id)
+    except Exception as e:
+        structured_logger.log_error(e, ErrorCategory.DATABASE, ErrorSeverity.MEDIUM, {"event": "ORDER_CREATED", "order_id": db_order.id, "actor_user_id": user_id})
     if checklist_data:
         for item_data in checklist_data:
             db_condition = DeviceConditionModel(**item_data.dict(), order_id=db_order.id)
@@ -228,7 +234,7 @@ def update_order_diagnosis(db: Session, order_id: int, diagnosis_update, backgro
     return db_order
 
 def complete_technician_work(db: Session, order_id: int, order_update: RepairOrderUpdate,
-                             background_tasks: BackgroundTasks):
+                             background_tasks: BackgroundTasks, user_id: int):
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
     prev_status_id = db_order.status_id
@@ -246,6 +252,11 @@ def complete_technician_work(db: Session, order_id: int, order_update: RepairOrd
     db_order.updated_at = func.now()
     db.commit()
     db.refresh(db_order)
+    try:
+        new_status = db_order.status.status_name if db_order.status else str(db_order.status_id)
+        crud_record.log_order_event(db, event_type="STATUS_CHANGED", order_id=db_order.id, actor_user_id=user_id, prev_status_id=prev_status_id, new_status_id=db_order.status_id, description=f"Cambio de estado a {new_status}")
+    except Exception:
+        pass
     background_tasks.add_task(send_order_updated_notification, order_id=db_order.id)
     # Email al cliente por cambio de estado
     from app.services.email_transaccional import EmailTransactionalService
@@ -292,6 +303,12 @@ def update_order_details(db: Session, order_id: int, order_update: RepairOrderDe
     db_order.updated_at = func.now()
     db.commit()
     db.refresh(db_order)
+    try:
+        if prev_status_id != db_order.status_id:
+            new_status = db_order.status.status_name if db_order.status else str(db_order.status_id)
+            crud_record.log_order_event(db, event_type="STATUS_CHANGED", order_id=db_order.id, actor_user_id=user_id, prev_status_id=prev_status_id, new_status_id=db_order.status_id, description=f"Cambio de estado a {new_status}")
+    except Exception:
+        pass
     background_tasks.add_task(send_order_details_updated_notification, order_id=db_order.id, actor_user_id=user_id)
     # Email al cliente si cambió el estado
     from app.services.email_transaccional import EmailTransactionalService
@@ -310,6 +327,11 @@ def assign_technician_and_start_process(db: Session, order_id: int, technician_i
         db_order.updated_at = func.now()
         db.commit()
         db.refresh(db_order)
+        try:
+            new_status = db_order.status.status_name if db_order.status else str(db_order.status_id)
+            crud_record.log_order_event(db, event_type="STATUS_CHANGED", order_id=db_order.id, actor_user_id=technician_id, prev_status_id=prev_status_id, new_status_id=db_order.status_id, description=f"Cambio de estado a {new_status}")
+        except Exception:
+            pass
         background_tasks.add_task(send_order_taken_notification, order_id=order_id, technician_id=technician_id)
         # Email al cliente por cambio de estado
         from app.services.email_transaccional import EmailTransactionalService
@@ -342,6 +364,11 @@ def reopen_order(db: Session, order_id: int, background_tasks: BackgroundTasks):
         db_order.repair_notes = f"{db_order.repair_notes or ''}{note_prefix}"
         db.commit()
         db.refresh(db_order)
+        try:
+            new_status = db_order.status.status_name if db_order.status else str(db_order.status_id)
+            crud_record.log_order_event(db, event_type="STATUS_CHANGED", order_id=db_order.id, actor_user_id=None, prev_status_id=prev_status_id, new_status_id=db_order.status_id, description=f"Cambio de estado a {new_status}")
+        except Exception:
+            pass
         background_tasks.add_task(send_order_reopened_notification, order_id=order_id)
         # Email al cliente por cambio de estado
         from app.services.email_transaccional import EmailTransactionalService
@@ -404,6 +431,11 @@ def mark_as_delivered(db: Session, order_id: int, background_tasks: BackgroundTa
     db_order.updated_at = func.now()
     db.commit()
     db.refresh(db_order)
+    try:
+        new_status = db_order.status.status_name if db_order.status else str(db_order.status_id)
+        crud_record.log_order_event(db, event_type="STATUS_CHANGED", order_id=db_order.id, actor_user_id=user_id, prev_status_id=prev_status_id, new_status_id=db_order.status_id, description=f"Cambio de estado a {new_status}")
+    except Exception:
+        pass
 
     background_tasks.add_task(send_order_delivered_notification, order_id=db_order.id, actor_user_id=user_id)
     # Email al cliente por cambio de estado
@@ -509,6 +541,25 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
     
     db.commit()
     db.refresh(db_order)
+    try:
+        from app.crud import crud_branch
+        origin_branch = crud_branch.get_branch(db, branch_id=origin_branch_id)
+        target_branch = crud_branch.get_branch(db, branch_id=target_branch_id)
+        origin_name = origin_branch.branch_name if origin_branch else str(origin_branch_id)
+        target_name = target_branch.branch_name if target_branch else str(target_branch_id)
+        crud_record.log_order_event(
+            db,
+            event_type="TRANSFERRED",
+            order_id=db_order.id,
+            actor_user_id=user_id,
+            origin_branch_id=origin_branch_id,
+            target_branch_id=target_branch_id,
+            prev_status_id=prev_status_id,
+            new_status_id=db_order.status_id,
+            description=f"Transferencia: {origin_name} → {target_name}"
+        )
+    except Exception:
+        pass
     
     # Enviar evento WebSocket para actualizar la lista en tiempo real
     event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(db_order).dict()}

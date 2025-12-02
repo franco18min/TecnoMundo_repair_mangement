@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Building2, MapPin, Phone, Mail } from 'lucide-react';
+import { X, Building2, MapPin, Phone, Mail, Loader } from 'lucide-react';
 import { FormField } from '../shared/FormField';
 import { useToast } from '../../context/ToastContext';
 import { createBranch, updateBranch } from '../../api/branchApi';
 
 export function BranchModal({ isOpen, onClose, branch, onSave }) {
     const [branchName, setBranchName] = useState('');
+    const [companyName, setCompanyName] = useState('');
+    const [address, setAddress] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const { showToast } = useToast();
@@ -17,10 +21,18 @@ export function BranchModal({ isOpen, onClose, branch, onSave }) {
         if (isOpen) {
             if (isEditing) {
                 setBranchName(branch.branch_name || '');
+                setCompanyName(branch.company_name || '');
+                setAddress(branch.address || '');
+                setPhone(branch.phone || '');
+                setEmail(branch.email || '');
             } else {
-                setBranchName(''); // Reset for creation
+                setBranchName('');
+                setCompanyName('');
+                setAddress('');
+                setPhone('');
+                setEmail('');
             }
-            setError(''); // Clear previous errors when modal opens
+            setError('');
         }
     }, [branch, isEditing, isOpen]);
 
@@ -30,7 +42,13 @@ export function BranchModal({ isOpen, onClose, branch, onSave }) {
         setError('');
 
         try {
-            const branchData = { branch_name: branchName };
+            const branchData = {
+                branch_name: branchName,
+                company_name: companyName || null,
+                address: address || null,
+                phone: phone || null,
+                email: email || null
+            };
             if (isEditing) {
                 const updatedBranch = await updateBranch(branch.id, branchData);
                 onSave(updatedBranch, 'edit');
@@ -79,7 +97,7 @@ export function BranchModal({ isOpen, onClose, branch, onSave }) {
                             <X size={24} />
                         </motion.button>
                     </div>
-                    <form id="branch-form" onSubmit={handleSubmit} className="p-6">
+                    <form id="branch-form" onSubmit={handleSubmit} className="p-6 space-y-4">
                         <FormField
                             icon={<Building2 size={20}/>}
                             name="branch_name"
@@ -87,6 +105,36 @@ export function BranchModal({ isOpen, onClose, branch, onSave }) {
                             onChange={(e) => setBranchName(e.target.value)}
                             placeholder="Nombre de la sucursal"
                             required
+                        />
+                        <FormField
+                            icon={<Building2 size={20}/>}
+                            name="company_name"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            placeholder="Nombre de la empresa (opcional)"
+                        />
+                        <FormField
+                            icon={<MapPin size={20}/>}
+                            name="address"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Dirección (opcional)"
+                        />
+                        <FormField
+                            icon={<Phone size={20}/>}
+                            name="phone"
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="Teléfono (opcional)"
+                        />
+                        <FormField
+                            icon={<Mail size={20}/>}
+                            name="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Email (opcional)"
                         />
                     </form>
                     <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">

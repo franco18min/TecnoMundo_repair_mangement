@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { LayoutDashboard, Wrench, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, Settings, ListOrdered } from 'lucide-react';
 import { Sidebar, SidebarItem } from '../components/shared/layout/Sidebar';
 import { DashboardHome } from '../components/dashboard/DashboardHome';
 import { OrdersPage } from '../components/orders/OrdersPage';
@@ -11,6 +11,7 @@ import { NotificationToast } from '../components/shared/Notifications/Notificati
 import { usePermissions } from '../hooks/usePermissions';
 import { ClientsPage } from '../components/clients/ClientsPage';
 import { ConfigurationPage } from '../components/config/ConfigurationPage';
+import { RecordsPage } from '../components/records/RecordsPage';
 import { MobileBottomBar } from '../components/shared/layout/MobileBottomBar';
 
 export function DashboardPage({ onLogout }) {
@@ -48,6 +49,8 @@ export function DashboardPage({ onLogout }) {
                 return <OrdersPage onNewOrderClick={() => handleOpenModal()} onViewOrderClick={handleOpenModal} />;
             case 'clients':
                 return <ClientsPage onViewOrderClick={handleOpenModal} />;
+            case 'records':
+                return <RecordsPage />;
             case 'config':
                 return <ConfigurationPage />;
             case 'dashboard':
@@ -67,12 +70,15 @@ export function DashboardPage({ onLogout }) {
                     )}
                     <hr className="my-3 border-gray-200" />
                     {permissions.canAccessConfig && (
-                        <SidebarItem
-                            icon={<Settings size={20} />}
-                            text="Configuración"
-                            active={activePage === 'config'}
-                            onClick={() => setActivePage('config')}
-                        />
+                        <>
+                            <SidebarItem icon={<ListOrdered size={20} />} text="Registros" active={activePage === 'records'} onClick={() => setActivePage('records')} />
+                            <SidebarItem
+                                icon={<Settings size={20} />}
+                                text="Configuración"
+                                active={activePage === 'config'}
+                                onClick={() => setActivePage('config')}
+                            />
+                        </>
                     )}
                 </Sidebar>
             </div>

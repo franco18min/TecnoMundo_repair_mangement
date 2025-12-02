@@ -48,3 +48,4 @@ class RepairOrder(Base):
     # --- INICIO DE LA MODIFICACIÓN ---
     branch = relationship("Branch", back_populates="repair_orders")
     # --- FIN DE LA MODIFICACIÓN ---
+    records = relationship("Record", back_populates="order", cascade="all, delete-orphan")

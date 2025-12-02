@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye } from 'lucide-react';
+import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search } from 'lucide-react';
 import { deleteRepairOrder } from '../../api/repairOrdersApi';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
@@ -225,45 +225,49 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 </motion.button>
             </motion.div>
 
-            {/* Filtros */}
             <motion.div 
-                className="hidden md:block bg-white p-4 rounded-lg shadow-sm border border-gray-200"
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
+                className="hidden md:block bg-white p-3 rounded-lg shadow-sm border border-gray-200"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
             >
-                <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 items-end"
-                    variants={containerVariants}
-                >
-                    <motion.div className="xl:col-span-1" variants={itemVariants}>
-                        <FilterInput name="id" label="ID Orden" value={filters.id} onChange={handleFilterChange} />
-                    </motion.div>
-                    <motion.div className="xl:col-span-2" variants={itemVariants}>
+                <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Número de orden</label>
+                        <div className="relative">
+                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
+                                name="id"
+                                value={filters.id}
+                                onChange={handleFilterChange}
+                                className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 pl-9 pr-3 text-sm h-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Buscar por N° de orden"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex-1">
                         <FilterInput name="client" label="Cliente" value={filters.client} onChange={handleFilterChange} />
-                    </motion.div>
-                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                    </div>
+                    <div className="w-48">
                         <FilterSelect name="device_type" label="Tipo Disp." value={filters.device_type} onChange={handleFilterChange} options={uniqueDeviceTypes.map(d => ({value: d, text: d}))} />
-                    </motion.div>
-                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                    </div>
+                    <div className="w-48">
                         <FilterSelect name="status" label="Estado" value={filters.status} onChange={handleFilterChange} options={uniqueStatusesOptions} className={selectedStatusClass} />
-                    </motion.div>
-                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                    </div>
+                    <div className="w-48">
                         <FilterSelect name="technician" label="Técnico" value={filters.technician} onChange={handleFilterChange} options={uniqueTechnicians.map(t => ({value: t, text: t}))} />
-                    </motion.div>
-                    <motion.div className="xl:col-span-1" variants={itemVariants}>
+                    </div>
+                    <div className="flex-1">
                         <FilterInput name="parts_used" label="Repuesto" value={filters.parts_used} onChange={handleFilterChange} />
-                    </motion.div>
-                    <motion.button 
-                        onClick={clearFilters} 
-                        className="flex items-center justify-center gap-2 bg-gray-200 text-gray-700 font-semibold py-2 px-3 rounded-lg hover:bg-gray-300 h-10 transition-colors duration-200"
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                    </div>
+                    <button
+                        onClick={clearFilters}
+                        className="ml-auto text-sm text-gray-600 hover:text-gray-900"
+                        title="Limpiar filtros"
                     >
-                        <RotateCcw size={16} /> Limpiar
-                    </motion.button>
-                </motion.div>
+                        Limpiar
+                    </button>
+                </div>
             </motion.div>
 
             {/* Lista móvil (tarjetas) órdenes sin tomar y mis órdenes */}
