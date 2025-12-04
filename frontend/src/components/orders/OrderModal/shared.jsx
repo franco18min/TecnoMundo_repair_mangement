@@ -16,9 +16,9 @@ export const DisplayField = ({ label, value, fullWidth = false, isCurrency = fal
 // Re-exportamos FormField del shared para mantener compatibilidad
 export { FormField };
 
-export const TextAreaField = ({ label, id, ...props }) => (
+export const TextAreaField = ({ label, id, rows = 3, ...props }) => (
     <div>
         <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <textarea id={id} {...props} rows="3" className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <textarea id={id} {...props} rows={rows} className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
     </div>
 );

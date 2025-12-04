@@ -133,7 +133,7 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                     {checklistItems.length > 0 ? checklistItems.map((item, index) => (
                         <motion.div 
                             key={`${item.check_description}-${index}`}
-                            className="bg-gray-50 p-3 rounded-lg border"
+                            className="bg-gray-50 p-3 rounded-lg border overflow-visible"
                             variants={itemVariants}
                             layout
                             whileHover={{ scale: 1.01 }}
@@ -234,13 +234,12 @@ export function ChecklistSection({ mode, permissions, checklistItems, handleAddQ
                                         >
                                             <ThumbsDown size={20} strokeWidth={item.technician_finding === false ? 2.5 : 1.5} />
                                         </motion.button>
-                                        <motion.input 
-                                            type="text" 
+                                        <motion.textarea 
+                                            rows={1}
                                             placeholder="Notas..." 
                                             value={item.technician_notes || ''} 
                                             onChange={(e) => handleChecklistChange(index, 'technician_notes', e.target.value)} 
-                                            className="text-sm border-b focus:outline-none focus:border-indigo-500 flex-1 ml-2 bg-transparent transition-all duration-200"
-                                            whileFocus={{ scale: 1.02 }}
+                                            className="text-sm bg-white border border-indigo-200 rounded-md px-2 py-1 flex-1 ml-2 resize-none overflow-hidden whitespace-pre-wrap break-words transition-all duration-200 min-h-[32px] w-full focus:min-h-[96px] hover:min-h-[96px] focus:w-[calc(100%+2rem)] hover:w-[calc(100%+2rem)] focus:ml-[-1rem] hover:ml-[-1rem] focus:mr-[-1rem] hover:mr-[-1rem] focus:shadow-lg hover:shadow-md relative z-10"
                                         />
                                     </div>
                                 ) : (

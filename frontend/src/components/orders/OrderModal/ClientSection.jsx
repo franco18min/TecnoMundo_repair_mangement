@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DisplayField, FormField } from './shared';
+import { SegmentedControl } from '../../shared/SegmentedControl';
 
 export function ClientSection({ permissions, formData, handleFormChange, clientType, setClientType, clientSearch, setClientSearch, clientSearchResults, isClientSearchFocused, setIsClientSearchFocused, handleClientSelect }) {
     return (
@@ -9,10 +10,16 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
             {permissions.canEditInitialDetails ? (
                 <AnimatePresence mode="wait">
                     <motion.div key={clientType} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                        <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
-                            <button type="button" onClick={() => setClientType('nuevo')} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-200 ${clientType === 'nuevo' ? 'bg-indigo-600 text-white shadow' : 'text-gray-600'}`}>Cliente Nuevo</button>
-                            <button type="button" onClick={() => setClientType('registrado')} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-200 ${clientType === 'registrado' ? 'bg-indigo-600 text-white shadow' : 'text-gray-600'}`}>Cliente Registrado</button>
-                        </div>
+                        <SegmentedControl
+                            value={clientType}
+                            onChange={setClientType}
+                            options={[
+                                { value: 'nuevo', label: 'Cliente Nuevo' },
+                                { value: 'registrado', label: 'Cliente Registrado' }
+                            ]}
+                            className="mb-4"
+                            size="md"
+                        />
                         {clientType === 'registrado' && (
                             <div className="relative">
                                 <FormField label="Buscar Cliente" id="client_search" type="text" placeholder="Buscar por Nombre, Apellido o DNI..." value={clientSearch} onChange={(e) => setClientSearch(e.target.value)} onFocus={() => setIsClientSearchFocused(true)} onBlur={() => setTimeout(() => setIsClientSearchFocused(false), 200)} autoComplete="off" />

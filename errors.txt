@@ -1,63 +1,40 @@
+PS C:\Users\tc\Desktop\TecnoMundo_repair_mang
 
-apiClient.js:29  POST http://localhost:5174/api/v1/users/ 500 (Internal Server Error)
-(anonymous) @ apiClient.js:29
-createUser @ userApi.js:9
-saveUser @ UserConfigSection.jsx:154
-handleSubmit @ UserModal.jsx:59
-callCallback2 @ chunk-SVG7M4VJ.js?v=c8712c11:3678
-invokeGuardedCallbackDev @ chunk-SVG7M4VJ.js?v=c8712c11:3703
-invokeGuardedCallback @ chunk-SVG7M4VJ.js?v=c8712c11:3737
-invokeGuardedCallbackAndCatchFirstError @ chunk-SVG7M4VJ.js?v=c8712c11:3740
-executeDispatch @ chunk-SVG7M4VJ.js?v=c8712c11:7044
-processDispatchQueueItemsInOrder @ chunk-SVG7M4VJ.js?v=c8712c11:7064
-processDispatchQueue @ chunk-SVG7M4VJ.js?v=c8712c11:7073
-dispatchEventsForPlugins @ chunk-SVG7M4VJ.js?v=c8712c11:7081
-(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:7204
-batchedUpdates$1 @ chunk-SVG7M4VJ.js?v=c8712c11:18964
-batchedUpdates @ chunk-SVG7M4VJ.js?v=c8712c11:3583
-dispatchEventForPluginEventSystem @ chunk-SVG7M4VJ.js?v=c8712c11:7203
-dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SVG7M4VJ.js?v=c8712c11:5482
-dispatchEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5476
-dispatchDiscreteEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5453
-main.jsx:22 Error en apiClient: Error: Error interno del servidor
-    at apiClient.js:41:31
-    at async saveUser (UserConfigSection.jsx:154:29)
-console.error @ main.jsx:22
-(anonymous) @ apiClient.js:55
-await in (anonymous)
-createUser @ userApi.js:9
-saveUser @ UserConfigSection.jsx:154
-handleSubmit @ UserModal.jsx:59
-callCallback2 @ chunk-SVG7M4VJ.js?v=c8712c11:3678
-invokeGuardedCallbackDev @ chunk-SVG7M4VJ.js?v=c8712c11:3703
-invokeGuardedCallback @ chunk-SVG7M4VJ.js?v=c8712c11:3737
-invokeGuardedCallbackAndCatchFirstError @ chunk-SVG7M4VJ.js?v=c8712c11:3740
-executeDispatch @ chunk-SVG7M4VJ.js?v=c8712c11:7044
-processDispatchQueueItemsInOrder @ chunk-SVG7M4VJ.js?v=c8712c11:7064
-processDispatchQueue @ chunk-SVG7M4VJ.js?v=c8712c11:7073
-dispatchEventsForPlugins @ chunk-SVG7M4VJ.js?v=c8712c11:7081
-(anonymous) @ chunk-SVG7M4VJ.js?v=c8712c11:7204
-batchedUpdates$1 @ chunk-SVG7M4VJ.js?v=c8712c11:18964
-batchedUpdates @ chunk-SVG7M4VJ.js?v=c8712c11:3583
-dispatchEventForPluginEventSystem @ chunk-SVG7M4VJ.js?v=c8712c11:7203
-dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SVG7M4VJ.js?v=c8712c11:5482
-dispatchEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5476
-dispatchDiscreteEvent @ chunk-SVG7M4VJ.js?v=c8712c11:5453
-
-en la consola del backend me sale esto:
-
-
-
-
-en la consola del backend me sale esto:
-
-
-INFO:     127.0.0.1:54172 - "GET /api/v1/users/?status=all HTTP/1.1" 200 OK
-2025-11-27 18:24:17,146 - app.core.logger - ERROR - [CRITICAL] system: (pg8000.dbapi.IntegrityError) {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
-[SQL: INSERT INTO system."user" (username, password, email, phone_number, is_active, role_id, branch_id) VALUES (%s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::BOOLEAN, %s::INTEGER, %s::INTEGER) RETURNING system."user".id, system."user".created_at]
-[parameters: ('Daniel', 'pbkdf2$G97fumnc4Idj5AjcH+d0UWrn6qJTxnX+cB3tUPAqrl0=$eM0q6o8palbTMOmFEymq2eqQHv1UH1I44DaI7HtOU4M=', 'tecnico@tecnomundo.com.ar', None, True, 2, 1)]
-(Background on this error at: https://sqlalche.me/e/20/gkpj)
-INFO:     127.0.0.1:62413 - "POST /api/v1/users/ HTTP/1.1" 500 Internal Server Error
+PS C:\Users\tc\Desktop\TecnoMundo_repair_mang       cd backend
+PS C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend> venv\Scripts\activate
+(venv) PS C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend> uvicorn main:app --reload --port 9001
+INFO:     Will watch for changes in these directories: ['C:\\Users\\tc\\Desktop\\TecnoMundo_repair_mangement\\backend']
+INFO:     Uvicorn running on http://127.0.0.1:9001 (Press CTRL+C to quit)
+INFO:     Started reloader process [31296] using WatchFiles
+[DB] Using driver: pg8000, url: postgresql+pg8000://postgres.zshbhslyzclpovyngryf:X8fJRji3Yd4PFCLI@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
+[DB] SSL mode: require
+INFO:     Started server process [35224]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60540 - "OPTIONS /api/v1/users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61730 - "OPTIONS /api/v1/users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61730 - "GET /api/v1/users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61730 - "OPTIONS /api/v1/repair-orders/ HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 64318) - "WebSocket /api/v1/notifications/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJGcmFuY28iLCJleHAiOjE3NjQ2MDg5NDB9.DJOTd7m0y_vSICzAG5NVYYAgaDy4rTv4bVtwwPrHfg8" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55729 - "OPTIONS /api/v1/notifications/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51834 - "GET /api/v1/users/me HTTP/1.1" 200 OK
+INFO:     ('127.0.0.1', 59974) - "WebSocket /api/v1/notifications/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJGcmFuY28iLCJleHAiOjE3NjQ2MDg5NDB9.DJOTd7m0y_vSICzAG5NVYYAgaDy4rTv4bVtwwPrHfg8" [accepted]
+INFO:     connection closed
+INFO:     connection open
+INFO:     127.0.0.1:55729 - "GET /api/v1/notifications/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55731 - "GET /api/v1/branches/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57715 - "GET /api/v1/branches/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55729 - "GET /api/v1/notifications/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61730 - "GET /api/v1/repair-orders/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55729 - "GET /api/v1/repair-orders/ HTTP/1.1" 200 OK
+2025-12-01 10:30:41,775 - app.core.logger - ERROR - [CRITICAL] system: (pg8000.dbapi.ProgrammingError) {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
+[SQL: SELECT system.record.id AS system_record_id, system.record.event_type AS system_record_event_type, system.record.order_id AS system_record_order_id, system.record.actor_user_id AS system_record_actor_user_id, system.record.origin_branch_id AS system_record_origin_branch_id, system.record.target_branch_id AS system_record_target_branch_id, system.record.prev_status_id AS system_record_prev_status_id, system.record.new_status_id AS system_record_new_status_id, system.record.description AS system_record_description, system.record.meta AS system_record_meta, system.record.created_at AS system_record_created_at
+FROM system.record ORDER BY system.record.created_at DESC
+ LIMIT %s::INTEGER OFFSET %s::INTEGER]
+[parameters: (100, 0)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+INFO:     127.0.0.1:55209 - "GET /api/v1/records/ HTTP/1.1" 500 Internal Server Error
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 256, in execute
@@ -67,12 +44,12 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 723, in execute_unnamed
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 704, in execute_unnamed
     self.handle_messages(context)
     ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 844, in handle_messages
     raise context.error
-pg8000.exceptions.DatabaseError: {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
+pg8000.exceptions.DatabaseError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
 
 During handling of the above exception, another exception occurred:
 
@@ -89,7 +66,7 @@ Traceback (most recent call last):
     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
     raise cls(msg)
-pg8000.dbapi.IntegrityError: {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
+pg8000.dbapi.ProgrammingError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
 
 The above exception was the direct cause of the following exception:
 
@@ -130,9 +107,7 @@ Traceback (most recent call last):
     raise app_exc
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
     await self.app(scope, receive_or_disconnect, send_no_error)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
-    await self.simple_response(scope, receive, send, request_headers=headers)     
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
     await self.app(scope, receive, send)
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)      
@@ -179,66 +154,49 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
     result = context.run(func, *args)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\users.py", line 65, in create_user
-    user = crud_user.create(db, obj_in=user_in)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\crud\crud_user.py", line 60, in create
-    db.commit()
-    ~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1311, in commit
-    self._prepare_impl()
-    ~~~~~~~~~~~~~~~~~~^^
-  File "<string>", line 2, in _prepare_impl
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1286, in _prepare_impl
-    self.session.flush()
-    ~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
-    self._flush(objects)
-    ~~~~~~~~~~~^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
-    flush_context.execute()
-    ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
-    rec.execute(self)
-    ~~~~~~~~~~~^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
-    util.preloaded.orm_persistence.save_obj(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.mapper,
-        ^^^^^^^^^^^^
-        uow.states_for_mapper_hierarchy(self.mapper, False, False),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        uow,
-        ^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
-    _emit_insert_statements(
-    ~~~~~~~~~~~~~~~~~~~~~~~^
-        base_mapper,
-        ^^^^^^^^^^^^
-    ...<3 lines>...
-        insert,
-        ^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements        
-    result = connection.execute(
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\records.py", line 35, in read_records
+    return crud_record.get_records(db, filters)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\crud\crud_record.py", line 49, in get_records
+    return q.order_by(RecordModel.created_at.desc()).offset(filters.skip).limit(filters.limit).all()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
         statement,
+        ^^^^^^^^^^
         params,
-        execution_options=execution_options,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
     )
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
@@ -287,17 +245,19 @@ Traceback (most recent call last):
     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
     raise cls(msg)
-sqlalchemy.exc.IntegrityError: (pg8000.dbapi.IntegrityError) {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
-[SQL: INSERT INTO system."user" (username, password, email, phone_number, is_active, role_id, branch_id) VALUES (%s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::BOOLEAN, %s::INTEGER, %s::INTEGER) RETURNING system."user".id, system."user".created_at]
-[parameters: ('Daniel', 'pbkdf2$G97fumnc4Idj5AjcH+d0UWrn6qJTxnX+cB3tUPAqrl0=$eM0q6o8palbTMOmFEymq2eqQHv1UH1I44DaI7HtOU4M=', 'tecnico@tecnomundo.com.ar', None, True, 2, 1)]
-(Background on this error at: https://sqlalche.me/e/20/gkpj)
-INFO:     127.0.0.1:54391 - "GET /api/v1/roles/ HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56854 - "GET /api/v1/users/?status=all HTTP/1.1" 200 OK
-2025-11-27 18:29:02,402 - app.core.logger - ERROR - [CRITICAL] system: (pg8000.dbapi.IntegrityError) {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
-[SQL: INSERT INTO system."user" (username, password, email, phone_number, is_active, role_id, branch_id) VALUES (%s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::BOOLEAN, %s::INTEGER, %s::INTEGER) RETURNING system."user".id, system."user".created_at]
-[parameters: ('Daniel', 'pbkdf2$TTw2eJQOud0P5oteU6G+7ig7ggAHVhRlaP9hepy0Pts=$kNM3B2QL4vdOMZusYBmoa638/xVH6lzOigatT03Qexc=', 'tecnico@tecnomundo.com.ar', None, True, 2, 1)]
-(Background on this error at: https://sqlalche.me/e/20/gkpj)
-INFO:     127.0.0.1:62601 - "POST /api/v1/users/ HTTP/1.1" 500 Internal Server Error
+sqlalchemy.exc.ProgrammingError: (pg8000.dbapi.ProgrammingError) {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
+[SQL: SELECT system.record.id AS system_record_id, system.record.event_type AS system_record_event_type, system.record.order_id AS system_record_order_id, system.record.actor_user_id AS system_record_actor_user_id, system.record.origin_branch_id AS system_record_origin_branch_id, system.record.target_branch_id AS system_record_target_branch_id, system.record.prev_status_id AS system_record_prev_status_id, system.record.new_status_id AS system_record_new_status_id, system.record.description AS system_record_description, system.record.meta AS system_record_meta, system.record.created_at AS system_record_created_at
+FROM system.record ORDER BY system.record.created_at DESC
+ LIMIT %s::INTEGER OFFSET %s::INTEGER]
+[parameters: (100, 0)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-12-01 10:30:42,488 - app.core.logger - ERROR - [CRITICAL] system: (pg8000.dbapi.ProgrammingError) {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
+[SQL: SELECT system.record.id AS system_record_id, system.record.event_type AS system_record_event_type, system.record.order_id AS system_record_order_id, system.record.actor_user_id AS system_record_actor_user_id, system.record.origin_branch_id AS system_record_origin_branch_id, system.record.target_branch_id AS system_record_target_branch_id, system.record.prev_status_id AS system_record_prev_status_id, system.record.new_status_id AS system_record_new_status_id, system.record.description AS system_record_description, system.record.meta AS system_record_meta, system.record.created_at AS system_record_created_at
+FROM system.record ORDER BY system.record.created_at DESC
+ LIMIT %s::INTEGER OFFSET %s::INTEGER]
+[parameters: (100, 0)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+INFO:     127.0.0.1:57296 - "GET /api/v1/records/ HTTP/1.1" 500 Internal Server Error
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 256, in execute
@@ -307,12 +267,12 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 723, in execute_unnamed
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 704, in execute_unnamed
     self.handle_messages(context)
     ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\core.py", line 844, in handle_messages
     raise context.error
-pg8000.exceptions.DatabaseError: {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
+pg8000.exceptions.DatabaseError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
 
 During handling of the above exception, another exception occurred:
 
@@ -329,7 +289,7 @@ Traceback (most recent call last):
     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
     raise cls(msg)
-pg8000.dbapi.IntegrityError: {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
+pg8000.dbapi.ProgrammingError: {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
 
 The above exception was the direct cause of the following exception:
 
@@ -370,9 +330,7 @@ Traceback (most recent call last):
     raise app_exc
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
     await self.app(scope, receive_or_disconnect, send_no_error)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
-    await self.simple_response(scope, receive, send, request_headers=headers)     
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
     await self.app(scope, receive, send)
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)      
@@ -419,66 +377,49 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
     result = context.run(func, *args)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\users.py", line 65, in create_user
-    user = crud_user.create(db, obj_in=user_in)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\crud\crud_user.py", line 60, in create
-    db.commit()
-    ~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1311, in commit
-    self._prepare_impl()
-    ~~~~~~~~~~~~~~~~~~^^
-  File "<string>", line 2, in _prepare_impl
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1286, in _prepare_impl
-    self.session.flush()
-    ~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
-    self._flush(objects)
-    ~~~~~~~~~~~^^^^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
-    flush_context.execute()
-    ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
-    rec.execute(self)
-    ~~~~~~~~~~~^^^^^^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
-    util.preloaded.orm_persistence.save_obj(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.mapper,
-        ^^^^^^^^^^^^
-        uow.states_for_mapper_hierarchy(self.mapper, False, False),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        uow,
-        ^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
-    _emit_insert_statements(
-    ~~~~~~~~~~~~~~~~~~~~~~~^
-        base_mapper,
-        ^^^^^^^^^^^^
-    ...<3 lines>...
-        insert,
-        ^^^^^^^
-    )
-    ^
-  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements        
-    result = connection.execute(
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\api\v1\endpoints\records.py", line 35, in read_records
+    return crud_record.get_records(db, filters)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\app\crud\crud_record.py", line 49, in get_records
+    return q.order_by(RecordModel.created_at.desc()).offset(filters.skip).limit(filters.limit).all()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
         statement,
+        ^^^^^^^^^^
         params,
-        execution_options=execution_options,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
     )
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
     return meth(
@@ -527,7 +468,11 @@ Traceback (most recent call last):
     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\tc\Desktop\TecnoMundo_repair_mangement\backend\venv\Lib\site-packages\pg8000\legacy.py", line 283, in execute
     raise cls(msg)
-sqlalchemy.exc.IntegrityError: (pg8000.dbapi.IntegrityError) {'S': 'ERROR', 'V': 'ERROR', 'C': '23505', 'M': 'duplicate key value violates unique constraint "user_email_key"', 'D': 'Key (email)=(tecnico@tecnomundo.com.ar) already exists.', 's': 'system', 't': 'user', 'n': 'user_email_key', 'F': 'nbtinsert.c', 'L': '666', 'R': '_bt_check_unique'}
-[SQL: INSERT INTO system."user" (username, password, email, phone_number, is_active, role_id, branch_id) VALUES (%s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::VARCHAR, %s::BOOLEAN, %s::INTEGER, %s::INTEGER) RETURNING system."user".id, system."user".created_at]
-[parameters: ('Daniel', 'pbkdf2$TTw2eJQOud0P5oteU6G+7ig7ggAHVhRlaP9hepy0Pts=$kNM3B2QL4vdOMZusYBmoa638/xVH6lzOigatT03Qexc=', 'tecnico@tecnomundo.com.ar', None, True, 2, 1)]
-(Background on this error at: https://sqlalche.me/e/20/gkpj)
+sqlalchemy.exc.ProgrammingError: (pg8000.dbapi.ProgrammingError) {'S': 'ERROR', 'V': 'ERROR', 'C': '42703', 'M': 'column record.meta does not exist', 'P': '520', 'F': 'parse_relation.c', 'L': '3716', 'R': 'errorMissingColumn'}
+[SQL: SELECT system.record.id AS system_record_id, system.record.event_type AS system_record_event_type, system.record.order_id AS system_record_order_id, system.record.actor_user_id AS system_record_actor_user_id, system.record.origin_branch_id AS system_record_origin_branch_id, system.record.target_branch_id AS system_record_target_branch_id, system.record.prev_status_id AS system_record_prev_status_id, system.record.new_status_id AS system_record_new_status_id, system.record.description AS system_record_description, system.record.meta AS system_record_meta, system.record.created_at AS system_record_created_at
+FROM system.record ORDER BY system.record.created_at DESC
+ LIMIT %s::INTEGER OFFSET %s::INTEGER]
+[parameters: (100, 0)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+INFO:     127.0.0.1:55208 - "GET /api/v1/users/?status=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57939 - "GET /api/v1/users/?status=all HTTP/1.1" 200 OK

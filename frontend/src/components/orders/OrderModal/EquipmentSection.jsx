@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DisplayField, FormField, TextAreaField } from './shared';
 import { KeyRound, Lock, Package, Store } from 'lucide-react';
+import { SegmentedControl } from '../../shared/SegmentedControl';
 import PatternLock from '../PatternLock'; // RUTA ACTUALIZADA: ahora en carpeta orders
 
 // Variantes de animación
@@ -53,14 +54,14 @@ export function EquipmentSection({ permissions, formData, handleFormChange, devi
             animate="show"
         >
             <motion.h3 
-                className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4"
+                className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-3"
                 variants={itemVariants}
             >
                 Datos del Equipo y Falla
             </motion.h3>
             
             <motion.div 
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3"
                 variants={containerVariants}
             >
                 {/* Campos de Equipo */}
@@ -129,109 +130,84 @@ export function EquipmentSection({ permissions, formData, handleFormChange, devi
                 </motion.div>
 
                 {/* Campos de Falla y Observaciones */}
-                <motion.div className="md:col-span-2" variants={itemVariants}>
-                    {permissions.canEditInitialDetails ? (
-                        <TextAreaField 
-                            label="Descripción del Problema" 
-                            name="problem_description" 
-                            value={formData.problem_description} 
-                            onChange={handleFormChange} 
-                            required 
-                        />
-                    ) : (
-                        <DisplayField 
-                            label="Descripción del Problema" 
-                            value={formData.problem_description} 
-                            fullWidth={true} 
-                        />
-                    )}
-                </motion.div>
-
-                <motion.div className="md:col-span-2" variants={itemVariants}>
-                    {permissions.canEditInitialDetails ? (
-                        <TextAreaField 
-                            label="Observaciones" 
-                            name="observations" 
-                            value={formData.observations} 
-                            onChange={handleFormChange} 
-                        />
-                    ) : (
-                        <DisplayField 
-                            label="Observaciones" 
-                            value={formData.observations} 
-                            fullWidth={true} 
-                        />
-                    )}
+                <motion.div className="xl:col-span-3" variants={itemVariants}>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        <div>
+                            {permissions.canEditInitialDetails ? (
+                                <TextAreaField 
+                                    label="Descripción del Problema" 
+                                    name="problem_description" 
+                                    value={formData.problem_description} 
+                                    onChange={handleFormChange} 
+                                    required 
+                                    rows={3}
+                                />
+                            ) : (
+                                <DisplayField 
+                                    label="Descripción del Problema" 
+                                    value={formData.problem_description} 
+                                />
+                            )}
+                        </div>
+                        <div>
+                            {permissions.canEditInitialDetails ? (
+                                <TextAreaField 
+                                    label="Observaciones" 
+                                    name="observations" 
+                                    value={formData.observations} 
+                                    onChange={handleFormChange} 
+                                    rows={3}
+                                />
+                            ) : (
+                                <DisplayField 
+                                    label="Observaciones" 
+                                    value={formData.observations} 
+                                />
+                            )}
+                        </div>
+                    </div>
                 </motion.div>
 
                 {/* --- SECCIÓN DE REPUESTOS UNIFICADA --- */}
-                <motion.div className="md:col-span-2" variants={itemVariants}>
+                <motion.div className="xl:col-span-2" variants={itemVariants}>
                     {permissions.canEditInitialDetails ? (
                         <div className="flex items-center justify-between gap-4 py-2">
                             <label className="text-sm font-medium text-gray-700">Origen del Repuesto</label>
-                            <div className="flex bg-gray-100 rounded-lg p-1 w-full max-w-xs">
-                                <motion.button 
-                                    type="button" 
-                                    onClick={() => setSparePartStatus('local')} 
-                                    className={`w-1/2 p-2 rounded-md font-semibold flex items-center justify-center gap-2 transition-colors duration-200 ${
-                                        sparePartStatus === 'local' 
-                                            ? 'bg-indigo-600 text-white shadow' 
-                                            : 'text-gray-600'
-                                    }`}
-                                    variants={buttonVariants}
-                                    animate={sparePartStatus === 'local' ? 'active' : 'inactive'}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <Store size={16}/>En Stock
-                                </motion.button>
-                                <motion.button 
-                                    type="button" 
-                                    onClick={() => setSparePartStatus('pedido')} 
-                                    className={`w-1/2 p-2 rounded-md font-semibold flex items-center justify-center gap-2 transition-colors duration-200 ${
-                                        sparePartStatus === 'pedido' 
-                                            ? 'bg-indigo-600 text-white shadow' 
-                                            : 'text-gray-600'
-                                    }`}
-                                    variants={buttonVariants}
-                                    animate={sparePartStatus === 'pedido' ? 'active' : 'inactive'}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <Package size={16}/>Pedido
-                                </motion.button>
-                            </div>
+                            <SegmentedControl
+                                value={sparePartStatus}
+                                onChange={setSparePartStatus}
+                                options={[
+                                    { value: 'local', label: (<span className="flex items-center gap-1.5"><Store size={16}/>En Stock</span>) },
+                                    { value: 'pedido', label: (<span className="flex items-center gap-1.5"><Package size={16}/>Pedido</span>) }
+                                ]}
+                                size="sm"
+                            />
                         </div>
                     ) : (
-                        <div className="flex items-center justify-between py-2">
+                        <div className="flex items-center justify-between gap-4 py-2">
                             <label className="block text-sm font-medium text-gray-500">Estado del Repuesto</label>
-                            <div className="flex bg-gray-100/70 rounded-lg p-1 h-[42px] border border-gray-200 w-full max-w-xs">
-                                <div className={`w-1/2 text-sm rounded-md font-semibold flex items-center justify-center gap-2 ${
-                                    fullOrderData?.status?.status_name !== 'Waiting for parts' 
-                                        ? 'bg-indigo-600 text-white' 
-                                        : 'text-gray-500'
-                                }`}>
-                                    <Store size={16}/>En Stock
-                                </div>
-                                <div className={`w-1/2 text-sm rounded-md font-semibold flex items-center justify-center gap-2 ${
-                                    fullOrderData?.status?.status_name === 'Waiting for parts' 
-                                        ? 'bg-indigo-600 text-white' 
-                                        : 'text-gray-500'
-                                }`}>
-                                    <Package size={16}/>Pedido
-                                </div>
-                            </div>
+                            <SegmentedControl
+                                value={(fullOrderData?.status?.status_name === 'Waiting for parts') ? 'pedido' : 'local'}
+                                onChange={() => {}}
+                                options={[
+                                    { value: 'local', label: (<span className="flex items-center gap-1.5"><Store size={16}/>En Stock</span>) },
+                                    { value: 'pedido', label: (<span className="flex items-center gap-1.5"><Package size={16}/>Pedido</span>) }
+                                ]}
+                                size="sm"
+                                className="opacity-90 pointer-events-none"
+                            />
                         </div>
                     )}
                 </motion.div>
 
-                <motion.div className="md:col-span-2" variants={itemVariants}>
+                <motion.div className="xl:col-span-3" variants={itemVariants}>
                     {permissions.canEditPartsUsed ? (
                         <TextAreaField 
                             label="Repuestos Utilizados" 
                             name="parts_used" 
                             value={formData.parts_used} 
                             onChange={handleFormChange} 
+                            rows={2}
                         />
                     ) : (
                         <DisplayField 
@@ -243,42 +219,20 @@ export function EquipmentSection({ permissions, formData, handleFormChange, devi
                 </motion.div>
 
                 {/* --- SECCIÓN DE DESBLOQUEO --- */}
-                <motion.div className="md:col-span-2" variants={itemVariants}>
+                <motion.div className="xl:col-span-3" variants={itemVariants}>
                     {permissions.canEditInitialDetails ? (
                         <>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Método de Desbloqueo</label>
-                            <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
-                                <motion.button 
-                                    type="button" 
-                                    onClick={() => setUnlockMethod('password')} 
-                                    className={`w-1/2 p-2 rounded-md font-semibold flex items-center justify-center gap-2 transition-colors duration-200 ${
-                                        unlockMethod === 'password' 
-                                            ? 'bg-indigo-600 text-white shadow' 
-                                            : 'text-gray-600'
-                                    }`}
-                                    variants={buttonVariants}
-                                    animate={unlockMethod === 'password' ? 'active' : 'inactive'}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <KeyRound size={16}/>Contraseña
-                                </motion.button>
-                                <motion.button 
-                                    type="button" 
-                                    onClick={() => setUnlockMethod('pattern')} 
-                                    className={`w-1/2 p-2 rounded-md font-semibold flex items-center justify-center gap-2 transition-colors duration-200 ${
-                                        unlockMethod === 'pattern' 
-                                            ? 'bg-indigo-600 text-white shadow' 
-                                            : 'text-gray-600'
-                                    }`}
-                                    variants={buttonVariants}
-                                    animate={unlockMethod === 'pattern' ? 'active' : 'inactive'}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <Lock size={16}/>Patrón
-                                </motion.button>
-                            </div>
+                            <SegmentedControl
+                                value={unlockMethod}
+                                onChange={setUnlockMethod}
+                                options={[
+                                    { value: 'password', label: (<span className="flex items-center gap-1.5"><KeyRound size={16}/>Contraseña</span>) },
+                                    { value: 'pattern', label: (<span className="flex items-center gap-1.5"><Lock size={16}/>Patrón</span>) }
+                                ]}
+                                className="mb-4"
+                                size="sm"
+                            />
                             
                             <AnimatePresence mode="wait">
                                 {unlockMethod === 'password' ? (

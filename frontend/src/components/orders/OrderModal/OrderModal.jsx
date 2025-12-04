@@ -316,13 +316,13 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                         transition={{ duration: 0.2 }}
 
                     >
-                        <motion.div 
-                            className="bg-white rounded-xl shadow-2xl w-full max-w-full sm:max-w-3xl max-h-[92vh] flex flex-col" 
-                            initial={{ scale: 0.9, y: -20 }} 
-                            animate={{ scale: 1, y: 0 }} 
-                            exit={{ scale: 0.9, y: 20 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        >
+                    <motion.div 
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-[96vw] sm:max-w-[1200px] h-[96vh] flex flex-col" 
+                        initial={{ scale: 0.9, y: -20 }} 
+                        animate={{ scale: 1, y: 0 }} 
+                        exit={{ scale: 0.9, y: 20 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
                         <div className="p-4 sm:p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xl sm:text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><motion.button 
                                 onClick={() => onClose(false)} 
                                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
@@ -334,12 +334,18 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                             </motion.button></div>
                         {isLoading ? (<div className="flex-1 flex justify-center items-center p-6 sm:p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
                             <>
-                                <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-6 sm:space-y-8">
-                                    <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
-                                    <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
-                                    <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
-                                    <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
-                                    <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} onLoadDefaultQuestions={handleLoadDefaultQuestions} />
+                                <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto">
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                        <div className="space-y-6">
+                                            <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
+                                            <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
+                                            <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} onLoadDefaultQuestions={handleLoadDefaultQuestions} />
+                                        </div>
+                                        <div className="space-y-6">
+                                            <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
+                                            <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
+                                        </div>
+                                    </div>
                                 </form>
                                 <ModalFooter
                                     mode={mode}
