@@ -1,8 +1,6 @@
-// frontend/src/components/orders/OrderModal/OrderModal.jsx
-
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader } from 'lucide-react';
+import { X, Loader, Wrench } from 'lucide-react';
 
 // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
 import {
@@ -21,8 +19,10 @@ import { EquipmentSection } from './EquipmentSection';
 import { CostsSection } from './CostsSection';
 import { DiagnosisSection } from './DiagnosisSection';
 import { ChecklistSection } from './ChecklistSection';
+import { ChecklistModal } from './ChecklistModal';
 import { ModalFooter } from './ModalFooter';
 import { OrderPrinter } from '../tickets/OrderPrinter';
+import { TechPanelDrawer } from './TechPanelDrawer';
 
 
 export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
@@ -54,6 +54,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [selectedClientId, setSelectedClientId] = useState(null);
     const [sparePartStatus, setSparePartStatus] = useState('local');
     const printerRef = useRef();
+    const [isChecklistOpen, setIsChecklistOpen] = useState(false);
+    const [isTechPanelOpen, setIsTechPanelOpen] = useState(false);
 
     const permissions = usePermissions(mode, fullOrderData, currentUser);
     const { showToast } = useToast();
@@ -62,7 +64,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         const loadInitialData = async () => {
             if (!isOpen) return;
             setIsLoading(true); setError(''); setFormData(initialFormData); setFullOrderData(null); setChecklistItems([]);
-            setClientType('nuevo'); setClientSearch(''); setSelectedClientId(null); setUnlockMethod('password'); setMode(orderId ? 'view' : 'create'); setSparePartStatus('local');
+            setClientType('nuevo'); setClientSearch(''); setSelectedClientId(null); setUnlockMethod('password'); setMode(orderId ? 'view' : 'create'); setSparePartStatus('local'); setIsTechPanelOpen(false);
             try {
                 const types = await fetchDeviceTypes();
                 setDeviceTypes(types);
@@ -108,12 +110,12 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         setSelectedClientId(client.id); setClientSearch(`${client.first_name} ${client.last_name}`); setClientSearchResults([]); setIsClientSearchFocused(false);
     };
 
-    const handleFormChange = (e) => setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
+    const handleFormChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     const handlePatternChange = useCallback((pattern) => { setFormData(prev => ({ ...prev, password_or_pattern: pattern })); }, []);
     const handleChecklistChange = (index, field, value) => { const updatedItems = [...checklistItems]; updatedItems[index] = { ...updatedItems[index], [field]: value }; setChecklistItems(updatedItems); };
     const handleAddQuestion = (e) => {
         const question = e.target.value;
-        if (question && !checklistItems.find(item => item.check_description === question)) { setChecklistItems([...checklistItems, { check_description: question, client_answer: null }]); }
+        if (question && !checklistItems.find(item => item.check_description === question)) { setChecklistItems([{ check_description: question, client_answer: null }, ...checklistItems]); }
         e.target.value = '';
     };
     const handleRemoveQuestion = (questionToRemove) => setChecklistItems(checklistItems.filter(item => item.check_description !== questionToRemove));
@@ -127,13 +129,13 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 technician_finding: null,
                 technician_notes: null
             }));
-            
+
             // Evitar duplicados - solo agregar preguntas que no existan ya
             const existingQuestions = checklistItems.map(item => item.check_description);
             const uniqueNewItems = newChecklistItems.filter(
                 newItem => !existingQuestions.includes(newItem.check_description)
             );
-            
+
             if (uniqueNewItems.length > 0) {
                 setChecklistItems([...checklistItems, ...uniqueNewItems]);
                 showToast(`${uniqueNewItems.length} preguntas predeterminadas cargadas`, 'success');
@@ -276,8 +278,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 showToast('Orden modificada con éxito', 'success');
                 onClose(true);
             } catch (err) {
-                 setError(err.message || "No se pudo modificar la orden.");
-                 showToast(err.message || "No se pudo modificar la orden", 'error');
+                setError(err.message || "No se pudo modificar la orden.");
+                showToast(err.message || "No se pudo modificar la orden", 'error');
             } finally {
                 setIsSubmitting(false);
             }
@@ -308,62 +310,109 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div 
-                        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 sm:p-6" 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
+                    <motion.div
+                        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 sm:p-6"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
 
                     >
-                    <motion.div 
-                        className="bg-white rounded-xl shadow-2xl w-full max-w-[96vw] sm:max-w-[1200px] h-[96vh] flex flex-col" 
-                        initial={{ scale: 0.9, y: -20 }} 
-                        animate={{ scale: 1, y: 0 }} 
-                        exit={{ scale: 0.9, y: 20 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    >
-                        <div className="p-4 sm:p-6 border-b flex justify-between items-center"><AnimatePresence mode="wait"><motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xl sm:text-2xl font-bold text-gray-800">{mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}`: `Detalles de la Orden #${orderId}`)}</motion.h2></AnimatePresence><motion.button 
-                                onClick={() => onClose(false)} 
-                                className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
-                                whileHover={{ scale: 1.1, rotate: 90 }}
-                                whileTap={{ scale: 0.9 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                            >
-                                <X size={24} />
-                            </motion.button></div>
-                        {isLoading ? (<div className="flex-1 flex justify-center items-center p-6 sm:p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
-                            <>
-                                <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto">
-                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                                        <div className="space-y-6">
-                                            <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
-                                            <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
-                                            <ChecklistSection permissions={permissions} checklistItems={checklistItems} handleAddQuestion={handleAddQuestion} handleRemoveQuestion={handleRemoveQuestion} handleChecklistChange={handleChecklistChange} onLoadDefaultQuestions={handleLoadDefaultQuestions} />
+                        <motion.div
+                            className="bg-white rounded-xl shadow-2xl w-full max-w-[96vw] sm:max-w-[1200px] h-[96vh] flex flex-col relative overflow-hidden"
+                            initial={{ scale: 0.9, y: -20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        >
+                            <div className="p-4 sm:p-6 border-b flex justify-between items-center bg-white z-10">
+                                <AnimatePresence mode="wait">
+                                    <motion.h2 key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xl sm:text-2xl font-bold text-gray-800">
+                                        {mode === 'create' ? 'Crear Nueva Orden' : (mode === 'edit' ? `Modificando Orden #${orderId}` : `Detalles de la Orden #${orderId}`)}
+                                    </motion.h2>
+                                </AnimatePresence>
+                                <div className="flex items-center gap-2">
+                                    {mode !== 'create' && (
+                                        <motion.button
+                                            type="button"
+                                            onClick={() => setIsTechPanelOpen(true)}
+                                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium text-sm"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <Wrench size={16} />
+                                            Panel Técnico
+                                        </motion.button>
+                                    )}
+                                    <motion.button
+                                        onClick={() => onClose(false)}
+                                        className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
+                                        whileHover={{ scale: 1.1, rotate: 90 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                    >
+                                        <X size={24} />
+                                    </motion.button>
+                                </div>
+                            </div>
+                            {isLoading ? (<div className="flex-1 flex justify-center items-center p-6 sm:p-8"><Loader className="animate-spin text-indigo-600" size={48} /></div>) : (
+                                <>
+                                    <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scrollbar">
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                            <div className="space-y-6">
+                                                <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
+                                                <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
+                                                <div className="bg-white border rounded-lg p-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <h3 className="text-lg font-semibold text-indigo-700">Checklist de Recepción</h3>
+                                                        <motion.button
+                                                            type="button"
+                                                            onClick={() => setIsChecklistOpen(true)}
+                                                            className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700"
+                                                            whileHover={{ scale: 1.05 }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                        >
+                                                            Abrir Checklist
+                                                        </motion.button>
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 mt-2">Ítems: {checklistItems.length}</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-6">
+                                                <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
+                                            </div>
                                         </div>
-                                        <div className="space-y-6">
-                                            <EquipmentSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} deviceTypes={deviceTypes} sparePartStatus={sparePartStatus} setSparePartStatus={setSparePartStatus} unlockMethod={unlockMethod} setUnlockMethod={setUnlockMethod} handlePatternChange={handlePatternChange} isPatternValue={isPatternValue} fullOrderData={fullOrderData} />
-                                            <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
-                                        </div>
-                                    </div>
-                                </form>
-                                <ModalFooter
-                                    mode={mode}
-                                    permissions={permissions}
-                                    onClose={onClose}
-                                    isSubmitting={isSubmitting}
-                                    error={error}
-                                    setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
-                                    setIsReopenConfirmOpen={setIsReopenConfirmOpen}
-                                    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
-                                    setIsDeliverConfirmModalOpen={setIsDeliverConfirmModalOpen}
-                                    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
-                                    handlePrint={handleDirectPrint}
-                                    setMode={setMode}
-                                    currentUser={currentUser}
-                                />
-                            </>
-                        )}
+                                    </form>
+
+                                    {/* Tech Panel Drawer */}
+                                    <TechPanelDrawer
+                                        isOpen={isTechPanelOpen}
+                                        onClose={() => setIsTechPanelOpen(false)}
+                                    >
+                                        <DiagnosisSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} orderId={orderId} />
+                                    </TechPanelDrawer>
+
+                                    <ModalFooter
+                                        mode={mode}
+                                        permissions={permissions}
+                                        onClose={onClose}
+                                        isSubmitting={isSubmitting}
+                                        error={error}
+                                        setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
+                                        setIsReopenConfirmOpen={setIsReopenConfirmOpen}
+                                        // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
+                                        setIsDeliverConfirmModalOpen={setIsDeliverConfirmModalOpen}
+                                        // --- FIN DE LA NUEVA FUNCIONALIDAD ---
+                                        handlePrint={handleDirectPrint}
+                                        setMode={setMode}
+                                        currentUser={currentUser}
+                                    />
+
+                                    {/* Floating Tech Panel Button removed */}
+
+
+                                </>
+                            )}
                         </motion.div>
                     </motion.div>
                 )}
@@ -375,6 +424,16 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             {/* --- INICIO DE LA NUEVA FUNCIONALIDAD --- */}
             <ConfirmationModal isOpen={isDeliverConfirmModalOpen} onClose={() => setIsDeliverConfirmModalOpen(false)} onConfirm={handleDeliverOrder} title="Confirmar Entrega" message={`¿Confirmas que has entregado el equipo asociado a la orden #${orderId} al cliente?`} confirmText="Sí, Entregar" />
             {/* --- FIN DE LA NUEVA FUNCIONALIDAD --- */}
+            <ChecklistModal
+                isOpen={isChecklistOpen}
+                onClose={() => setIsChecklistOpen(false)}
+                permissions={permissions}
+                checklistItems={checklistItems}
+                handleAddQuestion={handleAddQuestion}
+                handleRemoveQuestion={handleRemoveQuestion}
+                handleChecklistChange={handleChecklistChange}
+                onLoadDefaultQuestions={handleLoadDefaultQuestions}
+            />
         </>
     );
 }

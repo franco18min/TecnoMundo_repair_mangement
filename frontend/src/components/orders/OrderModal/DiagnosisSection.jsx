@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { DisplayField, TextAreaField } from './shared';
 import { PhotoBoard } from './PhotoBoard/index.js';
-import { 
-    getRepairOrderPhotos, 
-    uploadRepairOrderPhoto, 
-    updateRepairOrderPhoto, 
-    deleteRepairOrderPhoto 
+import {
+    getRepairOrderPhotos,
+    uploadRepairOrderPhoto,
+    updateRepairOrderPhoto,
+    deleteRepairOrderPhoto
 } from '../../../api/repairOrderPhotosApi';
 import { updateOrderDiagnosis } from '../../../api/repairOrdersApi';
 
@@ -24,8 +24,8 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { 
-        opacity: 1, 
+    show: {
+        opacity: 1,
         y: 0,
         transition: {
             type: "spring",
@@ -52,7 +52,7 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
 
     const loadPhotos = async () => {
         if (!orderId) return;
-        
+
         setIsLoadingPhotos(true);
         try {
             const photosData = await getRepairOrderPhotos(orderId);
@@ -69,12 +69,12 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
         console.log('🔍 orderId:', orderId, 'type:', typeof orderId);
         console.log('🔍 file:', file.name, file.size, file.type);
         console.log('🔍 note:', note);
-        
+
         try {
             const newPhoto = await uploadRepairOrderPhoto(orderId, file, note);
             console.log('✅ Photo uploaded successfully:', newPhoto);
             setPhotos(prev => [...prev, newPhoto]);
-            
+
             return newPhoto; // Retornar la foto para que PhotoBoard pueda manejarla
         } catch (error) {
             console.error('❌ Error uploading photo:', error);
@@ -85,7 +85,7 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
     const handleUpdatePhoto = async (photoId, note) => {
         try {
             await updateRepairOrderPhoto(photoId, note);
-            setPhotos(prev => prev.map(photo => 
+            setPhotos(prev => prev.map(photo =>
                 photo.id === photoId ? { ...photo, note } : photo
             ));
         } catch (error) {
@@ -104,9 +104,9 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
 
     const handleUpdatePhotoAnnotations = async (photoId, annotations) => {
         // Actualizar el estado local inmediatamente después del guardado exitoso
-        setPhotos(prev => prev.map(photo => 
-            photo.id === photoId ? { 
-                ...photo, 
+        setPhotos(prev => prev.map(photo =>
+            photo.id === photoId ? {
+                ...photo,
                 markers: annotations.markers || [],
                 drawings: annotations.drawings || []
             } : photo
@@ -116,7 +116,7 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
     // Función para guardar automáticamente los campos de diagnóstico
     const saveDiagnosisData = useCallback(async (diagnosisData) => {
         if (!orderId || isSavingDiagnosis) return;
-        
+
         setIsSavingDiagnosis(true);
         try {
             await updateOrderDiagnosis(orderId, diagnosisData);
@@ -132,19 +132,19 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
     const handleDiagnosisChange = useCallback((name, value) => {
         // Actualizar el formData inmediatamente para la UI
         handleFormChange({ target: { name, value } });
-        
+
         // Limpiar timeout anterior
         if (saveTimeout) {
             clearTimeout(saveTimeout);
         }
-        
+
         // Configurar nuevo timeout para guardar después de 2 segundos
         const newTimeout = setTimeout(() => {
             const diagnosisData = {};
             diagnosisData[name] = value;
             saveDiagnosisData(diagnosisData);
         }, 2000);
-        
+
         setSaveTimeout(newTimeout);
     }, [handleFormChange, saveTimeout, saveDiagnosisData]);
 
@@ -163,14 +163,14 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
             initial="hidden"
             animate="show"
         >
-            <motion.h3 
+            <motion.h3
                 className="text-lg font-semibold text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-4"
                 variants={itemVariants}
             >
                 Diagnóstico y Reparación
             </motion.h3>
-            
-            <motion.div 
+
+            <motion.div
                 className="space-y-6"
                 variants={itemVariants}
             >
@@ -179,11 +179,11 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
                     {permissions.canEditDiagnosisPanel ? (
                         <>
                             <div className="relative">
-                                <TextAreaField 
-                                    label="Diagnóstico del Técnico" 
-                                    name="technician_diagnosis" 
-                                    value={formData.technician_diagnosis} 
-                                    onChange={(e) => handleDiagnosisChange('technician_diagnosis', e.target.value)} 
+                                <TextAreaField
+                                    label="Diagnóstico del Técnico"
+                                    name="technician_diagnosis"
+                                    value={formData.technician_diagnosis}
+                                    onChange={(e) => handleDiagnosisChange('technician_diagnosis', e.target.value)}
                                 />
                                 {isSavingDiagnosis && (
                                     <div className="absolute top-2 right-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
@@ -192,11 +192,11 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
                                 )}
                             </div>
                             <div className="relative">
-                                <TextAreaField 
-                                    label="Notas de Reparación" 
-                                    name="repair_notes" 
-                                    value={formData.repair_notes} 
-                                    onChange={(e) => handleDiagnosisChange('repair_notes', e.target.value)} 
+                                <TextAreaField
+                                    label="Notas de Reparación"
+                                    name="repair_notes"
+                                    value={formData.repair_notes}
+                                    onChange={(e) => handleDiagnosisChange('repair_notes', e.target.value)}
                                 />
                                 {isSavingDiagnosis && (
                                     <div className="absolute top-2 right-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
@@ -207,8 +207,8 @@ export function DiagnosisSection({ mode, permissions, formData, handleFormChange
                         </>
                     ) : (
                         <>
-                            <DisplayField label="Diagnóstico del Técnico" value={formData.technician_diagnosis} fullWidth={true}/>
-                            <DisplayField label="Notas de Reparación" value={formData.repair_notes} fullWidth={true}/>
+                            <DisplayField label="Diagnóstico del Técnico" value={formData.technician_diagnosis} fullWidth={true} />
+                            <DisplayField label="Notas de Reparación" value={formData.repair_notes} fullWidth={true} />
                         </>
                     )}
                 </div>
