@@ -4,6 +4,8 @@ import { BranchConfigSection } from './BranchConfigSection';
 import { UserConfigSection } from './UserConfigSection';
 import { OrderTransferSection } from './OrderTransferSection';
 import { TicketConfigSection } from './TicketConfigSection';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useAuth } from '../../context/AuthContext';
 
 const TabButton = ({ label, isActive, onClick }) => (
     <button
@@ -19,7 +21,13 @@ const TabButton = ({ label, isActive, onClick }) => (
 );
 
 export const ConfigurationPage = () => {
-    const [activeTab, setActiveTab] = useState('users'); // 'users', 'branches', 'orders', 'tickets'
+    const { currentUser } = useAuth();
+    const role = (currentUser?.role?.role_name || '').toLowerCase();
+    const isReceptionist = ['receptionist', 'recepcionist', 'recepcionista'].includes(role);
+    
+    // Si es recepcionista, la pestaña por defecto debe ser 'orders'.
+    // Si es admin, puede ser 'users'.
+    const [activeTab, setActiveTab] = useState(isReceptionist ? 'orders' : 'users'); 
 
     return (
         <motion.div
@@ -32,40 +40,46 @@ export const ConfigurationPage = () => {
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="px-4 py-3 border-b border-gray-200">
                     <nav className="flex space-x-2" aria-label="Tabs">
-                        <TabButton
-                            label="Usuarios"
-                            isActive={activeTab === 'users'}
-                            onClick={() => setActiveTab('users')}
-                        />
-                        <TabButton
-                            label="Sucursales"
-                            isActive={activeTab === 'branches'}
-                            onClick={() => setActiveTab('branches')}
-                        />
+                        {!isReceptionist && (
+                            <>
+                                <TabButton
+                                    label="Usuarios"
+                                    isActive={activeTab === 'users'}
+                                    onClick={() => setActiveTab('users')}
+                                />
+                                <TabButton
+                                    label="Sucursales"
+                                    isActive={activeTab === 'branches'}
+                                    onClick={() => setActiveTab('branches')}
+                                />
+                            </>
+                        )}
                         <TabButton
                             label="Órdenes"
                             isActive={activeTab === 'orders'}
                             onClick={() => setActiveTab('orders')}
                         />
-                        <TabButton
-                            label="Tickets"
-                            isActive={activeTab === 'tickets'}
-                            onClick={() => setActiveTab('tickets')}
-                        />
+                        {!isReceptionist && (
+                            <TabButton
+                                label="Tickets"
+                                isActive={activeTab === 'tickets'}
+                                onClick={() => setActiveTab('tickets')}
+                            />
+                        )}
                     </nav>
                 </div>
 
                 <div className="p-6">
-                    {activeTab === 'users' && (
+                    {activeTab === 'users' && !isReceptionist && (
                         <UserConfigSection />
                     )}
-                    {activeTab === 'branches' && (
+                    {activeTab === 'branches' && !isReceptionist && (
                         <BranchConfigSection />
                     )}
                     {activeTab === 'orders' && (
                         <OrderTransferSection />
                     )}
-                    {activeTab === 'tickets' && (
+                    {activeTab === 'tickets' && !isReceptionist && (
                         <TicketConfigSection />
                     )}
                 </div>

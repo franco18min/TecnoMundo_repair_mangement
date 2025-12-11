@@ -510,11 +510,20 @@ def transfer_order(db: Session, order_id: int, target_branch_id: int, background
     """
     Transfiere una orden de reparación a otra sucursal.
     Si la orden está en proceso (status_id=2), se resetea el técnico y se pone en pendiente (status_id=1).
+    Valida que el usuario tenga permiso para transferir la orden desde su sucursal actual si es recepcionista.
     """
     # Verificar que la orden existe
     db_order = get_repair_order(db, order_id=order_id)
     if not db_order:
         raise ValueError("Orden no encontrada.")
+    
+    # Obtener el usuario actor para validar permisos adicionales
+    actor_user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    
+    # Si es recepcionista, validar que la orden pertenezca a su sucursal
+    if actor_user and actor_user.role.role_name == "Receptionist":
+        if actor_user.branch_id != db_order.branch_id:
+            raise ValueError("No tienes permiso para transferir órdenes de otras sucursales.")
     
     # Guardar la sucursal origen antes de actualizar
     origin_branch_id = db_order.branch_id

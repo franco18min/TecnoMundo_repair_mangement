@@ -119,5 +119,9 @@ secrets/
 backend/create_user.py
 orchestrator
 .trae/rules
+.trae/documents/
 health_20251114_202922.txt
 docs
+
+# Global ignores
+**/__pycache__/

@@ -153,12 +153,12 @@ def transfer_order(
     transfer_data: schemas_repair_order.RepairOrderTransfer,
     background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_admin)
+    current_user: User = Depends(deps.get_current_active_admin_or_receptionist)
 ):
     """
     Transfiere una orden de reparación a otra sucursal.
-    Solo accesible para Administradores.
-    Si la orden está en proceso, se resetea el técnico y se pone en estado pendiente.
+    Accesible para Administradores y Recepcionistas.
+    Si es recepcionista, solo puede transferir órdenes de su propia sucursal.
     """
     try:
         transferred_order = crud_repair_order.transfer_order(

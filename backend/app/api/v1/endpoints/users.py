@@ -25,7 +25,7 @@ def read_users(
     skip: int = 0,
     limit: int = 100,
     status: str = 'all',
-    current_user: User = Depends(deps.get_current_active_admin),
+    current_user: User = Depends(deps.get_current_active_user),
 ):
     """
     Recupera una lista de usuarios.

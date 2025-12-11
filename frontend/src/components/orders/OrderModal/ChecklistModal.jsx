@@ -10,9 +10,9 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: -16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 30 } },
-  exit: { opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.15 } }
+  hidden: { opacity: 0, y: -24 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+  exit: { opacity: 0, y: -20, scale: 0.95 }
 };
 
 const buttonVariants = {
@@ -124,7 +124,7 @@ export function ChecklistModal({
                 </motion.div>
               )}
 
-              <motion.div variants={containerVariants} className="space-y-3" layout transition={{ layout: { type: 'spring', stiffness: 260, damping: 30 } }}>
+              <motion.div variants={containerVariants} className="space-y-3" layout>
                 <AnimatePresence mode="popLayout">
                   {checklistItems.length > 0 ? (
                     checklistItems.map((item, index) => (
@@ -133,7 +133,7 @@ export function ChecklistModal({
                         className="bg-gray-50 p-3 rounded-lg border"
                         variants={itemVariants}
                         layout
-                        transition={{ layout: { type: 'spring', stiffness: 280, damping: 28 } }}
+                        transition={{ layout: { type: 'spring', stiffness: 400, damping: 30 } }}
                         whileHover={{ scale: 1.01 }}
                         exit="exit"
                       >
@@ -249,7 +249,7 @@ export function ChecklistModal({
                   )}
                 </AnimatePresence>
 
-
+                
               </motion.div>
             </div>
 

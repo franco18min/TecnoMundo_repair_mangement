@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/", response_model=List[RecordSchema])
 def read_records(
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_admin),
+    current_user: User = Depends(deps.get_current_active_user),
     type: Optional[str] = None,
     user_id: Optional[int] = None,
     branch_id: Optional[int] = None,
