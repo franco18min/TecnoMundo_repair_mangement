@@ -15,8 +15,9 @@ export const usePermissions = (mode, order = null) => {
         const isReceptionist = ['receptionist', 'recepcionist', 'recepcionista'].includes(raw);
         const isTechnician = ['technical', 'technician', 'tecnico'].includes(raw);
 
-        const canAccessConfig = isAdmin;
+        const canAccessConfig = isAdmin || isReceptionist;
         const canSwitchBranch = isAdmin || isReceptionist || isTechnician;
+        const canViewRecords = isAdmin || isReceptionist || isTechnician;
 
         const canCreateOrders = isAdmin || isReceptionist;
         const canViewClients = isAdmin || isReceptionist;
@@ -26,7 +27,7 @@ export const usePermissions = (mode, order = null) => {
         const canEditCosts = isAdmin || isReceptionist;
 
         if (!mode) {
-            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig, canSwitchBranch };
+            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig, canSwitchBranch, canViewRecords };
         }
 
         if (mode === 'create') {
@@ -44,12 +45,13 @@ export const usePermissions = (mode, order = null) => {
                 canModify: false,
                 canViewClients: canViewClients,
                 canAccessConfig: canAccessConfig,
-                canDeliverOrder: false, // No se puede entregar en modo creación
+                canViewRecords: canViewRecords,
+                canDeliverOrder: false,
                 canSwitchBranch: canSwitchBranch,
             };
         }
 
-        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients, canAccessConfig, canSwitchBranch };
+        if (!order) return { canCreateOrders, canDeleteOrders, canPrintOrder, canViewClients, canAccessConfig, canSwitchBranch, canViewRecords };
 
         const isMyOrder = order.technician?.id === currentUser.id;
         const isUnassigned = !order.technician;
@@ -62,34 +64,25 @@ export const usePermissions = (mode, order = null) => {
         const canAdminOrRecepModify = (isAdmin || isReceptionist);
         const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
 
-        // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
         const canDeliverOrder = (isAdmin || isReceptionist) && isCompleted;
-        // --- FIN DE LA NUEVA FUNCIONALIDAD ---
 
-        // Permiso específico para agregar fotos: técnicos solo en órdenes asignadas en estado 'In Process'
-        // También debe considerar el modo del modal
         const canAddPhotos = (mode === 'edit') && ((isAdmin || isReceptionist) || (isTechnician && isMyOrder && isInProcess));
 
-        // Lógica de modificación: Admin/Recepcionista pueden modificar órdenes Pending o In Process
         const canModifyOrder = (isAdmin || isReceptionist) && (isPending || isInProcess);
 
-        // NUEVA FUNCIONALIDAD: Técnicos pueden modificar solo para editar diagnóstico
         const canModifyForDiagnosis = isTechnician && isMyOrder && isInProcess;
 
-        // canEditInitialDetails debe considerar tanto el rol como el modo del modal
-        const canEditInitialDetails = canModifyOrder && mode === 'edit'; // Solo admin/recepcionista en modo edit
+        const canEditInitialDetails = canModifyOrder && mode === 'edit';
 
-        // canEditDiagnosisPanel: Admin/Recepcionista en modo edit O técnicos asignados en modo edit
         const canEditDiagnosisPanel = (mode === 'edit') && (canModifyOrder || canModifyForDiagnosis);
 
-        // canEditCosts y canEditPartsUsed: Solo admin/recepcionista en modo edit
         const canEditCostsInMode = canEditCosts && canModifyOrder && mode === 'edit';
         const canEditPartsUsedInMode = canEditPartsUsed && canModifyOrder && mode === 'edit';
 
         return {
             canEditInitialDetails: canEditInitialDetails,
             canEditDiagnosisPanel: canEditDiagnosisPanel,
-            canAddPhotos: canAddPhotos, // <-- Nuevo permiso específico para fotos
+            canAddPhotos: canAddPhotos,
             canInteractWithTechnicianChecklist: canAdminOrRecepModify || (isTechnician && isMyOrder && isInProcess),
             canEditCosts: canEditCostsInMode,
             canEditPartsUsed: canEditPartsUsedInMode,
@@ -98,13 +91,14 @@ export const usePermissions = (mode, order = null) => {
             canReopenOrder: (isAdmin || isReceptionist) && (isCompleted || isDelivered),
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
-            canModifyOrder: canModifyOrder, // <-- Permiso añadido para el botón "Modificar Orden"
-            canModifyForDiagnosis: canModifyForDiagnosis, // <-- NUEVO: Permiso para técnicos editar diagnóstico
+            canModifyOrder: canModifyOrder,
+            canModifyForDiagnosis: canModifyForDiagnosis,
             canCompleteOrder: canComplete,
             isReadOnly: !canModifyOrder && !canComplete && !canModifyForDiagnosis,
             canViewClients: canViewClients,
             canAccessConfig: canAccessConfig,
-            canDeliverOrder: canDeliverOrder, // <-- Permiso añadido
+            canViewRecords: canViewRecords,
+            canDeliverOrder: canDeliverOrder,
             canSwitchBranch: canSwitchBranch,
         };
     }, [currentUser, mode, order]);

@@ -69,16 +69,16 @@ export function DashboardPage({ onLogout }) {
                         <SidebarItem icon={<Users size={20} />} text="Clientes" active={activePage === 'clients'} onClick={() => setActivePage('clients')} />
                     )}
                     <hr className="my-3 border-gray-200" />
+                    {permissions.canViewRecords && (
+                        <SidebarItem icon={<ListOrdered size={20} />} text="Registros" active={activePage === 'records'} onClick={() => setActivePage('records')} />
+                    )}
                     {permissions.canAccessConfig && (
-                        <>
-                            <SidebarItem icon={<ListOrdered size={20} />} text="Registros" active={activePage === 'records'} onClick={() => setActivePage('records')} />
-                            <SidebarItem
-                                icon={<Settings size={20} />}
-                                text="Configuración"
-                                active={activePage === 'config'}
-                                onClick={() => setActivePage('config')}
-                            />
-                        </>
+                        <SidebarItem
+                            icon={<Settings size={20} />}
+                            text="Configuración"
+                            active={activePage === 'config'}
+                            onClick={() => setActivePage('config')}
+                        />
                     )}
                 </Sidebar>
             </div>

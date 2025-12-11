@@ -30,12 +30,14 @@ export function RecordsPage() {
 
     const branchOptions = useMemo(() => [{ id: '', branch_name: 'Todas' }, ...branches], [branches]);
 
-    useEffect(() => { (async () => {
-        try {
-            const allUsers = await getUsers('all');
-            setUsers(allUsers);
-        } catch (e) {}
-    })(); }, []);
+    useEffect(() => {
+        (async () => {
+            try {
+                const allUsers = await getUsers('all');
+                setUsers(allUsers);
+            } catch (e) { }
+        })();
+    }, []);
 
     const loadRecords = async () => {
         setIsLoading(true);
@@ -65,7 +67,7 @@ export function RecordsPage() {
 
     const handleApplyFilters = () => loadRecords();
 
-    if (!permissions.canAccessConfig) return <div className="p-6">No autorizado.</div>;
+    if (!permissions.canViewRecords) return <div className="p-6">No autorizado.</div>;
 
     return (
         <div>
