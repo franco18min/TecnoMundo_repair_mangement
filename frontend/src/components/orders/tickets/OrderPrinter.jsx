@@ -8,6 +8,8 @@ import { WorkshopTicket } from './WorkshopTicket';
 export const OrderPrinter = forwardRef((props, ref) => {
   const [orderToPrint, setOrderToPrint] = useState(null);
   const [printConfig, setPrintConfig] = useState({ client: true, workshop: true });
+  // Cola de impresión para secuencial
+  const [printQueue, setPrintQueue] = useState([]);
   const componentRef = useRef();
 
   const handlePrint = useReactToPrint({
@@ -15,7 +17,30 @@ export const OrderPrinter = forwardRef((props, ref) => {
       return componentRef.current;
     },
     onAfterPrint: () => {
-        setOrderToPrint(null);
+        // Si hay cola, remover el actual y seguir
+        if (printQueue.length > 0) {
+            const nextQueue = [...printQueue];
+            nextQueue.shift(); // Sacar el que acabamos de imprimir
+            setPrintQueue(nextQueue);
+            
+            // Si queda algo en la cola, configurarlo para imprimir
+            if (nextQueue.length > 0) {
+                const nextType = nextQueue[0];
+                // Pequeño delay para dar tiempo al navegador a cerrar el diálogo anterior
+                setTimeout(() => {
+                    setPrintConfig({ 
+                        client: nextType === 'client', 
+                        workshop: nextType === 'workshop' 
+                    });
+                    // Forzar re-render y trigger de impresión
+                    setOrderToPrint({...orderToPrint, _ts: Date.now()}); 
+                }, 500);
+            } else {
+                setOrderToPrint(null);
+            }
+        } else {
+            setOrderToPrint(null);
+        }
     },
     // Asegurar que los estilos se incluyan en la impresión
     copyStyles: true,
@@ -43,8 +68,17 @@ export const OrderPrinter = forwardRef((props, ref) => {
   // La función expuesta ahora solo se encarga de cambiar el estado.
   useImperativeHandle(ref, () => ({
     triggerPrint(order, config = { client: true, workshop: true }) {
-      setPrintConfig(config);
-      setOrderToPrint(order);
+      // Si se pide imprimir AMBOS, iniciamos el modo secuencial
+      if (config.client && config.workshop) {
+          setPrintQueue(['client', 'workshop']);
+          setPrintConfig({ client: true, workshop: false }); // Empezar con cliente
+          setOrderToPrint(order);
+      } else {
+          // Modo simple (solo uno)
+          setPrintQueue([]);
+          setPrintConfig(config);
+          setOrderToPrint(order);
+      }
     }
   }));
 
@@ -64,21 +98,12 @@ export const OrderPrinter = forwardRef((props, ref) => {
             body {
               margin: 0;
             }
-            .ticket-page-break {
-              display: block;
-              page-break-before: always;
-              break-before: page;
-              page-break-after: always;
-              break-after: page;
-              height: 0px;
-              width: 100%;
-              overflow: hidden;
-            }
             .ticket-wrapper {
               display: block;
               page-break-inside: avoid;
               break-inside: avoid;
               position: relative;
+              padding-bottom: 5mm; /* Margen de seguridad inferior */
             }
           }
         `}</style>
@@ -89,9 +114,7 @@ export const OrderPrinter = forwardRef((props, ref) => {
           </div>
         )}
         
-        {printConfig.client && printConfig.workshop && (
-          <div className="ticket-page-break"></div>
-        )}
+        {/* En modo secuencial nunca imprimimos los dos a la vez, así que quitamos el separador */}
         
         {printConfig.workshop && (
           <div className="ticket-wrapper">
