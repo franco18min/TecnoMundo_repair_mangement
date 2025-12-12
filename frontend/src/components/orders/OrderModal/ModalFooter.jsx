@@ -1,8 +1,8 @@
 // frontend/src/components/OrderModal/ModalFooter.jsx
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Loader, RotateCcw, Printer, Edit, CheckCircle, Wrench, Truck, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader, RotateCcw, Printer, Edit, CheckCircle, Wrench, Truck, Eye, ChevronDown } from 'lucide-react';
 
 export function ModalFooter({
     mode, permissions, onClose, isSubmitting, error,
@@ -11,8 +11,16 @@ export function ModalFooter({
     handlePrint,
     setMode
 }) {
+    const [showPrintMenu, setShowPrintMenu] = useState(false);
+
     const handleModifyClick = () => {
         setMode(mode === 'view' ? 'edit' : 'view');
+    };
+
+    const handlePrintOption = (option) => {
+        setShowPrintMenu(false);
+        if (option === 'all') handlePrint({ client: true, workshop: true });
+        if (option === 'single') handlePrint({ client: true, workshop: false });
     };
 
     return (
@@ -22,9 +30,41 @@ export function ModalFooter({
                 {error && <p className="text-red-500 text-sm self-center">{error}</p>}
 
                 {permissions.canPrintOrder && (mode === 'view' || mode === 'edit') && (
-                    <motion.button type="button" onClick={handlePrint} className="flex items-center gap-2 bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-700" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Printer size={18} /> Imprimir
-                    </motion.button>
+                    <div className="relative">
+                        <motion.button 
+                            type="button" 
+                            onClick={() => setShowPrintMenu(!showPrintMenu)} 
+                            className="flex items-center gap-2 bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-700" 
+                            whileHover={{ scale: 1.05 }} 
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <Printer size={18} /> Imprimir <ChevronDown size={14} />
+                        </motion.button>
+                        
+                        <AnimatePresence>
+                            {showPrintMenu && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                                >
+                                    <button 
+                                        onClick={() => handlePrintOption('all')}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 flex items-center gap-2"
+                                    >
+                                        Imprimir Todo (2 Copias)
+                                    </button>
+                                    <button 
+                                        onClick={() => handlePrintOption('single')}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 flex items-center gap-2"
+                                    >
+                                        Imprimir 1 Ticket
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 )}
             </div>
 

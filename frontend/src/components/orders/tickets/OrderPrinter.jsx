@@ -7,6 +7,7 @@ import { WorkshopTicket } from './WorkshopTicket';
 
 export const OrderPrinter = forwardRef((props, ref) => {
   const [orderToPrint, setOrderToPrint] = useState(null);
+  const [printConfig, setPrintConfig] = useState({ client: true, workshop: true });
   const componentRef = useRef();
 
   const handlePrint = useReactToPrint({
@@ -41,7 +42,8 @@ export const OrderPrinter = forwardRef((props, ref) => {
 
   // La función expuesta ahora solo se encarga de cambiar el estado.
   useImperativeHandle(ref, () => ({
-    triggerPrint(order) {
+    triggerPrint(order, config = { client: true, workshop: true }) {
+      setPrintConfig(config);
       setOrderToPrint(order);
     }
   }));
@@ -55,29 +57,47 @@ export const OrderPrinter = forwardRef((props, ref) => {
       <div ref={componentRef}>
         <style>{`
           @media print {
+            @page {
+              margin: 0;
+              size: auto; 
+            }
+            body {
+              margin: 0;
+            }
             .ticket-page-break {
               display: block;
               page-break-before: always;
               break-before: page;
               page-break-after: always;
               break-after: page;
-              height: 0;
-              clear: both;
+              height: 0px;
+              width: 100%;
+              overflow: hidden;
             }
             .ticket-wrapper {
               display: block;
               page-break-inside: avoid;
               break-inside: avoid;
+              position: relative;
             }
           }
         `}</style>
-        <div className="ticket-wrapper">
-          <ClientTicket order={orderToPrint} />
-        </div>
-        <div className="ticket-page-break"></div>
-        <div className="ticket-wrapper">
-          <WorkshopTicket order={orderToPrint} />
-        </div>
+        
+        {printConfig.client && (
+          <div className="ticket-wrapper">
+            <ClientTicket order={orderToPrint} />
+          </div>
+        )}
+        
+        {printConfig.client && printConfig.workshop && (
+          <div className="ticket-page-break"></div>
+        )}
+        
+        {printConfig.workshop && (
+          <div className="ticket-wrapper">
+            <WorkshopTicket order={orderToPrint} />
+          </div>
+        )}
       </div>
     </div>
   );

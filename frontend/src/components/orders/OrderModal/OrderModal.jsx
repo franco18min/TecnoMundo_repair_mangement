@@ -294,9 +294,9 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         }
     };
 
-    const handleDirectPrint = () => {
+    const handleDirectPrint = (config = { client: true, workshop: true }) => {
         if (fullOrderData) {
-            printerRef.current?.triggerPrint(fullOrderData);
+            printerRef.current?.triggerPrint(fullOrderData, config);
         }
     };
 
