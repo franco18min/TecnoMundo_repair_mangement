@@ -116,6 +116,8 @@ class RepairOrderDetailsUpdate(BaseModel):
     status_id: Optional[int] = Field(None, ge=1, le=6)
     is_spare_part_ordered: Optional[bool] = None
     checklist: Optional[List[DeviceConditionUpdate]] = None
+    technician_diagnosis: Optional[str] = None
+    repair_notes: Optional[str] = None
 
 # Schema para actualizar solo campos de diagnóstico
 class RepairOrderDiagnosisUpdate(BaseModel):

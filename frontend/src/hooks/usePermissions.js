@@ -61,14 +61,17 @@ export const usePermissions = (mode, order = null) => {
         const isCompleted = status === 'Completed';
         const isDelivered = status === 'Delivered';
 
-        const canAdminOrRecepModify = (isAdmin || isReceptionist);
+        // Receptionist logic: can only modify orders from their own branch
+        const isSameBranch = !order.branch_id || (currentUser.branch?.id === order.branch_id);
+        const canAdminOrRecepModify = isAdmin || (isReceptionist && isSameBranch);
+        
         const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
 
-        const canDeliverOrder = (isAdmin || isReceptionist) && isCompleted;
+        const canDeliverOrder = (isAdmin || (isReceptionist && isSameBranch)) && isCompleted;
 
-        const canAddPhotos = (mode === 'edit') && ((isAdmin || isReceptionist) || (isTechnician && isMyOrder && isInProcess));
+        const canAddPhotos = (mode === 'edit') && ((isAdmin || (isReceptionist && isSameBranch)) || (isTechnician && isMyOrder && isInProcess));
 
-        const canModifyOrder = (isAdmin || isReceptionist) && (isPending || isInProcess);
+        const canModifyOrder = (isAdmin || (isReceptionist && isSameBranch)) && (isPending || isInProcess);
 
         const canModifyForDiagnosis = isTechnician && isMyOrder && isInProcess;
 
@@ -88,7 +91,7 @@ export const usePermissions = (mode, order = null) => {
             canEditPartsUsed: canEditPartsUsedInMode,
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
-            canReopenOrder: (isAdmin || isReceptionist) && (isCompleted || isDelivered),
+            canReopenOrder: (isAdmin || (isReceptionist && isSameBranch)) && (isCompleted || isDelivered),
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
             canModifyOrder: canModifyOrder,

@@ -242,6 +242,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             problem_description: formData.problem_description, accesories: formData.accesories, observations: formData.observations,
             password_or_pattern: formData.password_or_pattern, total_cost: Number(formData.total_cost) || 0, deposit: Number(formData.deposit) || 0,
             parts_used: formData.parts_used,
+            technician_diagnosis: formData.technician_diagnosis,
+            repair_notes: formData.repair_notes,
             is_spare_part_ordered: sparePartStatus === 'pedido',
             checklist: checklistItems.filter(item => item.client_answer !== null),
         };
