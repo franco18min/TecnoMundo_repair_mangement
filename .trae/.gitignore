@@ -1,6 +1,0 @@
-node_modules/
-dist/
-cache/*.log
-cache/*.tmp
-cache/metrics.json
-cache/context.json

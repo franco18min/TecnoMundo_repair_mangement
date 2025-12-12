@@ -152,7 +152,8 @@ def get_repair_orders(db: Session, user: UserModel, skip: int = 0, limit: int = 
         joinedload(RepairOrderModel.branch)
     )
     if user.role.role_name != "Administrator" and user.branch_id:
-        query = query.filter(RepairOrderModel.branch_id == user.branch_id)
+        # query = query.filter(RepairOrderModel.branch_id == user.branch_id)
+        pass # Permitir ver órdenes de todas las sucursales para todos los roles
     return query.order_by(RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
 
 def get_repair_order(db: Session, order_id: int):

@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Wrench, CheckCircle, AlertTriangle, Clock, Archive, Truck, XCircle } from 'lucide-react';
+import { Wrench, CheckCircle, AlertTriangle, Clock, Archive, Truck, XCircle, MapPin } from 'lucide-react';
 
 // --- INICIO DE LA MODIFICACIÓN ---
 // Añadimos la prop 'onClick'
@@ -44,6 +44,10 @@ export function OrderCard({ order, onClick }) {
               <p className="text-sm text-gray-600 font-medium">{deviceModel}</p>
             </div>
             <p className="text-sm text-gray-500">{order.customer.name}</p>
+            <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+                <MapPin size={12} />
+                <span>{order.branch?.branch_name || 'N/A'}</span>
+            </div>
           </div>
           <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ${currentStatus.badge}`}>
             {currentStatus.icon}

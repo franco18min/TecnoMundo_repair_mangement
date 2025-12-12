@@ -85,48 +85,84 @@ export const AuthProvider = ({ children }) => {
     }, [validateToken]);
 
     useEffect(() => {
-        if (currentUser) {
+        let isMounted = true;
+        let reconnectTimeout = null;
+
+        const connect = () => {
+            if (!currentUser) return;
             const token = getAccessToken();
-            const wsUrlWithToken = `${API_CONFIG.WS_URL}?token=${token}`;
-            
-            // Cerrar conexión existente si existe
-            if (websocketRef.current) {
-                websocketRef.current.close();
+            if (!token) return;
+
+            // Avoid opening multiple connections if already connected or connecting
+            if (websocketRef.current && (websocketRef.current.readyState === WebSocket.OPEN || websocketRef.current.readyState === WebSocket.CONNECTING)) {
+                return;
             }
+
+            const wsUrlWithToken = `${API_CONFIG.WS_URL}?token=${token}`;
+            console.log('Initiating WebSocket connection...');
             
-            websocketRef.current = new WebSocket(wsUrlWithToken);
+            const ws = new WebSocket(wsUrlWithToken);
+            websocketRef.current = ws;
 
-            websocketRef.current.onopen = () => {};
-            websocketRef.current.onclose = (event) => {};
-            websocketRef.current.onerror = () => {};
+            ws.onopen = () => {
+                console.log('WebSocket Connected');
+            };
 
-            websocketRef.current.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                switch (data.event) {
-                    case 'ORDER_CREATED':
-                        setOrders(prev => [mapOrderData(data.payload), ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived)));
-                        break;
-                    case 'ORDER_UPDATED':
-                        setOrders(prev => prev.map(o => o.id === data.payload.id ? mapOrderData(data.payload) : o));
-                        break;
-                    case 'ORDER_DELETED':
-                        setOrders(prev => prev.filter(o => o.id !== data.payload.id));
-                        break;
-                    case 'NEW_NOTIFICATION':
-                        setNotifications(prev => [data.payload, ...prev]);
-                        break;
-                    default:
-                        break;
+            ws.onclose = (event) => {
+                console.log(`WebSocket Disconnected (Code: ${event.code}). Reconnecting in 3s...`);
+                if (isMounted) {
+                    reconnectTimeout = setTimeout(connect, 3000);
                 }
             };
 
-            return () => {
-                if (websocketRef.current) {
-                    websocketRef.current.close(1000, 'Component unmounting');
+            ws.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+                ws.close(); // Force close to trigger onclose logic if it hangs
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    switch (data.event) {
+                        case 'ORDER_CREATED':
+                            setOrders(prev => {
+                                const newOrder = mapOrderData(data.payload);
+                                // Prevent duplicates
+                                if (prev.find(o => o.id === newOrder.id)) return prev;
+                                return [newOrder, ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived));
+                            });
+                            break;
+                        case 'ORDER_UPDATED':
+                            setOrders(prev => prev.map(o => o.id === data.payload.id ? mapOrderData(data.payload) : o));
+                            break;
+                        case 'ORDER_DELETED':
+                            setOrders(prev => prev.filter(o => o.id !== data.payload.id));
+                            break;
+                        case 'NEW_NOTIFICATION':
+                            setNotifications(prev => [data.payload, ...prev]);
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (e) {
+                    console.error('Error processing WS message:', e);
                 }
             };
+        };
+
+        if (currentUser) {
+            connect();
         }
-    }, [currentUser]); // Removida dependencia getAccessToken que causaba reconexiones
+
+        return () => {
+            isMounted = false;
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            if (websocketRef.current) {
+                websocketRef.current.onclose = null;
+                websocketRef.current.close(1000, 'Component unmounting');
+            }
+        };
+    }, [currentUser, getAccessToken]);
 
     const login = async (username, password) => {
         await apiLogin(username, password);
@@ -141,8 +177,20 @@ export const AuthProvider = ({ children }) => {
     };
 
     const filteredOrders = useMemo(() => {
+        // If "Todas las Sucursales" is selected (assuming ID 0 or null represents that) or if we want to show everything by default when no specific branch is selected
+        // However, based on the user request "ver todas las ordenes de todas las sucursales", we should probably allow a "View All" option or just return all orders if selectedBranchId is null/special value.
+        
+        // Current logic:
+        if (selectedBranchId === 'all') {
+             return orders;
+        }
+
         if (selectedBranchId == null) {
-            return [];
+             // If no branch is selected, show all orders? Or show none?
+             // User request: "todos los usuarios ... puedan ver todas las ordenes de todas las sucursales"
+             // Let's assume we want to show all orders if no specific branch is forced, OR we need to make sure the UI allows selecting "All".
+             // For now, let's return ALL orders if selectedBranchId is null, to be safe with the "see everything" requirement.
+             return orders; 
         }
         return orders.filter(order => order.branch_id === selectedBranchId);
     }, [orders, selectedBranchId]);

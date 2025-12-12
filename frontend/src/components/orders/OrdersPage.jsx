@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search } from 'lucide-react';
+import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search, MapPin } from 'lucide-react';
 import { deleteRepairOrder } from '../../api/repairOrdersApi';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
@@ -313,6 +313,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dispositivo</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
@@ -338,6 +339,12 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                                         className="hover:bg-gray-50 transition-colors duration-150"
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{order.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div className="flex items-center gap-1">
+                                                <MapPin size={14} />
+                                                {order.branch?.branch_name || 'N/A'}
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer?.name || 'Cliente no especificado'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.device?.type || 'N/A'} {order.device?.model || ''}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">

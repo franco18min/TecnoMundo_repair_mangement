@@ -74,7 +74,7 @@ export const usePermissions = (mode, order = null) => {
 
         const canEditInitialDetails = canModifyOrder && mode === 'edit';
 
-        const canEditDiagnosisPanel = (mode === 'edit') && (canModifyOrder || canModifyForDiagnosis);
+        const canEditDiagnosisPanel = (mode === 'edit') && ((isAdmin && (isPending || isInProcess)) || canModifyForDiagnosis);
 
         const canEditCostsInMode = canEditCosts && canModifyOrder && mode === 'edit';
         const canEditPartsUsedInMode = canEditPartsUsed && canModifyOrder && mode === 'edit';
