@@ -7,11 +7,19 @@ const DEFAULT_DEV_BASE_URL = 'http://127.0.0.1:9001';
 
 // Determinar BASE_URL según entorno, evitando fallback inseguro en producción
 let BASE_URL;
-if (ENVIRONMENT === 'production') {
+
+// Detección automática de entorno de producción por dominio (Safety Net)
+const isProductionDomain = typeof window !== 'undefined' && 
+  (window.location.hostname.includes('tecnoapp.ar') || window.location.hostname.includes('tecnoapp.site'));
+
+if (ENVIRONMENT === 'production' || isProductionDomain) {
   if (BASE_URL_ENV && BASE_URL_ENV.startsWith('https://')) {
     BASE_URL = BASE_URL_ENV;
   } else {
-    console.error('[Config] VITE_API_BASE_URL no está definido o no es HTTPS en producción. Configure frontend/.env.production correctamente.');
+    // Si estamos en producción (por ENV o dominio) pero no hay variable definida o no es HTTPS
+    if (!BASE_URL_ENV) {
+        console.warn('[Config] Detectado entorno producción pero VITE_API_BASE_URL no está definido. Usando default.');
+    }
     // Intentar un valor razonable por defecto en producción (ajuste si su dominio difiere)
     BASE_URL = BASE_URL_ENV || 'https://api.tecnoapp.ar';
   }

@@ -52,14 +52,15 @@ def update_customer(db: Session, customer_id: int, customer: CustomerUpdate):
 
 def search_customers(db: Session, query: str):
     """
-    Busca clientes por nombre, apellido o DNI.
+    Busca clientes por nombre, apellido, DNI o teléfono.
     """
     search_term = f"%{query}%"
     return db.query(CustomerModel).filter(
         or_(
             CustomerModel.first_name.ilike(search_term),
             CustomerModel.last_name.ilike(search_term),
-            CustomerModel.dni.ilike(search_term)
+            CustomerModel.dni.ilike(search_term),
+            CustomerModel.phone_number.ilike(search_term)
         )
     ).limit(10).all()
 

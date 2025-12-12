@@ -53,9 +53,31 @@ export const OrderPrinter = forwardRef((props, ref) => {
   return (
     <div style={{ display: 'none' }}>
       <div ref={componentRef}>
-        <ClientTicket order={orderToPrint} />
-        <div style={{ pageBreakBefore: 'always' }}></div>
-        <WorkshopTicket order={orderToPrint} />
+        <style>{`
+          @media print {
+            .ticket-page-break {
+              display: block;
+              page-break-before: always;
+              break-before: page;
+              page-break-after: always;
+              break-after: page;
+              height: 0;
+              clear: both;
+            }
+            .ticket-wrapper {
+              display: block;
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+          }
+        `}</style>
+        <div className="ticket-wrapper">
+          <ClientTicket order={orderToPrint} />
+        </div>
+        <div className="ticket-page-break"></div>
+        <div className="ticket-wrapper">
+          <WorkshopTicket order={orderToPrint} />
+        </div>
       </div>
     </div>
   );

@@ -15,7 +15,8 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
         
         try {
             const results = await searchClients(q);
-            if (results && results.length > 0) {
+            // Validar que results sea un array válido antes de verificar length
+            if (Array.isArray(results) && results.length > 0) {
                 setPotentialMatches(results);
                 setShowMatchSelection(true);
             } else {
@@ -25,6 +26,9 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
             }
         } catch (error) {
             console.error("Error searching clients", error);
+            // En caso de error, asumimos que no hay coincidencias para no bloquear al usuario
+            setShowMatchSelection(false);
+            setPotentialMatches([]);
         }
     };
 
