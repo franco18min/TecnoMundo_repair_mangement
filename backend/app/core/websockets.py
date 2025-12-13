@@ -3,7 +3,9 @@
 from fastapi import WebSocket
 from typing import List, Dict
 from app.models.user import User
+import logging
 
+logger = logging.getLogger(__name__)
 
 class ConnectionManager:
     def __init__(self):
@@ -13,18 +15,21 @@ class ConnectionManager:
         await websocket.accept()
         branch_id = user.branch_id
         if branch_id is None:
+            logger.warning(f"WS Rejected: User {user.id} has no branch_id")
             await websocket.close(code=1008)
             return
 
         if branch_id not in self.active_connections:
             self.active_connections[branch_id] = {}
         self.active_connections[branch_id][user.id] = websocket
+        logger.info(f"WS Connected: User {user.id} | Branch {branch_id}")
 
     def disconnect(self, user: User):
         branch_id = user.branch_id
         if branch_id and branch_id in self.active_connections:
             if user.id in self.active_connections[branch_id]:
                 del self.active_connections[branch_id][user.id]
+                logger.info(f"WS Disconnected: User {user.id} | Branch {branch_id}")
                 if not self.active_connections[branch_id]:
                     del self.active_connections[branch_id]
 

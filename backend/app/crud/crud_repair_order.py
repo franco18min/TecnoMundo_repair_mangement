@@ -79,8 +79,17 @@ async def send_order_taken_notification(order_id: int, technician_id: int):
         logging.info("--- [FIN DEL DIAGNÓSTico] ---\n")
 
 async def send_order_details_updated_notification(order_id: int, actor_user_id: int):
-    # ... (código sin cambios)
-    pass
+    with SessionLocal() as db:
+        order = get_repair_order(db, order_id=order_id)
+        if not order or not order.branch_id: return
+
+        # Notificar a todos los conectados sobre la actualización de datos
+        event_payload = {"event": "ORDER_UPDATED", "payload": RepairOrderSchema.from_orm(order).dict()}
+        await manager.broadcast_to_all(json.dumps(event_payload, default=str))
+
+        # Opcional: Notificar específicamente a roles clave si es necesario, 
+        # pero para actualización de dashboard el broadcast es lo principal.
+        # Aquí podríamos agregar notificaciones personales si la lógica de negocio lo requiere.
 
 async def send_order_updated_notification(order_id: int):
     with SessionLocal() as db:

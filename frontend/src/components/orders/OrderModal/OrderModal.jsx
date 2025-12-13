@@ -338,12 +338,12 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                         <motion.button
                                             type="button"
                                             onClick={() => setIsTechPanelOpen(true)}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium text-sm"
+                                            className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium text-xs sm:text-sm"
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                         >
                                             <Wrench size={16} />
-                                            <span className="hidden sm:inline">Panel Técnico</span>
+                                            <span>Panel Técnico</span>
                                         </motion.button>
                                     )}
                                     <motion.button
