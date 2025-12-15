@@ -36,7 +36,7 @@ const processVariables = (content, order) => {
     '[CLAVE_PATRON]': order.password_or_pattern || 'N/A',
     '[ADELANTO]': order.deposit ? `$${order.deposit.toFixed(2)}` : '$0.00',
     '[COSTO_TOTAL]': order.total_cost ? `$${order.total_cost.toFixed(2)}` : '$0.00',
-    '[SALDO]': order.balance ? `$${order.balance.toFixed(2)}` : '$0.00',
+    '[SALDO]': `$${((order.total_cost || 0) - (order.deposit || 0)).toFixed(2)}`,
     '[REPUESTO]': order.parts_used || 'N/A',
     '[TECNICO_ASIGNADO]': order.technician?.full_name || 'No asignado',
     '[DIAGNOSTICO_TECNICO]': order.technician_diagnosis || 'Pendiente',
