@@ -1,8 +1,8 @@
 // frontend/src/components/dashboard/DashboardHome.jsx
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Loader } from 'lucide-react';
+import { PlusCircle, Loader, Filter } from 'lucide-react';
 import { OrderCard } from '../orders/OrderCard';
 import { useAuth } from '../../context/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -25,6 +25,7 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
     const { currentUser, filteredOrders } = useAuth();
     // --- FIN DE LA MODIFICACIÓN ---
     const { canCreateOrders } = usePermissions('create'); // El modo es 'create' para este permiso
+    const [statusFilter, setStatusFilter] = useState('All'); // 'All', 'Pending', 'In Process', 'Completed', 'Delivered', 'Waiting'
 
     // Detectar móvil
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -41,13 +42,26 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
 
     const recentOrders = useMemo(() => {
         // La lógica de cortar las 6 más recientes ahora se aplica a la lista ya filtrada
-        const base = isMobile ? mobileFilteredOrders : (filteredOrders || []);
+        let base = isMobile ? mobileFilteredOrders : (filteredOrders || []);
+        
+        // Aplicar filtro de estado si está activo
+        if (statusFilter !== 'All') {
+            base = base.filter(order => {
+                if (statusFilter === 'Pending') return order.status === 'Pending';
+                if (statusFilter === 'Waiting') return order.status === 'Waiting for parts';
+                if (statusFilter === 'In Process') return order.status === 'In Process';
+                if (statusFilter === 'Completed') return order.status === 'Completed';
+                if (statusFilter === 'Delivered') return order.status === 'Delivered';
+                return true;
+            });
+        }
+
         return base.slice(0, 6);
-    }, [filteredOrders, mobileFilteredOrders, isMobile]);
+    }, [filteredOrders, mobileFilteredOrders, isMobile, statusFilter]);
 
     return (
         <>
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-4">
                 <div>
                     <motion.h1 className="text-3xl font-bold text-gray-800" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                         Órdenes Recientes
@@ -56,20 +70,63 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
                         Hola {currentUser?.username}, bienvenido de nuevo.
                     </motion.p>
                 </div>
-                {canCreateOrders && (
-                    <motion.button
-                        onClick={onNewOrderClick}
-                        className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                    >
-                        <PlusCircle size={20} />
-                        <span className="hidden sm:inline">Nueva orden</span>
-                    </motion.button>
-                )}
+                
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Filtro para todos los roles */}
+                    <div className="flex flex-wrap bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+                        <button
+                            onClick={() => setStatusFilter('All')}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${statusFilter === 'All' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Todas
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('Pending')}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${statusFilter === 'Pending' ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Pendientes
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('Waiting')}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${statusFilter === 'Waiting' ? 'bg-orange-50 text-orange-700' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            En Espera
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('In Process')}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${statusFilter === 'In Process' ? 'bg-yellow-50 text-yellow-700' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            En Proceso
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('Completed')}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${statusFilter === 'Completed' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Completadas
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('Delivered')}
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${statusFilter === 'Delivered' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Entregadas
+                        </button>
+                    </div>
+
+                    {canCreateOrders && (
+                        <motion.button
+                            onClick={onNewOrderClick}
+                            className="flex items-center gap-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            <PlusCircle size={20} />
+                            <span className="hidden sm:inline">Nueva orden</span>
+                        </motion.button>
+                    )}
+                </div>
             </div>
             <motion.div
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"

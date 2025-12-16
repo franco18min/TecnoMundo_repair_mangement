@@ -22,10 +22,15 @@ export const OrderPrinter = forwardRef((props, ref) => {
     // Agregar un delay adicional antes de la impresión
     onBeforeGetContent: () => {
       return new Promise((resolve) => {
+        // Reducimos el tiempo de espera y nos aseguramos de que el componente esté montado
         setTimeout(() => {
           resolve();
-        }, 200);
+        }, 100);
       });
+    },
+    // Manejar errores de impresión silenciosamente para evitar crasheos por extensiones
+    onPrintError: (errorLocation, error) => {
+        console.warn("Error al intentar imprimir:", error);
     }
   });
 
@@ -34,9 +39,16 @@ export const OrderPrinter = forwardRef((props, ref) => {
     // Si 'orderToPrint' tiene datos (no es null), entonces llamamos a la impresión.
     if (orderToPrint) {
       // Pequeño delay para asegurar que el componente se renderice completamente
-      setTimeout(() => {
-        handlePrint();
-      }, 50); // Reducido a 50ms ya que onBeforeGetContent maneja el delay principal
+      // Usamos un try-catch para envolver la llamada a handlePrint
+      const timer = setTimeout(() => {
+        try {
+            handlePrint();
+        } catch (e) {
+            console.error("Error al ejecutar handlePrint:", e);
+        }
+      }, 50); 
+      
+      return () => clearTimeout(timer);
     }
   }, [orderToPrint]); // El array de dependencias asegura que solo se ejecute cuando cambia orderToPrint
 

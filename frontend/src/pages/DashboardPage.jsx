@@ -50,7 +50,7 @@ export function DashboardPage({ onLogout }) {
             case 'clients':
                 return <ClientsPage onViewOrderClick={handleOpenModal} />;
             case 'records':
-                return <RecordsPage />;
+                return <RecordsPage onViewOrderClick={handleOpenModal} />;
             case 'config':
                 return <ConfigurationPage />;
             case 'dashboard':

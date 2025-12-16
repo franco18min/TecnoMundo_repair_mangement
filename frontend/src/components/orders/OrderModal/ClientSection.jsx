@@ -4,7 +4,7 @@ import { DisplayField, FormField } from './shared';
 import { searchClients } from '../../../api/customerApi';
 import { Users, UserPlus } from 'lucide-react';
 
-export function ClientSection({ permissions, formData, handleFormChange, clientType, setClientType, clientSearch, setClientSearch, clientSearchResults, isClientSearchFocused, setIsClientSearchFocused, handleClientSelect }) {
+export function ClientSection({ permissions, formData, handleFormChange, clientType, setClientType, clientSearch, setClientSearch, clientSearchResults, isClientSearchFocused, setIsClientSearchFocused, handleClientSelect, fieldErrors = {} }) {
     const [potentialMatches, setPotentialMatches] = useState([]);
     const [showMatchSelection, setShowMatchSelection] = useState(false);
 
@@ -119,10 +119,10 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
                     <AnimatePresence mode="wait">
                         <motion.div key={clientType} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
-                                <FormField label="Nombre" name="first_name" type="text" value={formData.first_name} onChange={(e) => { handleFormChange(e); scheduleLookup('first_name', e.target.value); }} required={clientType === 'nuevo'} />
-                                <FormField label="Apellido" name="last_name" type="text" value={formData.last_name} onChange={(e) => { handleFormChange(e); scheduleLookup('last_name', e.target.value); }} required={clientType === 'nuevo'} />
-                                <FormField label="Teléfono" name="phone_number" type="tel" value={formData.phone_number} onChange={(e) => { handleFormChange(e); scheduleLookup('phone_number', e.target.value); }} required={clientType === 'nuevo'} />
-                                <FormField label="DNI" name="dni" type="text" value={formData.dni} onChange={(e) => { handleFormChange(e); scheduleLookup('dni', e.target.value); }} required={clientType === 'nuevo'} />
+                                <FormField label="Nombre" name="first_name" type="text" value={formData.first_name} onChange={(e) => { handleFormChange(e); scheduleLookup('first_name', e.target.value); }} required={clientType === 'nuevo'} error={fieldErrors.first_name} />
+                                <FormField label="Apellido" name="last_name" type="text" value={formData.last_name} onChange={(e) => { handleFormChange(e); scheduleLookup('last_name', e.target.value); }} required={clientType === 'nuevo'} error={fieldErrors.last_name} />
+                                <FormField label="Teléfono" name="phone_number" type="tel" value={formData.phone_number} onChange={(e) => { handleFormChange(e); scheduleLookup('phone_number', e.target.value); }} required={false} error={fieldErrors.phone_number} />
+                                <FormField label="DNI" name="dni" type="text" value={formData.dni} onChange={(e) => { handleFormChange(e); scheduleLookup('dni', e.target.value); }} required={false} error={fieldErrors.dni} />
                             </div>
                         </motion.div>
                     </AnimatePresence>

@@ -38,6 +38,7 @@ export const FormField = ({
     
     // Props estándar
     children, 
+    error, // Nueva prop para manejar errores
     ...props 
 }) => {
     const Component = as === 'select' ? 'select' : as || 'input';
@@ -68,7 +69,9 @@ export const FormField = ({
                         <select 
                             id={id} 
                             {...props} 
-                            className="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className={`w-full bg-gray-50 border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                                error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'
+                            }`}
                         >
                             {children}
                         </select>
@@ -76,12 +79,15 @@ export const FormField = ({
                         <input 
                             id={id} 
                             {...props} 
-                            className={`w-full bg-gray-50 border border-gray-300 rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full bg-gray-50 border rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                                 isCurrency ? 'pl-7 pr-3' : 'px-3'
+                            } ${
+                                error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'
                             }`} 
                         />
                     )}
                 </div>
+                {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
             </div>
         );
     }

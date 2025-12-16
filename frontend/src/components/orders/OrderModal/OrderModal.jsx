@@ -40,6 +40,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
     const [isTakeConfirmModalOpen, setIsTakeConfirmModalOpen] = useState(false);
     const [isUpdateConfirmModalOpen, setIsUpdateConfirmModalOpen] = useState(false);
     const [isReopenConfirmOpen, setIsReopenConfirmOpen] = useState(false);
@@ -52,42 +53,57 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [clientSearchResults, setClientSearchResults] = useState([]);
     const [isClientSearchFocused, setIsClientSearchFocused] = useState(false);
     const [selectedClientId, setSelectedClientId] = useState(null);
+    const [originalClientData, setOriginalClientData] = useState(null); // Para detectar cambios en cliente existente
     const [sparePartStatus, setSparePartStatus] = useState('local');
     const printerRef = useRef();
     const [isChecklistOpen, setIsChecklistOpen] = useState(false);
     const [isTechPanelOpen, setIsTechPanelOpen] = useState(false);
+    const [hasUpdated, setHasUpdated] = useState(false);
 
     const permissions = usePermissions(mode, fullOrderData, currentUser);
     const { showToast } = useToast();
 
+    const loadInitialData = useCallback(async () => {
+        if (!isOpen) return;
+        setIsLoading(true); setError(''); 
+        // Solo resetear formulario si estamos cargando una orden nueva o cambiando de orden
+        if (!hasUpdated) {
+            setFormData(initialFormData); 
+            setChecklistItems([]);
+            setClientType('nuevo'); setClientSearch(''); setSelectedClientId(null); setOriginalClientData(null); setUnlockMethod('password'); setMode(orderId ? 'view' : 'create'); setSparePartStatus('local'); setIsTechPanelOpen(false);
+            setFieldErrors({});
+        }
+        
+        try {
+            const types = await fetchDeviceTypes();
+            setDeviceTypes(types);
+            if (orderId) {
+                const orderData = await fetchRepairOrderById(orderId);
+                setFullOrderData(orderData);
+                setFormData({
+                    dni: orderData.customer?.dni || '', first_name: orderData.customer?.first_name || '', last_name: orderData.customer?.last_name || '',
+                    phone_number: orderData.customer?.phone_number || '', device_type_id: orderData.device_type?.id || '', device_model: orderData.device_model || '',
+                    serial_number: orderData.serial_number || '', accesories: orderData.accesories || '', problem_description: orderData.problem_description || '',
+                    observations: orderData.observations || '', password_or_pattern: orderData.password_or_pattern || '', parts_used: orderData.parts_used || '',
+                    technician_diagnosis: orderData.technician_diagnosis || '', repair_notes: orderData.repair_notes || '',
+                    total_cost: orderData.total_cost ?? '', deposit: orderData.deposit ?? '', balance: orderData.balance ?? 0,
+                });
+                setChecklistItems(orderData.device_conditions || []);
+                // Seleccionar automáticamente el método de desbloqueo según el valor almacenado
+                const isPattern = !!orderData.password_or_pattern && orderData.password_or_pattern.includes('-');
+                setUnlockMethod(isPattern ? 'pattern' : 'password');
+            }
+        } catch (err) { setError("No se pudieron cargar los datos necesarios."); } finally { setIsLoading(false); }
+    }, [isOpen, orderId, initialFormData, hasUpdated]);
+
     useEffect(() => {
-        const loadInitialData = async () => {
-            if (!isOpen) return;
-            setIsLoading(true); setError(''); setFormData(initialFormData); setFullOrderData(null); setChecklistItems([]);
-            setClientType('nuevo'); setClientSearch(''); setSelectedClientId(null); setUnlockMethod('password'); setMode(orderId ? 'view' : 'create'); setSparePartStatus('local'); setIsTechPanelOpen(false);
-            try {
-                const types = await fetchDeviceTypes();
-                setDeviceTypes(types);
-                if (orderId) {
-                    const orderData = await fetchRepairOrderById(orderId);
-                    setFullOrderData(orderData);
-                    setFormData({
-                        dni: orderData.customer?.dni || '', first_name: orderData.customer?.first_name || '', last_name: orderData.customer?.last_name || '',
-                        phone_number: orderData.customer?.phone_number || '', device_type_id: orderData.device_type?.id || '', device_model: orderData.device_model || '',
-                        serial_number: orderData.serial_number || '', accesories: orderData.accesories || '', problem_description: orderData.problem_description || '',
-                        observations: orderData.observations || '', password_or_pattern: orderData.password_or_pattern || '', parts_used: orderData.parts_used || '',
-                        technician_diagnosis: orderData.technician_diagnosis || '', repair_notes: orderData.repair_notes || '',
-                        total_cost: orderData.total_cost ?? '', deposit: orderData.deposit ?? '', balance: orderData.balance ?? 0,
-                    });
-                    setChecklistItems(orderData.device_conditions || []);
-                    // Seleccionar automáticamente el método de desbloqueo según el valor almacenado
-                    const isPattern = !!orderData.password_or_pattern && orderData.password_or_pattern.includes('-');
-                    setUnlockMethod(isPattern ? 'pattern' : 'password');
-                }
-            } catch (err) { setError("No se pudieron cargar los datos necesarios."); } finally { setIsLoading(false); }
-        };
         loadInitialData();
-    }, [isOpen, orderId, initialFormData]);
+    }, [loadInitialData]);
+
+    const handleCloseModal = () => {
+        onClose(hasUpdated);
+        setHasUpdated(false);
+    };
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -107,10 +123,23 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
     const handleClientSelect = (client) => {
         setFormData(prev => ({ ...prev, first_name: client.first_name, last_name: client.last_name, phone_number: client.phone_number, dni: client.dni }));
-        setSelectedClientId(client.id); setClientSearch(`${client.first_name} ${client.last_name}`); setClientSearchResults([]); setIsClientSearchFocused(false);
+        setSelectedClientId(client.id);
+        setOriginalClientData({ // Guardar copia de los datos originales
+            first_name: client.first_name,
+            last_name: client.last_name,
+            phone_number: client.phone_number,
+            dni: client.dni
+        });
+        setClientSearch(`${client.first_name} ${client.last_name}`); setClientSearchResults([]); setIsClientSearchFocused(false);
     };
 
-    const handleFormChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleFormChange = (e) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        // Limpiar errores específicos del campo al escribir
+        if (fieldErrors[e.target.name]) {
+            setFieldErrors(prev => ({ ...prev, [e.target.name]: null }));
+        }
+    };
     const handlePatternChange = useCallback((pattern) => { setFormData(prev => ({ ...prev, password_or_pattern: pattern })); }, []);
     const handleChecklistChange = (index, field, value) => { const updatedItems = [...checklistItems]; updatedItems[index] = { ...updatedItems[index], [field]: value }; setChecklistItems(updatedItems); };
     const handleAddQuestion = (e) => {
@@ -235,9 +264,30 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
+        setFieldErrors({});
+
+        // Lógica para detectar si se modificó un cliente existente
+        let finalClientType = clientType;
+        let finalSelectedClientId = selectedClientId;
+
+        if (clientType === 'registrado' && originalClientData) {
+            const hasChanged = 
+                formData.first_name !== originalClientData.first_name ||
+                formData.last_name !== originalClientData.last_name ||
+                formData.phone_number !== originalClientData.phone_number ||
+                formData.dni !== originalClientData.dni;
+
+            if (hasChanged) {
+                // Si cambió, lo tratamos como un cliente nuevo
+                finalClientType = 'nuevo';
+                finalSelectedClientId = null;
+                console.log("Datos de cliente modificados, se creará como nuevo cliente.");
+            }
+        }
+
         const payload = {
-            customer: clientType === 'nuevo' ? { first_name: formData.first_name, last_name: formData.last_name, phone_number: formData.phone_number, dni: formData.dni } : null,
-            customer_id: clientType === 'registrado' ? selectedClientId : null,
+            customer: finalClientType === 'nuevo' ? { first_name: formData.first_name, last_name: formData.last_name, phone_number: formData.phone_number, dni: formData.dni } : null,
+            customer_id: finalClientType === 'registrado' ? finalSelectedClientId : null,
             device_type_id: parseInt(formData.device_type_id), device_model: formData.device_model, serial_number: formData.serial_number,
             problem_description: formData.problem_description, accesories: formData.accesories, observations: formData.observations,
             password_or_pattern: formData.password_or_pattern, total_cost: Number(formData.total_cost) || 0, deposit: Number(formData.deposit) || 0,
@@ -256,8 +306,17 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                 printerRef.current?.triggerPrint(newOrder);
                 onClose(true);
             } catch (err) {
-                setError(err.message || "No se pudo crear la orden.");
-                showToast(err.message || "No se pudo crear la orden", 'error');
+                const errorMsg = err.message || "No se pudo crear la orden.";
+                setError(errorMsg);
+                showToast(errorMsg, 'error');
+
+                // Mapear errores específicos a campos
+                if (errorMsg.includes('DNI')) {
+                    setFieldErrors(prev => ({ ...prev, dni: errorMsg }));
+                }
+                if (errorMsg.includes('teléfono')) {
+                    setFieldErrors(prev => ({ ...prev, phone_number: errorMsg }));
+                }
             } finally {
                 setIsSubmitting(false);
             }
@@ -278,7 +337,11 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                     await updateOrderDetails(orderId, payload);
                 }
                 showToast('Orden modificada con éxito', 'success');
-                onClose(true);
+                // No cerramos el modal, cambiamos a modo vista y actualizamos
+                setMode('view');
+                setHasUpdated(true);
+                // Recargar datos para mostrar los cambios
+                await loadInitialData();
             } catch (err) {
                 setError(err.message || "No se pudo modificar la orden.");
                 showToast(err.message || "No se pudo modificar la orden", 'error');
@@ -347,7 +410,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                         </motion.button>
                                     )}
                                     <motion.button
-                                        onClick={() => onClose(false)}
+                                        onClick={() => handleCloseModal()}
                                         className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
                                         whileHover={{ scale: 1.1, rotate: 90 }}
                                         whileTap={{ scale: 0.9 }}
@@ -362,7 +425,20 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scrollbar">
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                             <div className="space-y-6">
-                                                <ClientSection permissions={permissions} formData={formData} handleFormChange={handleFormChange} clientType={clientType} setClientType={setClientType} clientSearch={clientSearch} setClientSearch={setClientSearch} clientSearchResults={clientSearchResults} isClientSearchFocused={isClientSearchFocused} setIsClientSearchFocused={setIsClientSearchFocused} handleClientSelect={handleClientSelect} />
+                                                <ClientSection 
+                                                    permissions={permissions} 
+                                                    formData={formData} 
+                                                    handleFormChange={handleFormChange} 
+                                                    clientType={clientType} 
+                                                    setClientType={setClientType} 
+                                                    clientSearch={clientSearch} 
+                                                    setClientSearch={setClientSearch} 
+                                                    clientSearchResults={clientSearchResults} 
+                                                    isClientSearchFocused={isClientSearchFocused} 
+                                                    setIsClientSearchFocused={setIsClientSearchFocused} 
+                                                    handleClientSelect={handleClientSelect}
+                                                    fieldErrors={fieldErrors} // Pasar errores específicos
+                                                />
                                                 <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                                 <div className="bg-white border rounded-lg p-4">
                                                     <div className="flex items-center justify-between">
@@ -397,7 +473,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     <ModalFooter
                                         mode={mode}
                                         permissions={permissions}
-                                        onClose={onClose}
+                                        onClose={handleCloseModal}
                                         isSubmitting={isSubmitting}
                                         error={error}
                                         setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}

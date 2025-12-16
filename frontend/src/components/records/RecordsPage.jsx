@@ -19,7 +19,7 @@ const TYPE_LABELS = {
     'Order transfer': 'Transferencia de orden',
 };
 
-export function RecordsPage() {
+export function RecordsPage({ onViewOrderClick }) {
     const { branches } = useAuth();
     const permissions = usePermissions();
     const [isLoading, setIsLoading] = useState(true);
@@ -127,7 +127,7 @@ export function RecordsPage() {
                             <tr>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Orden</th>
+                                <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Sucursal</th>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Detalle</th>
@@ -136,7 +136,15 @@ export function RecordsPage() {
                         <tbody className="divide-y divide-gray-200">
                             <AnimatePresence>
                                 {records.map(r => (
-                                    <motion.tr key={r.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                    <motion.tr 
+                                        key={r.id} 
+                                        layout 
+                                        initial={{ opacity: 0 }} 
+                                        animate={{ opacity: 1 }} 
+                                        exit={{ opacity: 0 }}
+                                        onClick={() => r.order_id && onViewOrderClick && onViewOrderClick(r.order_id)}
+                                        className={r.order_id ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}
+                                    >
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-700">{new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date(r.created_at))}</td>
                                         <td className="px-6 py-4 whitespace-nowrap"><span className="font-medium text-gray-900">{TYPE_LABELS[r.event_type] || r.event_type}</span></td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{r.order_id}</td>

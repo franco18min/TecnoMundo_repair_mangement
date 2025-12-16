@@ -6,8 +6,8 @@ from typing import Optional
 class CustomerCreate(BaseModel):
     first_name: str
     last_name: str
-    phone_number: str
-    dni: str
+    phone_number: Optional[str] = None
+    dni: Optional[str] = None
     email: Optional[str] = None
     is_subscribed: Optional[bool] = False
 

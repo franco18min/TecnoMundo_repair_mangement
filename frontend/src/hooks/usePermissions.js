@@ -27,7 +27,7 @@ export const usePermissions = (mode, order = null) => {
         const canEditCosts = isAdmin || isReceptionist;
 
         if (!mode) {
-            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig, canSwitchBranch, canViewRecords };
+            return { canCreateOrders, canViewClients, canDeleteOrders, canAccessConfig, canSwitchBranch, canViewRecords, canPrintOrder };
         }
 
         if (mode === 'create') {
