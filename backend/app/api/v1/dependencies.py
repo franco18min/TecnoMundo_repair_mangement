@@ -80,3 +80,14 @@ def get_current_active_technician_or_admin(current_user: User = Depends(get_curr
         raise HTTPException(status_code=403, detail="Solo un técnico o administrador puede realizar esta acción.")
     return current_user
 # --- FIN DE LA CORRECCIÓN ---
+
+def get_current_active_user_all_roles(current_user: User = Depends(get_current_active_user)) -> User:
+    """
+    Verifica que el usuario actual sea un administrador, recepcionista o técnico activo.
+    Permite acceso a todos los roles operativos del sistema.
+    """
+    role_name = (current_user.role.role_name if current_user.role else "").lower()
+    allowed = {"administrator", "receptionist", "recepcionist", "recepcionista", "technical", "technician", "tecnico"}
+    if role_name not in allowed:
+        raise HTTPException(status_code=403, detail="No tiene los permisos suficientes para realizar esta acción.")
+    return current_user

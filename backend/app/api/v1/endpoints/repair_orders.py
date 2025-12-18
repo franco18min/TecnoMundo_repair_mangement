@@ -115,7 +115,7 @@ def reopen_order_endpoint(
     order_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_admin_or_receptionist)
+    current_user: User = Depends(deps.get_current_active_user_all_roles)
 ):
     reopened_order = crud_repair_order.reopen_order(db=db, order_id=order_id, background_tasks=background_tasks)
     if reopened_order is None:

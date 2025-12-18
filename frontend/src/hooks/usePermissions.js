@@ -64,7 +64,7 @@ export const usePermissions = (mode, order = null) => {
         // Receptionist logic: can only modify orders from their own branch
         const isSameBranch = !order.branch_id || (currentUser.branch?.id === order.branch_id);
         const canAdminOrRecepModify = isAdmin || (isReceptionist && isSameBranch);
-        
+
         const canComplete = (isAdmin || (isTechnician && isMyOrder)) && isInProcess;
 
         const canDeliverOrder = (isAdmin || (isReceptionist && isSameBranch)) && isCompleted;
@@ -91,7 +91,7 @@ export const usePermissions = (mode, order = null) => {
             canEditPartsUsed: canEditPartsUsedInMode,
             canTakeOrder: (isAdmin || isTechnician) && isUnassigned && isPending,
             canDeleteOrders: canDeleteOrders,
-            canReopenOrder: (isAdmin || (isReceptionist && isSameBranch)) && (isCompleted || isDelivered),
+            canReopenOrder: (isAdmin || (isReceptionist && isSameBranch) || (isTechnician && isMyOrder)) && (isCompleted || isDelivered),
             canPrintOrder: canPrintOrder,
             canModify: canAdminOrRecepModify,
             canModifyOrder: canModifyOrder,
