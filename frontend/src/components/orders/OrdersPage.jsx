@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search, MapPin, Printer, ChevronDown } from 'lucide-react';
-import { deleteRepairOrder } from '../../api/repairOrdersApi';
+import { deleteRepairOrder, fetchRepairOrderById } from '../../api/repairOrdersApi';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -35,8 +35,8 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { 
-        opacity: 1, 
+    show: {
+        opacity: 1,
         y: 0,
         transition: {
             type: "spring",
@@ -48,8 +48,8 @@ const itemVariants = {
 
 const tableRowVariants = {
     hidden: { opacity: 0, x: -20 },
-    show: { 
-        opacity: 1, 
+    show: {
+        opacity: 1,
         x: 0,
         transition: {
             type: "spring",
@@ -57,8 +57,8 @@ const tableRowVariants = {
             damping: 25
         }
     },
-    exit: { 
-        opacity: 0, 
+    exit: {
+        opacity: 0,
         x: 100,
         transition: {
             duration: 0.2
@@ -153,11 +153,23 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
 
     const closePrintMenu = () => setPrintMenu({ ...printMenu, isOpen: false });
 
-    const handlePrintOption = (order, option) => {
+    const handlePrintOption = async (order, option) => {
         closePrintMenu();
-        if (printerRef.current) {
-            if (option === 'all') printerRef.current.triggerPrint(order, { client: true, workshop: true });
-            if (option === 'single') printerRef.current.triggerPrint(order, { client: true, workshop: false });
+        try {
+            // Fetch complete order data with all fields needed for printing
+            const completeOrder = await fetchRepairOrderById(order.id);
+
+            if (printerRef.current) {
+                if (option === 'all') {
+                    printerRef.current.triggerPrint(completeOrder, { client: true, workshop: true });
+                }
+                if (option === 'single') {
+                    printerRef.current.triggerPrint(completeOrder, { client: true, workshop: false });
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching order for printing:', error);
+            showToast('Error al cargar los datos de la orden para imprimir', 'error');
         }
     };
 
@@ -232,7 +244,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     }, [filters.status]);
 
     return (
-        <motion.div 
+        <motion.div
             className="space-y-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -241,7 +253,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
             <OrderPrinter ref={printerRef} />
 
             {/* Header con botón de nueva orden */}
-            <motion.div 
+            <motion.div
                 className="flex justify-between items-center"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -259,7 +271,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 </motion.button>
             </motion.div>
 
-            <motion.div 
+            <motion.div
                 className="hidden md:block bg-white p-3 rounded-lg shadow-sm border border-gray-200"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -283,7 +295,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                         <FilterInput name="client" label="Cliente" value={filters.client} onChange={handleFilterChange} />
                     </div>
                     <div className="w-48">
-                        <FilterSelect name="device_type" label="Tipo Disp." value={filters.device_type} onChange={handleFilterChange} options={uniqueDeviceTypes.map(d => ({value: d, text: d}))} />
+                        <FilterSelect name="device_type" label="Tipo Disp." value={filters.device_type} onChange={handleFilterChange} options={uniqueDeviceTypes.map(d => ({ value: d, text: d }))} />
                     </div>
                     <div className="flex-1">
                         <FilterInput name="model" label="Modelo" value={filters.model} onChange={handleFilterChange} />
@@ -323,7 +335,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 ))}
 
                 {mobileOrders.length === 0 && (
-                    <motion.div 
+                    <motion.div
                         className="text-center py-12"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -337,7 +349,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
             </div>
 
             {/* Tabla de órdenes (solo en pantallas medianas y grandes) */}
-            <motion.div 
+            <motion.div
                 className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto min-h-[400px]"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -384,7 +396,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                                                 >
                                                     <Eye size={18} />
                                                 </motion.button>
-                                                
+
                                                 {/* Print Button with Dropdown */}
                                                 <div className="relative">
                                                     <motion.button
@@ -447,7 +459,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
 
                 {/* Estado vacío */}
                 {filteredAndSortedOrders.length === 0 && (
-                    <motion.div 
+                    <motion.div
                         className="text-center py-12"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -481,9 +493,9 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.1 }}
                             className="fixed z-50 bg-white rounded-md shadow-xl border border-gray-200 overflow-hidden w-48"
-                            style={{ 
-                                top: printMenu.position.y, 
-                                left: printMenu.position.x 
+                            style={{
+                                top: printMenu.position.y,
+                                left: printMenu.position.x
                             }}
                         >
                             <button

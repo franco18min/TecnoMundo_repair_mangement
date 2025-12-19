@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     // --- INICIO DE LA MODIFICACIÓN ---
     const getAccessToken = useCallback(() => localStorage.getItem('accessToken'), []);
 
-    const logout = useCallback(() => {
+    const logout = useCallback((message = null) => {
         websocketRef.current?.close();
         apiLogout();
         setCurrentUser(null);
@@ -34,6 +34,11 @@ export const AuthProvider = ({ children }) => {
         setOrders([]);
         setBranches([]);
         setSelectedBranchId(null);
+
+        // Guardar mensaje en sessionStorage para mostrarlo en login
+        if (message) {
+            sessionStorage.setItem('sessionExpiredMessage', message);
+        }
     }, []);
 
     useEffect(() => {
@@ -87,47 +92,79 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         let isMounted = true;
         let reconnectTimeout = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+
+        // Función para calcular delay de reconexión con backoff exponencial
+        const getReconnectDelay = (attempt) => {
+            return Math.min(1000 * Math.pow(2, attempt), 30000); // Max 30 segundos
+        };
 
         const connect = () => {
             if (!currentUser) return;
             const token = getAccessToken();
             if (!token) return;
 
-            // Avoid opening multiple connections if already connected or connecting
-            if (websocketRef.current && (websocketRef.current.readyState === WebSocket.OPEN || websocketRef.current.readyState === WebSocket.CONNECTING)) {
-                return;
+            // Evitar múltiples conexiones simultáneas
+            if (websocketRef.current) {
+                const state = websocketRef.current.readyState;
+                if (state === WebSocket.OPEN ||
+                    state === WebSocket.CONNECTING ||
+                    state === WebSocket.CLOSING) {
+                    return;
+                }
             }
 
             const wsUrlWithToken = `${API_CONFIG.WS_URL}?token=${token}`;
-            console.log('Initiating WebSocket connection...');
-            
+
             const ws = new WebSocket(wsUrlWithToken);
             websocketRef.current = ws;
 
             ws.onopen = () => {
-                console.log('WebSocket Connected');
+                reconnectAttempts = 0; // Reset intentos en conexión exitosa
             };
 
             ws.onclose = (event) => {
-                console.log(`WebSocket Disconnected (Code: ${event.code}). Reconnecting in 3s...`);
-                if (isMounted) {
-                    reconnectTimeout = setTimeout(connect, 3000);
+
+                // Si el código es 1008 (Policy Violation), probablemente el token expiró
+                if (event.code === 1008) {
+                    console.warn('Session expired - redirecting to login');
+                    logout('Sesión caducada. Por favor, inicie sesión nuevamente.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Reconexión con backoff exponencial
+                if (isMounted && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    const delay = getReconnectDelay(reconnectAttempts);
+                    console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
+                    reconnectAttempts++;
+                    reconnectTimeout = setTimeout(connect, delay);
+                } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                    console.error('Max reconnection attempts reached');
                 }
             };
 
             ws.onerror = (error) => {
                 console.error('WebSocket Error:', error);
-                ws.close(); // Force close to trigger onclose logic if it hangs
+                ws.close(); // Forzar cierre para activar lógica de onclose
             };
 
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
+
+                    // Responder a PING del servidor con PONG
+                    if (data.event === 'PING') {
+                        ws.send(JSON.stringify({ event: 'PONG' }));
+                        return;
+                    }
+
                     switch (data.event) {
                         case 'ORDER_CREATED':
                             setOrders(prev => {
                                 const newOrder = mapOrderData(data.payload);
-                                // Prevent duplicates
+                                // Prevenir duplicados
                                 if (prev.find(o => o.id === newOrder.id)) return prev;
                                 return [newOrder, ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived));
                             });
@@ -154,6 +191,18 @@ export const AuthProvider = ({ children }) => {
             connect();
         }
 
+        // Manejo de visibilidad de página
+        const handleVisibilityChange = () => {
+            if (!document.hidden && websocketRef.current) {
+                if (websocketRef.current.readyState !== WebSocket.OPEN) {
+                    console.log('Page visible, checking connection...');
+                    connect();
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             isMounted = false;
             if (reconnectTimeout) clearTimeout(reconnectTimeout);
@@ -161,8 +210,9 @@ export const AuthProvider = ({ children }) => {
                 websocketRef.current.onclose = null;
                 websocketRef.current.close(1000, 'Component unmounting');
             }
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [currentUser, getAccessToken]);
+    }, [currentUser, getAccessToken, logout]);
 
     const login = async (username, password) => {
         await apiLogin(username, password);
@@ -179,18 +229,18 @@ export const AuthProvider = ({ children }) => {
     const filteredOrders = useMemo(() => {
         // If "Todas las Sucursales" is selected (assuming ID 0 or null represents that) or if we want to show everything by default when no specific branch is selected
         // However, based on the user request "ver todas las ordenes de todas las sucursales", we should probably allow a "View All" option or just return all orders if selectedBranchId is null/special value.
-        
+
         // Current logic:
         if (selectedBranchId === 'all') {
-             return orders;
+            return orders;
         }
 
         if (selectedBranchId == null) {
-             // If no branch is selected, show all orders? Or show none?
-             // User request: "todos los usuarios ... puedan ver todas las ordenes de todas las sucursales"
-             // Let's assume we want to show all orders if no specific branch is forced, OR we need to make sure the UI allows selecting "All".
-             // For now, let's return ALL orders if selectedBranchId is null, to be safe with the "see everything" requirement.
-             return orders; 
+            // If no branch is selected, show all orders? Or show none?
+            // User request: "todos los usuarios ... puedan ver todas las ordenes de todas las sucursales"
+            // Let's assume we want to show all orders if no specific branch is forced, OR we need to make sure the UI allows selecting "All".
+            // For now, let's return ALL orders if selectedBranchId is null, to be safe with the "see everything" requirement.
+            return orders;
         }
         return orders.filter(order => order.branch_id === selectedBranchId);
     }, [orders, selectedBranchId]);
@@ -211,7 +261,7 @@ export const AuthProvider = ({ children }) => {
         filteredOrders
     };
 
-    return ( <AuthContext.Provider value={value}>{children}</AuthContext.Provider> );
+    return (<AuthContext.Provider value={value}>{children}</AuthContext.Provider>);
 };
 
 export const useAuth = () => useContext(AuthContext);

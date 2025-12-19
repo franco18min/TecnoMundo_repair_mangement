@@ -26,7 +26,7 @@ export function LoginPage() {
     const resetPosition = () => {
       try {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      } catch {}
+      } catch { }
     };
 
     const onViewportResize = () => {
@@ -42,6 +42,15 @@ export function LoginPage() {
     return () => {
       vv?.removeEventListener('resize', onViewportResize);
     };
+  }, []);
+
+  // Verificar si hay mensaje de sesión caducada
+  useEffect(() => {
+    const expiredMessage = sessionStorage.getItem('sessionExpiredMessage');
+    if (expiredMessage) {
+      setError(expiredMessage);
+      sessionStorage.removeItem('sessionExpiredMessage');
+    }
   }, []);
 
   const activeTabClasses = "bg-indigo-600 text-white";
@@ -63,7 +72,7 @@ export function LoginPage() {
           setError('Por favor ingresa tu DNI o número de orden.');
           return;
         }
-        
+
         // Redirigir a la página de estado del cliente
         navigate(`/client/order/${encodeURIComponent(clientQuery.trim())}`);
       }
@@ -157,12 +166,12 @@ export function LoginPage() {
             ) : (
               <div className="relative mb-6">
                 <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input 
-                  type="text" 
-                  placeholder="DNI o N° de Orden" 
+                <input
+                  type="text"
+                  placeholder="DNI o N° de Orden"
                   value={clientQuery}
                   onChange={(e) => setClientQuery(e.target.value)}
-                  className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
+                  className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                   required
                   autoComplete="off"
                   inputMode="numeric"

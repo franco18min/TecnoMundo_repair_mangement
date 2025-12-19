@@ -30,9 +30,13 @@ const getApiClient = (getAccessToken, logout) => {
             const requestId = response.headers.get('X-Request-Id');
 
             if (response.status === 401 && logout) {
-                // Si la petición falla por autenticación y tenemos la función logout, la llamamos.
-                logout();
-                throw new Error('Sesión expirada. Por favor, inicie sesión de nuevo.');
+                // Llamar logout con mensaje de sesión caducada
+                logout('Sesión caducada. Por favor, inicie sesión nuevamente.');
+
+                // Redirigir al login
+                window.location.href = '/login';
+
+                throw new Error('Sesión caducada. Por favor, inicie sesión de nuevo.');
             }
 
             if (!response.ok) {

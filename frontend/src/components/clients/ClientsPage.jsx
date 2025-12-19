@@ -84,7 +84,7 @@ export function ClientsPage({ onViewOrderClick }) {
         return clients.filter(client =>
             client.first_name.toLowerCase().includes(lowercasedTerm) ||
             client.last_name.toLowerCase().includes(lowercasedTerm) ||
-            client.dni.includes(lowercasedTerm)
+            (client.dni?.includes(lowercasedTerm) ?? false)
         );
     }, [clients, searchTerm]);
 
