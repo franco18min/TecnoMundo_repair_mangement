@@ -214,6 +214,65 @@ export const AuthProvider = ({ children }) => {
         };
     }, [currentUser, getAccessToken, logout]);
 
+    // Sistema de timeout: Solo Expiración Absoluta (4 horas)
+    useEffect(() => {
+        if (!currentUser) return;
+
+        const ABSOLUTE_TIMEOUT = 4 * 60 * 60 * 1000; // 4 horas
+        const WARNING_TIME = 5 * 60 * 1000; // Advertencia 5 min antes
+
+        let absoluteTimer = null;
+        let warningShown = false;
+
+        // Función para hacer logout por timeout
+        const handleTimeout = (reason) => {
+            console.warn(`Session timeout: ${reason}`);
+            logout('Sesión caducada. Por favor, inicie sesión nuevamente.');
+            window.location.href = '/login';
+        };
+
+        // Timer absoluto (desde login, no se reinicia)
+        const loginTime = parseInt(localStorage.getItem('loginTime') || Date.now());
+        const timeElapsed = Date.now() - loginTime;
+        const absoluteTimeRemaining = ABSOLUTE_TIMEOUT - timeElapsed;
+
+        if (absoluteTimeRemaining <= 0) {
+            // Ya expiró
+            handleTimeout('absolute timeout');
+            return;
+        }
+
+        absoluteTimer = setTimeout(() => {
+            handleTimeout('absolute timeout (4 hours)');
+        }, absoluteTimeRemaining);
+
+        // Verificación periódica (cada minuto) para detectar expiración absoluta
+        const checkInterval = setInterval(() => {
+            const sessionExpiration = parseInt(localStorage.getItem('sessionExpiration'));
+            const now = Date.now();
+            const timeRemaining = sessionExpiration - now;
+
+            // Verificar si ya expiró
+            if (timeRemaining <= 0) {
+                clearInterval(checkInterval);
+                handleTimeout('absolute timeout (verification)');
+                return;
+            }
+
+            // Mostrar advertencia 5 minutos antes (solo una vez)
+            if (timeRemaining <= WARNING_TIME && !warningShown) {
+                warningShown = true;
+                console.warn(`Session will expire in ${Math.floor(timeRemaining / 60000)} minutes`);
+            }
+        }, 60000); // Verificar cada minuto
+
+        // Cleanup
+        return () => {
+            if (absoluteTimer) clearTimeout(absoluteTimer);
+            if (checkInterval) clearInterval(checkInterval);
+        };
+    }, [currentUser, logout]);
+
     const login = async (username, password) => {
         await apiLogin(username, password);
         await validateToken();

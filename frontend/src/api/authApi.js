@@ -26,6 +26,15 @@ export const loginUser = async (username, password) => {
 
   const data = await response.json();
   localStorage.setItem('accessToken', data.access_token);
+
+  // Guardar timestamp de login para sistema de timeout
+  const loginTime = Date.now();
+  localStorage.setItem('loginTime', loginTime.toString());
+
+  // Calcular y guardar tiempo de expiración (4 horas)
+  const expirationTime = loginTime + (4 * 60 * 60 * 1000);
+  localStorage.setItem('sessionExpiration', expirationTime.toString());
+
   return data;
 };
 
@@ -33,22 +42,22 @@ export const loginUser = async (username, password) => {
  * Obtiene los datos del usuario actualmente autenticado usando el token.
  */
 export const getCurrentUser = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) throw new Error("No hay token de acceso.");
+  const token = localStorage.getItem('accessToken');
+  if (!token) throw new Error("No hay token de acceso.");
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-
-    if (!response.ok) {
-        if (response.status === 401) {
-            logoutUser(); // Limpia el token inválido
-        }
-        throw new Error("No se pudo obtener la información del usuario.");
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
     }
-    return await response.json();
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logoutUser(); // Limpia el token inválido
+    }
+    throw new Error("No se pudo obtener la información del usuario.");
+  }
+  return await response.json();
 };
 
 /**
@@ -74,4 +83,7 @@ export const registerUser = async (username, email, password) => {
  */
 export const logoutUser = () => {
   localStorage.removeItem('accessToken');
+  localStorage.removeItem('loginTime');
+  localStorage.removeItem('sessionExpiration');
+  localStorage.removeItem('lastActivity');
 };
