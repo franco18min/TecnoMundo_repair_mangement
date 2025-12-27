@@ -65,15 +65,15 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
 
     const loadInitialData = useCallback(async () => {
         if (!isOpen) return;
-        setIsLoading(true); setError(''); 
+        setIsLoading(true); setError('');
         // Solo resetear formulario si estamos cargando una orden nueva o cambiando de orden
         if (!hasUpdated) {
-            setFormData(initialFormData); 
+            setFormData(initialFormData);
             setChecklistItems([]);
             setClientType('nuevo'); setClientSearch(''); setSelectedClientId(null); setOriginalClientData(null); setUnlockMethod('password'); setMode(orderId ? 'view' : 'create'); setSparePartStatus('local'); setIsTechPanelOpen(false);
             setFieldErrors({});
         }
-        
+
         try {
             const types = await fetchDeviceTypes();
             setDeviceTypes(types);
@@ -271,7 +271,7 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         let finalSelectedClientId = selectedClientId;
 
         if (clientType === 'registrado' && originalClientData) {
-            const hasChanged = 
+            const hasChanged =
                 formData.first_name !== originalClientData.first_name ||
                 formData.last_name !== originalClientData.last_name ||
                 formData.phone_number !== originalClientData.phone_number ||
@@ -425,19 +425,20 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                     <form id="order-form" onSubmit={handleSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scrollbar">
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                             <div className="space-y-6">
-                                                <ClientSection 
-                                                    permissions={permissions} 
-                                                    formData={formData} 
-                                                    handleFormChange={handleFormChange} 
-                                                    clientType={clientType} 
-                                                    setClientType={setClientType} 
-                                                    clientSearch={clientSearch} 
-                                                    setClientSearch={setClientSearch} 
-                                                    clientSearchResults={clientSearchResults} 
-                                                    isClientSearchFocused={isClientSearchFocused} 
-                                                    setIsClientSearchFocused={setIsClientSearchFocused} 
+                                                <ClientSection
+                                                    permissions={permissions}
+                                                    formData={formData}
+                                                    handleFormChange={handleFormChange}
+                                                    clientType={clientType}
+                                                    setClientType={setClientType}
+                                                    clientSearch={clientSearch}
+                                                    setClientSearch={setClientSearch}
+                                                    clientSearchResults={clientSearchResults}
+                                                    isClientSearchFocused={isClientSearchFocused}
+                                                    setIsClientSearchFocused={setIsClientSearchFocused}
                                                     handleClientSelect={handleClientSelect}
-                                                    fieldErrors={fieldErrors} // Pasar errores específicos
+                                                    fieldErrors={fieldErrors}
+                                                    mode={mode}
                                                 />
                                                 <CostsSection mode={mode} permissions={permissions} formData={formData} handleFormChange={handleFormChange} />
                                                 <div className="bg-white border rounded-lg p-4">

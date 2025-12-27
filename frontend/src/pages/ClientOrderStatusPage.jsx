@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  RefreshCw, 
-  Search, 
-  AlertCircle, 
+import {
+  ArrowLeft,
+  RefreshCw,
+  Search,
+  AlertCircle,
   Loader,
   Home,
   Phone,
@@ -36,7 +36,7 @@ import { getOrderByClientQuery, getOrderDetails, getOrderPhotos } from '../api/o
 const ClientOrderStatusPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  
+
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -83,7 +83,7 @@ const ClientOrderStatusPage = () => {
     try {
       const data = await getOrderByClientQuery(searchIdentifier.trim());
       setOrderData(data);
-      
+
       // Obtener fotos si existen
       try {
         const photos = await getOrderPhotos(data.id);
@@ -92,11 +92,11 @@ const ClientOrderStatusPage = () => {
         console.warn('No se pudieron cargar las fotos:', photoError);
         setOrderData(prev => ({ ...prev, photos: [] }));
       }
-      
+
       // Verificar si ya está suscrito
       const subscriptionStatus = localStorage.getItem(`subscription_${data.id}`);
       setIsSubscribed(subscriptionStatus === 'true');
-      
+
       setToast({
         type: 'success',
         message: '¡Orden encontrada exitosamente!'
@@ -124,7 +124,7 @@ const ClientOrderStatusPage = () => {
   // Función para refrescar datos
   const handleRefresh = async () => {
     if (!orderData?.id) return;
-    
+
     setRefreshing(true);
     try {
       // Obtener detalles por ID (evita errores si la búsqueda original fue por DNI)
@@ -208,7 +208,7 @@ const ClientOrderStatusPage = () => {
           <p className="text-gray-600 mb-6">
             {error}
           </p>
-          
+
           {/* Búsqueda alternativa */}
           <div className="space-y-4">
             <div className="relative">
@@ -222,14 +222,14 @@ const ClientOrderStatusPage = () => {
               />
               <Search className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
             </div>
-            
+
             <button
               onClick={handleSearch}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               Buscar Orden
             </button>
-            
+
             <button
               onClick={() => navigate('/login')}
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors"
@@ -261,9 +261,9 @@ const ClientOrderStatusPage = () => {
                 <ArrowLeft className="w-5 h-5" />
                 <span className="font-medium">Volver</span>
               </button>
-              
+
               <div className="h-6 w-px bg-gray-300" />
-              
+
               <div className="flex items-center">
                 <BrandLogo className="h-6 w-auto" alt="TecnoMundo" />
               </div>
@@ -282,7 +282,7 @@ const ClientOrderStatusPage = () => {
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
-              
+
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -321,7 +321,7 @@ const ClientOrderStatusPage = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Información de la orden integrada */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mt-6">
               <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
@@ -331,7 +331,7 @@ const ClientOrderStatusPage = () => {
                   <p className="text-sm text-blue-200 mt-1 break-words">Tipo: {orderData?.device_type.type_name}</p>
                 )}
               </div>
-              
+
               <div className="bg-white/10 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
                 <h4 className="font-semibold text-white mb-2">Problema Reportado</h4>
                 <p className="text-blue-100 break-words">{orderData?.problem_description || 'No especificado'}</p>
@@ -361,7 +361,7 @@ const ClientOrderStatusPage = () => {
           <div className="grid grid-cols-1 gap-8">
             {/* Timeline horizontal */}
             <motion.div variants={itemVariants} className="space-y-6">
-              <OrderTimeline 
+              <OrderTimeline
                 currentStatus={orderData?.status?.status_name}
                 orderDate={orderData?.created_at}
               />
@@ -392,7 +392,7 @@ const ClientOrderStatusPage = () => {
 
           {showEmailSubscription && (
             <motion.div variants={itemVariants} className="overflow-hidden">
-              <EmailSubscription 
+              <EmailSubscription
                 customerEmail={orderData?.customer?.email || orderData?.customer?.phone_number}
                 orderId={orderData?.id}
                 onSubscriptionChange={handleSubscriptionChange}
@@ -401,14 +401,14 @@ const ClientOrderStatusPage = () => {
           )}
 
           {/* Información de la sucursal */}
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6"
           >
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Información de contacto
             </h3>
-            
+
             {/* Información horizontal de la sucursal */}
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               {/* Nombre de sucursal */}
@@ -416,11 +416,11 @@ const ClientOrderStatusPage = () => {
                 <Building className="w-5 h-5 text-blue-600" />
                 <span className="font-medium text-gray-800 break-words">{orderData?.branch?.branch_name}</span>
               </div>
-              
+
               {/* Teléfono (único, técnico o sucursal) */}
               {(orderData?.technician?.phone_number || orderData?.branch?.phone) && (
                 <div className="flex items-center space-x-2">
-                  <button 
+                  <button
                     onClick={() => {
                       const fallback = '+5493884087444';
                       const raw = (orderData?.technician?.phone_number || orderData?.branch?.phone || fallback).replace(/\D/g, '');
@@ -442,7 +442,7 @@ const ClientOrderStatusPage = () => {
                   </span>
                 </div>
               )}
-              
+
               {/* Dirección */}
               {orderData?.branch?.address && (
                 <div className="flex items-center space-x-2">
@@ -450,21 +450,6 @@ const ClientOrderStatusPage = () => {
                   <span className="text-gray-700 break-words">{orderData.branch.address}</span>
                 </div>
               )}
-
-              {/* Contacto del técnico: nombre opcional (sin duplicar teléfono) */}
-              {orderData?.technician && (() => {
-                const first = (orderData.technician.first_name || '').trim();
-                const last = (orderData.technician.last_name || '').trim();
-                const username = (orderData.technician.username || '').trim();
-                const showName = (first || last) || (username.toLowerCase() !== 'admin');
-                return showName ? (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-700 font-medium break-words">
-                      {`${first} ${last}`.trim() || username || 'Técnico'}
-                    </span>
-                  </div>
-                ) : null;
-              })()}
             </div>
           </motion.div>
         </motion.div>

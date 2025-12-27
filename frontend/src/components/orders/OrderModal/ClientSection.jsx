@@ -2,9 +2,9 @@ import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DisplayField, FormField } from './shared';
 import { searchClients } from '../../../api/customerApi';
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, MessageCircle } from 'lucide-react';
 
-export function ClientSection({ permissions, formData, handleFormChange, clientType, setClientType, clientSearch, setClientSearch, clientSearchResults, isClientSearchFocused, setIsClientSearchFocused, handleClientSelect, fieldErrors = {} }) {
+export function ClientSection({ permissions, formData, handleFormChange, clientType, setClientType, clientSearch, setClientSearch, clientSearchResults, isClientSearchFocused, setIsClientSearchFocused, handleClientSelect, fieldErrors = {}, mode }) {
     const [potentialMatches, setPotentialMatches] = useState([]);
     const [showMatchSelection, setShowMatchSelection] = useState(false);
 
@@ -12,7 +12,7 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
         const q = String(value || '').trim();
         if (q.length < 3 && (field === 'first_name' || field === 'last_name')) return;
         if (q.length < 4 && (field === 'dni' || field === 'phone_number')) return;
-        
+
         try {
             const results = await searchClients(q);
             // Validar que results sea un array válido antes de verificar length
@@ -59,9 +59,9 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
                 <>
                     <AnimatePresence>
                         {showMatchSelection && (
-                            <motion.div 
-                                initial={{ opacity: 0, height: 0 }} 
-                                animate={{ opacity: 1, height: 'auto' }} 
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
                                 className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 overflow-hidden"
                             >
@@ -76,7 +76,7 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
                                         <p className="text-sm text-amber-700 mb-3">
                                             Hemos encontrado {potentialMatches.length} cliente{potentialMatches.length !== 1 ? 's' : ''} similar{potentialMatches.length !== 1 ? 'es' : ''} en la base de datos.
                                         </p>
-                                        
+
                                         <div className="flex flex-wrap gap-2 mb-3">
                                             <button
                                                 type="button"
@@ -131,7 +131,31 @@ export function ClientSection({ permissions, formData, handleFormChange, clientT
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <DisplayField label="Nombre" value={formData.first_name} />
                     <DisplayField label="Apellido" value={formData.last_name} />
-                    <DisplayField label="Teléfono" value={formData.phone_number} />
+                    <div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                            <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+                            {mode === 'view' && formData.phone_number && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const raw = formData.phone_number.replace(/\D/g, '');
+                                        const base = raw.startsWith('549') ? raw : `549${raw}`;
+                                        const formattedPhone = `+${base}`;
+                                        const whatsappUrl = `https://api.whatsapp.com/send/?phone=${encodeURIComponent(formattedPhone)}&type=phone_number&app_absent=0`;
+                                        window.open(whatsappUrl, '_blank');
+                                    }}
+                                    className="flex items-center justify-center w-5 h-5 bg-green-500 hover:bg-green-600 rounded-full transition-colors duration-200"
+                                    title="Contactar por WhatsApp"
+                                    aria-label="Contactar por WhatsApp"
+                                >
+                                    <MessageCircle className="w-3 h-3 text-white" />
+                                </button>
+                            )}
+                        </div>
+                        <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
+                            {formData.phone_number || 'No especificado'}
+                        </div>
+                    </div>
                     <DisplayField label="DNI" value={formData.dni} />
                 </div>
             )}
