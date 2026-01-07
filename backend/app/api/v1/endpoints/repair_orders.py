@@ -1,6 +1,6 @@
 # backend/app/api/v1/endpoints/repair_orders.py
 
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, status, Query
 from sqlalchemy.orm import Session
 import traceback
@@ -18,19 +18,41 @@ def read_repair_orders(
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_user),
     page: int = Query(1, ge=1, description="Número de página (comienza en 1)"),
-    page_size: int = Query(15, ge=1, le=100, description="Cantidad de items por página")
+    page_size: int = Query(15, ge=1, le=100, description="Cantidad de items por página"),
+    # Filtros opcionales para búsqueda global
+    order_id: Optional[int] = Query(None, description="ID exacto de la orden"),
+    customer_name: Optional[str] = Query(None, description="Nombre o apellido del cliente (búsqueda parcial)"),
+    device_type: Optional[str] = Query(None, description="Tipo de dispositivo (búsqueda parcial)"),
+    status: Optional[str] = Query(None, description="Estado exacto de la orden"),
+    device_model: Optional[str] = Query(None, description="Modelo del dispositivo (búsqueda parcial)"),
+    parts_used: Optional[str] = Query(None, description="Repuestos utilizados (búsqueda parcial)")
 ):
     """
-    Obtiene órdenes de reparación con paginación.
+    Obtiene órdenes de reparación con paginación y filtros opcionales.
     
     - **page**: Número de página (mínimo 1)
-    - **page_size**: Items por página (entre 1 y 100, por defecto 20)
+    - **page_size**: Items por página (entre 1 y 100, por defecto 15)
+    - **order_id**: Filtrar por ID exacto
+    - **customer_name**: Buscar en nombre/apellido del cliente
+    - **device_type**: Filtrar por tipo de dispositivo
+    - **status**: Filtrar por estado
+    - **device_model**: Buscar en modelo del dispositivo
+    - **parts_used**: Buscar en repuestos usados
     
-    Retorna metadata de paginación junto con las órdenes.
+    Retorna metadata de paginación junto con las órdenes filtradas.
     """
     try:
         orders, total = crud_repair_order.get_repair_orders(
-            db, user=current_user, page=page, page_size=page_size
+            db, 
+            user=current_user, 
+            page=page, 
+            page_size=page_size,
+            order_id=order_id,
+            customer_name=customer_name,
+            device_type=device_type,
+            status=status,
+            device_model=device_model,
+            parts_used=parts_used
         )
         
         # Calcular total de páginas

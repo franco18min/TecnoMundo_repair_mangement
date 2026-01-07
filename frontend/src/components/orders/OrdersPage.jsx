@@ -183,41 +183,29 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         }
     };
 
-    // Handler para cambio de página
+    // Handler para cambio de página - pasar filtros actuales
     const handlePageChange = async (newPage) => {
         setIsLoading(true);
-        await fetchOrdersPage(newPage);
+        await fetchOrdersPage(newPage, filters); // Enviar filtros al servidor
         setIsLoading(false);
     };
 
-    // Los filtros ahora operan sobre la lista de órdenes de la página actual
-    const uniqueDeviceTypes = useMemo(() => ['Todos', ...new Set((orders || []).map(order => order.device.type))], [orders]);
-    const uniqueStatusesOptions = useMemo(() => {
-        const statuses = [...new Set((orders || []).map(order => order.status))];
-        const options = statuses.map(status => ({
-            value: status,
-            text: statusConfig[status]?.text || status
-        }));
-        return [{ value: 'Todos', text: 'Todos' }, ...options];
-    }, [orders]);
+    // Opciones estáticas para los filtros (el filtrado se hace en el servidor)
+    const uniqueDeviceTypes = ['Todos', 'Celular', 'Tablet', 'Notebook', 'PC', 'Impresora', 'Otro'];
+    const uniqueStatusesOptions = [
+        { value: 'Todos', text: 'Todos' },
+        { value: 'Pending', text: 'Pendiente' },
+        { value: 'In Process', text: 'En Proceso' },
+        { value: 'Waiting for parts', text: 'Esperando Repuesto' },
+        { value: 'Completed', text: 'Completado' },
+        { value: 'Delivered', text: 'Entregado' },
+        { value: 'Cancelled', text: 'Cancelado' }
+    ];
 
-    const filteredAndSortedOrders = useMemo(() => {
-        return (orders || []).filter(order => {
-            const filterId = filters.id.trim();
-            const filterClient = filters.client.trim().toLowerCase();
-            const filterParts = filters.parts_used.trim().toLowerCase();
-            const filterModel = filters.model.trim().toLowerCase();
-            const orderStatus = order.status;
-
-            if (filterId && order.id.toString() !== filterId) return false;
-            if (filterClient && !order.customer.name.toLowerCase().includes(filterClient)) return false;
-            if (filters.device_type !== 'Todos' && order.device.type !== filters.device_type) return false;
-            if (filters.status !== 'Todos' && orderStatus !== filters.status) return false;
-            if (filterModel && !order.device.model?.toLowerCase().includes(filterModel)) return false;
-            if (filterParts && !order.parts_used.toLowerCase().includes(filterParts)) return false;
-            return true;
-        });
-    }, [orders, filters]);
+    // Ya no necesitamos filtrado local - todo se hace en el servidor
+    // Los filtros se envían al backend y este devuelve solo las órdenes filtradas
+    // Simplemente mostramos lo que devuelve el servidor
+    const filteredAndSortedOrders = orders || [];
 
     // NUEVO: Órdenes del usuario actual (para móvil)
     const myOrders = useMemo(() => {
@@ -250,10 +238,20 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
+        const newFilters = { ...filters, [name]: value };
+        setFilters(newFilters);
+
+        // Resetear a página 1 y aplicar filtros en el servidor
+        setIsLoading(true);
+        fetchOrdersPage(1, newFilters).finally(() => setIsLoading(false));
     };
 
-    const clearFilters = () => setFilters(initialFilters);
+    const clearFilters = () => {
+        setFilters(initialFilters);
+        // Cargar página 1 sin filtros
+        setIsLoading(true);
+        fetchOrdersPage(1, initialFilters).finally(() => setIsLoading(false));
+    };
 
     const selectedStatusClass = useMemo(() => {
         if (filters.status === 'Todos' || !statusConfig[filters.status]) { return 'bg-gray-50'; }

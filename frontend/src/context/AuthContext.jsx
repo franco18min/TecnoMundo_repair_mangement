@@ -315,9 +315,9 @@ export const AuthProvider = ({ children }) => {
     }, [orders, selectedBranchId]);
 
     // Función para cambiar de página - DEBE estar antes del return condicional
-    const fetchOrdersPage = useCallback(async (page) => {
+    const fetchOrdersPage = useCallback(async (page, filters = {}) => {
         try {
-            const ordersData = await fetchRepairOrders(page, pageSize);
+            const ordersData = await fetchRepairOrders(page, pageSize, filters);
             setOrders(ordersData.orders);
             setTotalOrders(ordersData.total);
             setCurrentPage(ordersData.page);
