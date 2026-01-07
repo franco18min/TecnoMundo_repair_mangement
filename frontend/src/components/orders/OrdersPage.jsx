@@ -105,6 +105,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     const [orderToDelete, setOrderToDelete] = useState(null);
     const [printMenu, setPrintMenu] = useState({ isOpen: false, orderId: null, position: { x: 0, y: 0 } });
     const printerRef = useRef();
+    const scrollContainerRef = useRef(null); // Referencia al contenedor scrollable
 
     // Estado para órdenes y paginación
     const [orders, setOrders] = useState([]);
@@ -179,6 +180,10 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     // Manejar cambio de página
     const handlePageChange = (newPage) => {
         loadOrders(newPage, filters);
+        // Hacer scroll al tope cuando cambia la página
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = 0;
+        }
     };
 
     const handleConfirmDelete = async () => {
@@ -391,7 +396,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 style={{ maxHeight: 'calc(100vh - 280px)', display: 'flex', flexDirection: 'column' }}
             >
                 {/* Contenedor con scroll para la tabla */}
-                <div className="overflow-auto flex-1">
+                <div ref={scrollContainerRef} className="overflow-auto flex-1">
                     <table className="w-full min-w-[1000px]">
                         <thead className="bg-gray-50 sticky top-0 z-20">
                             <tr>
