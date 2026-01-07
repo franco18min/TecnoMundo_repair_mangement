@@ -21,7 +21,7 @@ const containerVariants = {
 };
 
 export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
-    const { currentUser } = useAuth();
+    const { currentUser, selectedBranchId } = useAuth();
     const { canCreateOrders } = usePermissions('create');
     const [statusFilter, setStatusFilter] = useState('All');
     const [recentOrders, setRecentOrders] = useState([]);
@@ -35,7 +35,9 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
         setIsLoading(true);
         try {
             // Cargar solo las 6 más recientes (página 1, tamaño 6)
-            const response = await fetchRepairOrders(1, 6);
+            // Incluir filtro de sucursal si está seleccionada
+            const filters = selectedBranchId ? { branch_id: selectedBranchId } : {};
+            const response = await fetchRepairOrders(1, 6, filters);
             setRecentOrders(response.items || []);
         } catch (error) {
             console.error('Error loading recent orders:', error);
@@ -52,6 +54,11 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
         window.addEventListener('orderUpdate', handleOrderUpdate);
         return () => window.removeEventListener('orderUpdate', handleOrderUpdate);
     }, []);
+
+    // Recargar cuando cambia la sucursal seleccionada
+    useEffect(() => {
+        loadRecentOrders();
+    }, [selectedBranchId]);
 
     // En móvil, filtrar solo órdenes sin tomar y las del usuario actual
     const mobileFilteredOrders = useMemo(() => {

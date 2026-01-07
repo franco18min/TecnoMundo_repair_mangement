@@ -25,7 +25,8 @@ def read_repair_orders(
     device_type: str = None,
     status_name: str = None,
     device_model: str = None,
-    parts_used: str = None
+    parts_used: str = None,
+    branch_id: int = None
 ):
     """
     Obtener órdenes de reparación con paginación y filtros.
@@ -60,7 +61,8 @@ def read_repair_orders(
             device_type=device_type,
             status_name=status_name,
             device_model=device_model,
-            parts_used=parts_used
+            parts_used=parts_used,
+            branch_id=branch_id
         )
         
         # Calcular total de páginas

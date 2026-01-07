@@ -161,7 +161,8 @@ def get_repair_orders(
     device_type: str = None,
     status_name: str = None,
     device_model: str = None,
-    parts_used: str = None
+    parts_used: str = None,
+    branch_id: int = None
 ):
     """
     Obtener órdenes de reparación con paginación y filtros.
@@ -215,6 +216,10 @@ def get_repair_orders(
     if parts_used:
         # Búsqueda parcial case-insensitive en repuestos
         query = query.filter(RepairOrderModel.parts_used.ilike(f"%{parts_used}%"))
+    
+    if branch_id:
+        # Filtrar por sucursal específica
+        query = query.filter(RepairOrderModel.branch_id == branch_id)
     
     # Obtener conteo total ANTES de aplicar paginación
     total_count = query.count()

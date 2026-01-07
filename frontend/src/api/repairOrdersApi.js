@@ -53,6 +53,7 @@ export const fetchRepairOrders = async (page = 1, pageSize = 20, filters = {}) =
     }
     if (filters.model) params.append('device_model', filters.model);
     if (filters.parts_used) params.append('parts_used', filters.parts_used);
+    if (filters.branch_id) params.append('branch_id', filters.branch_id);
 
     const response = await fetch(
       `${API_BASE_URL}/api/v1/repair-orders/?${params}`,

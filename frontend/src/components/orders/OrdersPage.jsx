@@ -99,7 +99,7 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
 );
 
 export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
-    const { currentUser } = useAuth();
+    const { currentUser, selectedBranchId } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [orderToDelete, setOrderToDelete] = useState(null);
@@ -111,7 +111,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     const [pagination, setPagination] = useState({
         total: 0,
         page: 1,
-        page_size: 5, // Para desarrollo, cambiar a 20 en producción
+        page_size: 10, // Cambiado de 5 a 10 para mostrar más órdenes
         total_pages: 0
     });
     const [isLoadingOrders, setIsLoadingOrders] = useState(true);
@@ -137,7 +137,8 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 device_type: currentFilters.device_type !== 'Todos' ? currentFilters.device_type : undefined,
                 status: currentFilters.status !== 'Todos' ? currentFilters.status : undefined,
                 model: currentFilters.model || undefined,
-                parts_used: currentFilters.parts_used || undefined
+                parts_used: currentFilters.parts_used || undefined,
+                branch_id: selectedBranchId || undefined
             };
 
             const response = await fetchRepairOrders(page, pagination.page_size, filterParams);
@@ -168,6 +169,12 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         window.addEventListener('orderUpdate', handleOrderUpdate);
         return () => window.removeEventListener('orderUpdate', handleOrderUpdate);
     }, []);
+
+    // Recargar cuando cambia la sucursal seleccionada
+    useEffect(() => {
+        // Resetear a página 1 cuando cambia la sucursal
+        loadOrders(1, filters);
+    }, [selectedBranchId]);
 
     // Manejar cambio de página
     const handlePageChange = (newPage) => {
@@ -386,9 +393,9 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 {/* Contenedor con scroll para la tabla */}
                 <div className="overflow-auto flex-1">
                     <table className="w-full min-w-[1000px]">
-                        <thead className="bg-gray-50 sticky top-0 z-10">
+                        <thead className="bg-gray-50 sticky top-0 z-20">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 w-24">Acciones</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-30 w-24">Acciones</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                 {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th> */}
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
