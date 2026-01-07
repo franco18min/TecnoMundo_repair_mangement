@@ -1,9 +1,10 @@
 # backend/app/api/v1/endpoints/repair_orders.py
 
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, status
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, status, Query
 from sqlalchemy.orm import Session
 import traceback
+import math
 
 from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
@@ -12,16 +13,36 @@ from app.api.v1 import dependencies as deps
 
 router = APIRouter()
 
-@router.get("/", response_model=List[schemas_repair_order.RepairOrder])
+@router.get("/", response_model=schemas_repair_order.RepairOrderPaginatedResponse)
 def read_repair_orders(
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_user),
-    skip: int = 0,
-    limit: int = 100
+    page: int = Query(1, ge=1, description="Número de página (comienza en 1)"),
+    page_size: int = Query(15, ge=1, le=100, description="Cantidad de items por página")
 ):
+    """
+    Obtiene órdenes de reparación con paginación.
+    
+    - **page**: Número de página (mínimo 1)
+    - **page_size**: Items por página (entre 1 y 100, por defecto 20)
+    
+    Retorna metadata de paginación junto con las órdenes.
+    """
     try:
-        orders = crud_repair_order.get_repair_orders(db, user=current_user, skip=skip, limit=limit)
-        return orders
+        orders, total = crud_repair_order.get_repair_orders(
+            db, user=current_user, page=page, page_size=page_size
+        )
+        
+        # Calcular total de páginas
+        total_pages = math.ceil(total / page_size) if total > 0 else 0
+        
+        return {
+            "items": orders,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages
+        }
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error en el servidor al consultar las órdenes.")

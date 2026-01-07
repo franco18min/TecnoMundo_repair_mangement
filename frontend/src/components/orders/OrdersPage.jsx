@@ -1,5 +1,3 @@
-// frontend/src/components/orders/OrdersPage.jsx
-
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search, MapPin, Printer, ChevronDown } from 'lucide-react';
@@ -10,6 +8,8 @@ import { useToast } from '../../context/ToastContext';
 import { ConfirmationModal } from '../shared/ConfirmationModal';
 import { OrderCard } from './OrderCard.jsx';
 import { OrderPrinter } from './tickets/OrderPrinter';
+import { Pagination } from '../shared/Pagination';
+
 
 const statusConfig = {
     'Pending': { text: 'Pendiente', badge: 'bg-red-100 text-red-800', icon: <AlertTriangle size={14} className="text-red-600" /> },
@@ -98,8 +98,16 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
 );
 
 export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
-    // Usamos 'filteredOrders' en lugar de 'orders'. La variable ahora se llama 'ordersToDisplay' para mayor claridad.
-    const { filteredOrders: ordersToDisplay, currentUser } = useAuth();
+    // --- MODIFICADO: Añadir datos de paginación ---
+    const {
+        orders,
+        currentUser,
+        currentPage,
+        totalOrders,
+        totalPages,
+        pageSize,
+        fetchOrdersPage
+    } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [orderToDelete, setOrderToDelete] = useState(null);
@@ -123,6 +131,8 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         try {
             await deleteRepairOrder(orderToDelete.id);
             showToast('Orden eliminada con éxito', 'success');
+            // Recargar la página actual después de eliminar
+            await fetchOrdersPage(currentPage);
         } catch (error) {
             console.error("Error al eliminar la orden:", error);
             showToast(error.message || 'No se pudo eliminar la orden', 'error');
@@ -173,19 +183,26 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         }
     };
 
-    // Los filtros ahora operan sobre la lista de órdenes ya filtrada por sucursal.
-    const uniqueDeviceTypes = useMemo(() => ['Todos', ...new Set((ordersToDisplay || []).map(order => order.device.type))], [ordersToDisplay]);
+    // Handler para cambio de página
+    const handlePageChange = async (newPage) => {
+        setIsLoading(true);
+        await fetchOrdersPage(newPage);
+        setIsLoading(false);
+    };
+
+    // Los filtros ahora operan sobre la lista de órdenes de la página actual
+    const uniqueDeviceTypes = useMemo(() => ['Todos', ...new Set((orders || []).map(order => order.device.type))], [orders]);
     const uniqueStatusesOptions = useMemo(() => {
-        const statuses = [...new Set((ordersToDisplay || []).map(order => order.status))];
+        const statuses = [...new Set((orders || []).map(order => order.status))];
         const options = statuses.map(status => ({
             value: status,
             text: statusConfig[status]?.text || status
         }));
         return [{ value: 'Todos', text: 'Todos' }, ...options];
-    }, [ordersToDisplay]);
+    }, [orders]);
 
     const filteredAndSortedOrders = useMemo(() => {
-        return (ordersToDisplay || []).filter(order => {
+        return (orders || []).filter(order => {
             const filterId = filters.id.trim();
             const filterClient = filters.client.trim().toLowerCase();
             const filterParts = filters.parts_used.trim().toLowerCase();
@@ -200,7 +217,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
             if (filterParts && !order.parts_used.toLowerCase().includes(filterParts)) return false;
             return true;
         });
-    }, [ordersToDisplay, filters]);
+    }, [orders, filters]);
 
     // NUEVO: Órdenes del usuario actual (para móvil)
     const myOrders = useMemo(() => {
@@ -470,6 +487,15 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                         <p className="mt-1 text-sm text-gray-500">Comienza creando una nueva orden de reparación.</p>
                     </motion.div>
                 )}
+
+                {/* Paginación */}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalOrders}
+                    pageSize={pageSize}
+                    onPageChange={handlePageChange}
+                />
             </motion.div>
 
             {/* Modal de confirmación */}
@@ -499,7 +525,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                             }}
                         >
                             <button
-                                onClick={() => handlePrintOption(ordersToDisplay.find(o => o.id === printMenu.orderId), 'all')}
+                                onClick={() => handlePrintOption(orders.find(o => o.id === printMenu.orderId), 'all')}
                                 className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2"
                             >
                                 <Printer size={16} />
@@ -507,7 +533,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                             </button>
                             <div className="border-t border-gray-100"></div>
                             <button
-                                onClick={() => handlePrintOption(ordersToDisplay.find(o => o.id === printMenu.orderId), 'single')}
+                                onClick={() => handlePrintOption(orders.find(o => o.id === printMenu.orderId), 'single')}
                                 className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2"
                             >
                                 <Printer size={16} />

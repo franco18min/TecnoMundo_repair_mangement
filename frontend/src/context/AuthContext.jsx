@@ -23,6 +23,11 @@ export const AuthProvider = ({ children }) => {
     const [branches, setBranches] = useState([]);
     const [selectedBranchId, setSelectedBranchId] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalOrders, setTotalOrders] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [pageSize, setPageSize] = useState(15); // Producción: 15 órdenes por página
+
     // --- INICIO DE LA MODIFICACIÓN ---
     const getAccessToken = useCallback(() => localStorage.getItem('accessToken'), []);
 
@@ -54,13 +59,18 @@ export const AuthProvider = ({ children }) => {
             const user = await getCurrentUser();
             setCurrentUser(user);
 
-            const [initialOrders, initialNotifications, allBranches] = await Promise.all([
-                fetchRepairOrders(),
+            const [ordersData, initialNotifications, allBranches] = await Promise.all([
+                fetchRepairOrders(1, pageSize), // Cargar primera página
                 fetchNotifications(),
                 apiFetchBranches()
             ]);
 
-            setOrders(initialOrders);
+            // ordersData ahora es: { orders, total, page, pageSize, totalPages }
+            setOrders(ordersData.orders);
+            setTotalOrders(ordersData.total);
+            setCurrentPage(ordersData.page);
+            setTotalPages(ordersData.totalPages);
+
             setNotifications(initialNotifications);
             setBranches(allBranches);
 
@@ -72,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             // Suprimir logs de consola en producción/desarrollo
         }
-    }, []);
+    }, [pageSize]);
 
     const validateToken = useCallback(async () => {
         const token = getAccessToken();
@@ -304,6 +314,19 @@ export const AuthProvider = ({ children }) => {
         return orders.filter(order => order.branch_id === selectedBranchId);
     }, [orders, selectedBranchId]);
 
+    // Función para cambiar de página - DEBE estar antes del return condicional
+    const fetchOrdersPage = useCallback(async (page) => {
+        try {
+            const ordersData = await fetchRepairOrders(page, pageSize);
+            setOrders(ordersData.orders);
+            setTotalOrders(ordersData.total);
+            setCurrentPage(ordersData.page);
+            setTotalPages(ordersData.totalPages);
+        } catch (error) {
+            console.error("Error al cargar página de órdenes:", error);
+        }
+    }, [pageSize]);
+
     if (isLoading) { return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><Loader className="animate-spin text-indigo-600" size={48} /></div>; }
 
     const value = {
@@ -317,7 +340,13 @@ export const AuthProvider = ({ children }) => {
         branches,
         selectedBranchId,
         setSelectedBranchId,
-        filteredOrders
+        filteredOrders,
+        // Paginación
+        currentPage,
+        totalOrders,
+        totalPages,
+        pageSize,
+        fetchOrdersPage
     };
 
     return (<AuthContext.Provider value={value}>{children}</AuthContext.Provider>);

@@ -150,7 +150,20 @@ async def send_order_reopened_notification(order_id: int):
                                   "payload": NotificationSchema.from_orm(db_notification).dict()}
             await manager.send_to_user(json.dumps(notification_event, default=str), order.technician_id)
 
-def get_repair_orders(db: Session, user: UserModel, skip: int = 0, limit: int = 100):
+def get_repair_orders(db: Session, user: UserModel, page: int = 1, page_size: int = 20):
+    """
+    Obtiene órdenes de reparación con paginación.
+    
+    Args:
+        db: Sesión de base de datos
+        user: Usuario actual
+        page: Número de página (comienza en 1)
+        page_size: Cantidad de items por página
+    
+    Returns:
+        Tuple de (orders, total_count)
+    """
+    # Construcción de la query base
     query = db.query(RepairOrderModel).options(
         joinedload(RepairOrderModel.customer),
         joinedload(RepairOrderModel.technician),
@@ -160,10 +173,22 @@ def get_repair_orders(db: Session, user: UserModel, skip: int = 0, limit: int = 
         joinedload(RepairOrderModel.photos),
         joinedload(RepairOrderModel.branch)
     )
+    
+    # Aplicar filtros de permisos si es necesario
     if user.role.role_name != "Administrator" and user.branch_id:
         # query = query.filter(RepairOrderModel.branch_id == user.branch_id)
         pass # Permitir ver órdenes de todas las sucursales para todos los roles
-    return query.order_by(RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Contar el total de órdenes
+    total_count = query.count()
+    
+    # Calcular offset basado en la página
+    offset = (page - 1) * page_size
+    
+    # Obtener las órdenes de la página actual
+    orders = query.order_by(RepairOrderModel.created_at.desc()).offset(offset).limit(page_size).all()
+    
+    return orders, total_count
 
 def get_repair_order(db: Session, order_id: int):
     return db.query(RepairOrderModel).options(
