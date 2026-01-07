@@ -2,125 +2,90 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
-/**
- * Componente de paginación reutilizable
- * @param {number} currentPage - Página actual (comienza en 1)
- * @param {number} totalPages - Total de páginas
- * @param {number} totalItems - Total de items
- * @param {number} pageSize - Items por página
- * @param {function} onPageChange - Callback cuando cambia la página
- */
-export function Pagination({ currentPage, totalPages, totalItems, pageSize, onPageChange }) {
-    // Calcular el rango de items mostrados
-    const startItem = totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+export function Pagination({ currentPage, totalPages, onPageChange, totalItems, pageSize }) {
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
     const endItem = Math.min(currentPage * pageSize, totalItems);
 
-    // Generar números de página a mostrar
-    const getPageNumbers = () => {
-        const pages = [];
-        const maxPagesToShow = 5;
-
-        if (totalPages <= maxPagesToShow) {
-            // Mostrar todas las páginas si son pocas
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
-            }
-        } else {
-            // Mostrar con ellipsis
-            if (currentPage <= 3) {
-                // Principio
-                for (let i = 1; i <= 4; i++) pages.push(i);
-                pages.push('...');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 2) {
-                // Final
-                pages.push(1);
-                pages.push('...');
-                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-            } else {
-                // Medio
-                pages.push(1);
-                pages.push('...');
-                for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-                pages.push('...');
-                pages.push(totalPages);
-            }
-        }
-
-        return pages;
-    };
-
-    if (totalPages <= 1) return null;
-
-    const pageNumbers = getPageNumbers();
+    const isFirstPage = currentPage === 1;
+    const isLastPage = currentPage === totalPages || totalPages === 0;
 
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white border-t border-gray-200">
-            {/* Info de items */}
-            <div className="text-sm text-gray-700">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 bg-white border-t border-gray-200" data-testid="pagination">
+            {/* Información de página */}
+            <div className="text-sm text-gray-700" data-testid="page-info">
                 Mostrando <span className="font-medium">{startItem}</span> a{' '}
                 <span className="font-medium">{endItem}</span> de{' '}
                 <span className="font-medium">{totalItems}</span> órdenes
             </div>
 
-            {/* Controles de paginación */}
+            {/* Controles de navegación */}
             <div className="flex items-center gap-2">
-                {/* Botón Anterior */}
                 <motion.button
-                    onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className={`p-2 rounded-md transition-colors ${currentPage === 1
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-gray-700 hover:bg-gray-100'
+                    onClick={() => onPageChange(1)}
+                    disabled={isFirstPage}
+                    className={`p-2 rounded-lg border transition-colors ${isFirstPage
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
                         }`}
-                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                    whileHover={!isFirstPage ? { scale: 1.05 } : {}}
+                    whileTap={!isFirstPage ? { scale: 0.95 } : {}}
+                    title="Primera página"
+                    data-testid="first-page"
                 >
-                    <ChevronLeft size={20} />
+                    <ChevronsLeft size={18} />
                 </motion.button>
 
-                {/* Números de página */}
-                <div className="flex items-center gap-1">
-                    {pageNumbers.map((page, index) => {
-                        if (page === '...') {
-                            return (
-                                <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
-                                    ...
-                                </span>
-                            );
-                        }
+                <motion.button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={isFirstPage}
+                    className={`p-2 rounded-lg border transition-colors ${isFirstPage
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                        }`}
+                    whileHover={!isFirstPage ? { scale: 1.05 } : {}}
+                    whileTap={!isFirstPage ? { scale: 0.95 } : {}}
+                    title="Página anterior"
+                    data-testid="prev-page"
+                >
+                    <ChevronLeft size={18} />
+                </motion.button>
 
-                        return (
-                            <motion.button
-                                key={page}
-                                onClick={() => onPageChange(page)}
-                                className={`min-w-[40px] h-10 px-3 rounded-md text-sm font-medium transition-colors ${currentPage === page
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                    }`}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                {page}
-                            </motion.button>
-                        );
-                    })}
+                <div className="px-4 py-2 text-sm font-medium text-gray-700">
+                    Página{' '}
+                    <span className="font-bold text-indigo-600">{currentPage}</span> de{' '}
+                    <span className="font-bold">{totalPages || 1}</span>
                 </div>
 
-                {/* Botón Siguiente */}
                 <motion.button
-                    onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={`p-2 rounded-md transition-colors ${currentPage === totalPages
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-gray-700 hover:bg-gray-100'
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={isLastPage}
+                    className={`p-2 rounded-lg border transition-colors ${isLastPage
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
                         }`}
-                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                    whileHover={!isLastPage ? { scale: 1.05 } : {}}
+                    whileTap={!isLastPage ? { scale: 0.95 } : {}}
+                    title="Página siguiente"
+                    data-testid="next-page"
                 >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={18} />
+                </motion.button>
+
+                <motion.button
+                    onClick={() => onPageChange(totalPages)}
+                    disabled={isLastPage}
+                    className={`p-2 rounded-lg border transition-colors ${isLastPage
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                        }`}
+                    whileHover={!isLastPage ? { scale: 1.05 } : {}}
+                    whileTap={!isLastPage ? { scale: 0.95 } : {}}
+                    title="Última página"
+                    data-testid="last-page"
+                >
+                    <ChevronsRight size={18} />
                 </motion.button>
             </div>
         </div>

@@ -34,38 +34,57 @@ export const mapOrderData = (order) => {
 };
 
 
-
-export const fetchRepairOrders = async (page = 1, pageSize = 15) => {
+export const fetchRepairOrders = async (page = 1, pageSize = 20, filters = {}) => {
   try {
+    // Construir query params
+    const params = new URLSearchParams({
+      page: page.toString(),
+      page_size: pageSize.toString()
+    });
+
+    // Agregar filtros opcionales
+    if (filters.order_id) params.append('order_id', filters.order_id);
+    if (filters.client_name) params.append('client_name', filters.client_name);
+    if (filters.device_type && filters.device_type !== 'Todos') {
+      params.append('device_type', filters.device_type);
+    }
+    if (filters.status && filters.status !== 'Todos') {
+      params.append('status_name', filters.status);
+    }
+    if (filters.model) params.append('device_model', filters.model);
+    if (filters.parts_used) params.append('parts_used', filters.parts_used);
+
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/repair-orders/?page=${page}&page_size=${pageSize}`,
+      `${API_BASE_URL}/api/v1/repair-orders/?${params}`,
       { headers: getAuthHeaders() }
     );
+
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
+
     const data = await response.json();
 
-    // La respuesta ahora es paginada: { items, total, page, page_size, total_pages }
+    // data ahora tiene estructura: { items, total, page, page_size, total_pages }
     return {
-      orders: data.items.map(mapOrderData),
+      items: data.items.map(mapOrderData),
       total: data.total,
       page: data.page,
-      pageSize: data.page_size,
-      totalPages: data.total_pages
+      page_size: data.page_size,
+      total_pages: data.total_pages
     };
   } catch (error) {
     console.error("No se pudieron obtener las órdenes de reparación:", error);
+    // Retornar estructura vacía en caso de error
     return {
-      orders: [],
+      items: [],
       total: 0,
       page: 1,
-      pageSize: pageSize,
-      totalPages: 0
+      page_size: pageSize,
+      total_pages: 0
     };
   }
 };
-
 
 
 

@@ -1,32 +1,23 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from '../api/authApi';
-import { fetchRepairOrders, mapOrderData } from '../api/repairOrdersApi';
 import { fetchNotifications, markNotificationAsRead as apiMarkAsRead } from '../api/notificationsApi';
 import { API_CONFIG } from '../config/api.js';
-// --- INICIO DE LA MODIFICACIÓN ---
 import { fetchBranches as apiFetchBranches } from '../api/branchApi';
 import { Loader } from 'lucide-react';
 import { initializeUserApi } from '../api/userApi';
 import { initializeRolesApi } from '../api/rolesApi';
 import { initializeBranchApi } from '../api/branchApi';
 import { initializeRecordsApi } from '../api/recordsApi';
-// --- FIN DE LA MODIFICACIÓN ---
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [orders, setOrders] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const websocketRef = useRef(null);
     const [branches, setBranches] = useState([]);
     const [selectedBranchId, setSelectedBranchId] = useState(null);
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalOrders, setTotalOrders] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
-    const [pageSize, setPageSize] = useState(15); // Producción: 15 órdenes por página
 
     // --- INICIO DE LA MODIFICACIÓN ---
     const getAccessToken = useCallback(() => localStorage.getItem('accessToken'), []);
@@ -36,7 +27,6 @@ export const AuthProvider = ({ children }) => {
         apiLogout();
         setCurrentUser(null);
         setNotifications([]);
-        setOrders([]);
         setBranches([]);
         setSelectedBranchId(null);
 
@@ -59,17 +49,10 @@ export const AuthProvider = ({ children }) => {
             const user = await getCurrentUser();
             setCurrentUser(user);
 
-            const [ordersData, initialNotifications, allBranches] = await Promise.all([
-                fetchRepairOrders(1, pageSize), // Cargar primera página
+            const [initialNotifications, allBranches] = await Promise.all([
                 fetchNotifications(),
                 apiFetchBranches()
             ]);
-
-            // ordersData ahora es: { orders, total, page, pageSize, totalPages }
-            setOrders(ordersData.orders);
-            setTotalOrders(ordersData.total);
-            setCurrentPage(ordersData.page);
-            setTotalPages(ordersData.totalPages);
 
             setNotifications(initialNotifications);
             setBranches(allBranches);
@@ -82,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             // Suprimir logs de consola en producción/desarrollo
         }
-    }, [pageSize]);
+    }, []);
 
     const validateToken = useCallback(async () => {
         const token = getAccessToken();
@@ -172,18 +155,12 @@ export const AuthProvider = ({ children }) => {
 
                     switch (data.event) {
                         case 'ORDER_CREATED':
-                            setOrders(prev => {
-                                const newOrder = mapOrderData(data.payload);
-                                // Prevenir duplicados
-                                if (prev.find(o => o.id === newOrder.id)) return prev;
-                                return [newOrder, ...prev].sort((a, b) => new Date(b.dateReceived) - new Date(a.dateReceived));
-                            });
-                            break;
                         case 'ORDER_UPDATED':
-                            setOrders(prev => prev.map(o => o.id === data.payload.id ? mapOrderData(data.payload) : o));
-                            break;
                         case 'ORDER_DELETED':
-                            setOrders(prev => prev.filter(o => o.id !== data.payload.id));
+                            // Emitir evento personalizado para que los componentes se actualicen
+                            window.dispatchEvent(new CustomEvent('orderUpdate', {
+                                detail: { event: data.event, order: data.payload }
+                            }));
                             break;
                         case 'NEW_NOTIFICATION':
                             setNotifications(prev => [data.payload, ...prev]);
@@ -295,37 +272,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) { }
     };
 
-    const filteredOrders = useMemo(() => {
-        // If "Todas las Sucursales" is selected (assuming ID 0 or null represents that) or if we want to show everything by default when no specific branch is selected
-        // However, based on the user request "ver todas las ordenes de todas las sucursales", we should probably allow a "View All" option or just return all orders if selectedBranchId is null/special value.
 
-        // Current logic:
-        if (selectedBranchId === 'all') {
-            return orders;
-        }
-
-        if (selectedBranchId == null) {
-            // If no branch is selected, show all orders? Or show none?
-            // User request: "todos los usuarios ... puedan ver todas las ordenes de todas las sucursales"
-            // Let's assume we want to show all orders if no specific branch is forced, OR we need to make sure the UI allows selecting "All".
-            // For now, let's return ALL orders if selectedBranchId is null, to be safe with the "see everything" requirement.
-            return orders;
-        }
-        return orders.filter(order => order.branch_id === selectedBranchId);
-    }, [orders, selectedBranchId]);
-
-    // Función para cambiar de página - DEBE estar antes del return condicional
-    const fetchOrdersPage = useCallback(async (page, filters = {}) => {
-        try {
-            const ordersData = await fetchRepairOrders(page, pageSize, filters);
-            setOrders(ordersData.orders);
-            setTotalOrders(ordersData.total);
-            setCurrentPage(ordersData.page);
-            setTotalPages(ordersData.totalPages);
-        } catch (error) {
-            console.error("Error al cargar página de órdenes:", error);
-        }
-    }, [pageSize]);
 
     if (isLoading) { return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><Loader className="animate-spin text-indigo-600" size={48} /></div>; }
 
@@ -334,19 +281,11 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         isLoggedIn: !!currentUser,
-        orders,
         notifications,
         markAsRead,
         branches,
         selectedBranchId,
-        setSelectedBranchId,
-        filteredOrders,
-        // Paginación
-        currentPage,
-        totalOrders,
-        totalPages,
-        pageSize,
-        fetchOrdersPage
+        setSelectedBranchId
     };
 
     return (<AuthContext.Provider value={value}>{children}</AuthContext.Provider>);

@@ -1,7 +1,9 @@
-import React, { useState, useMemo, useRef } from 'react';
+// frontend/src/components/orders/OrdersPage.jsx
+
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search, MapPin, Printer, ChevronDown } from 'lucide-react';
-import { deleteRepairOrder, fetchRepairOrderById } from '../../api/repairOrdersApi';
+import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search, MapPin, Printer, ChevronDown, Loader } from 'lucide-react';
+import { deleteRepairOrder, fetchRepairOrderById, fetchRepairOrders } from '../../api/repairOrdersApi';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -9,7 +11,6 @@ import { ConfirmationModal } from '../shared/ConfirmationModal';
 import { OrderCard } from './OrderCard.jsx';
 import { OrderPrinter } from './tickets/OrderPrinter';
 import { Pagination } from '../shared/Pagination';
-
 
 const statusConfig = {
     'Pending': { text: 'Pendiente', badge: 'bg-red-100 text-red-800', icon: <AlertTriangle size={14} className="text-red-600" /> },
@@ -98,21 +99,22 @@ const FilterSelect = ({ label, name, value, onChange, options, className = '' })
 );
 
 export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
-    // --- MODIFICADO: Añadir datos de paginación ---
-    const {
-        orders,
-        currentUser,
-        currentPage,
-        totalOrders,
-        totalPages,
-        pageSize,
-        fetchOrdersPage
-    } = useAuth();
+    const { currentUser } = useAuth();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [orderToDelete, setOrderToDelete] = useState(null);
     const [printMenu, setPrintMenu] = useState({ isOpen: false, orderId: null, position: { x: 0, y: 0 } });
     const printerRef = useRef();
+
+    // Estado para órdenes y paginación
+    const [orders, setOrders] = useState([]);
+    const [pagination, setPagination] = useState({
+        total: 0,
+        page: 1,
+        page_size: 5, // Para desarrollo, cambiar a 20 en producción
+        total_pages: 0
+    });
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
     const initialFilters = {
         id: '',
@@ -125,14 +127,59 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     const [filters, setFilters] = useState(initialFilters);
     const permissions = usePermissions();
 
+    // Función para cargar órdenes
+    const loadOrders = async (page = 1, currentFilters = filters) => {
+        setIsLoadingOrders(true);
+        try {
+            const filterParams = {
+                order_id: currentFilters.id || undefined,
+                client_name: currentFilters.client || undefined,
+                device_type: currentFilters.device_type !== 'Todos' ? currentFilters.device_type : undefined,
+                status: currentFilters.status !== 'Todos' ? currentFilters.status : undefined,
+                model: currentFilters.model || undefined,
+                parts_used: currentFilters.parts_used || undefined
+            };
+
+            const response = await fetchRepairOrders(page, pagination.page_size, filterParams);
+            setOrders(response.items || []);
+            setPagination({
+                total: response.total,
+                page: response.page,
+                page_size: response.page_size,
+                total_pages: response.total_pages
+            });
+        } catch (error) {
+            console.error('Error al cargar órdenes:', error);
+            showToast('Error al cargar órdenes', 'error');
+        } finally {
+            setIsLoadingOrders(false);
+        }
+    };
+
+    // Cargar órdenes inicial y escuchar eventos WebSocket
+    useEffect(() => {
+        loadOrders(pagination.page, filters);
+
+        const handleOrderUpdate = (event) => {
+            // Recargar página actual cuando hay cambios
+            loadOrders(pagination.page, filters);
+        };
+
+        window.addEventListener('orderUpdate', handleOrderUpdate);
+        return () => window.removeEventListener('orderUpdate', handleOrderUpdate);
+    }, []);
+
+    // Manejar cambio de página
+    const handlePageChange = (newPage) => {
+        loadOrders(newPage, filters);
+    };
+
     const handleConfirmDelete = async () => {
         if (!orderToDelete) return;
         setIsLoading(true);
         try {
             await deleteRepairOrder(orderToDelete.id);
             showToast('Orden eliminada con éxito', 'success');
-            // Recargar la página actual después de eliminar
-            await fetchOrdersPage(currentPage);
         } catch (error) {
             console.error("Error al eliminar la orden:", error);
             showToast(error.message || 'No se pudo eliminar la orden', 'error');
@@ -183,33 +230,32 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         }
     };
 
-    // Handler para cambio de página - pasar filtros actuales
-    const handlePageChange = async (newPage) => {
-        setIsLoading(true);
-        await fetchOrdersPage(newPage, filters); // Enviar filtros al servidor
-        setIsLoading(false);
-    };
+    // Opciones de filtros - usar valores estáticos en lugar de derivarlos de la página actual
+    // Esto asegura que todos los filtros estén disponibles independientemente de la página
+    const uniqueDeviceTypes = useMemo(() => [
+        'Todos',
+        'Celular',
+        'Tablet',
+        'Laptop',
+        'PC',
+        'Consola',
+        'Smartwatch',
+        'Otro'
+    ], []);
 
-    // Opciones estáticas para los filtros (el filtrado se hace en el servidor)
-    const uniqueDeviceTypes = ['Todos', 'Celular', 'Tablet', 'Notebook', 'PC', 'Impresora', 'Otro'];
-    const uniqueStatusesOptions = [
+    const uniqueStatusesOptions = useMemo(() => [
         { value: 'Todos', text: 'Todos' },
         { value: 'Pending', text: 'Pendiente' },
-        { value: 'In Process', text: 'En Proceso' },
-        { value: 'Waiting for parts', text: 'Esperando Repuesto' },
-        { value: 'Completed', text: 'Completado' },
-        { value: 'Delivered', text: 'Entregado' },
-        { value: 'Cancelled', text: 'Cancelado' }
-    ];
-
-    // Ya no necesitamos filtrado local - todo se hace en el servidor
-    // Los filtros se envían al backend y este devuelve solo las órdenes filtradas
-    // Simplemente mostramos lo que devuelve el servidor
-    const filteredAndSortedOrders = orders || [];
+        { value: 'Waiting for parts', text: 'Esperando repuestos' },
+        { value: 'In Process', text: 'En proceso' },
+        { value: 'Completed', text: 'Completada' },
+        { value: 'Delivered', text: 'Entregada' },
+        { value: 'Cancelled', text: 'Cancelada' }
+    ], []);
 
     // NUEVO: Órdenes del usuario actual (para móvil)
     const myOrders = useMemo(() => {
-        return (filteredAndSortedOrders || []).filter(order => {
+        return (orders || []).filter(order => {
             const techUsername = typeof order.technician === 'string'
                 ? order.technician
                 : order.technician?.username;
@@ -219,15 +265,15 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 (techId && currentUser?.id && techId === currentUser.id)
             );
         });
-    }, [filteredAndSortedOrders, currentUser]);
+    }, [orders, currentUser]);
 
     // NUEVO: Órdenes sin tomar (unassigned)
     const unassignedOrders = useMemo(() => {
-        return (filteredAndSortedOrders || []).filter(order => {
+        return (orders || []).filter(order => {
             const assignedName = order?.assignedTechnician?.name ?? order?.technician ?? 'No asignado';
             return !assignedName || assignedName === 'No asignado';
         });
-    }, [filteredAndSortedOrders]);
+    }, [orders]);
 
     // NUEVO: Lista para móvil: solo sin tomar + mis órdenes (sin duplicados)
     const mobileOrders = useMemo(() => {
@@ -240,17 +286,13 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         const { name, value } = e.target;
         const newFilters = { ...filters, [name]: value };
         setFilters(newFilters);
-
-        // Resetear a página 1 y aplicar filtros en el servidor
-        setIsLoading(true);
-        fetchOrdersPage(1, newFilters).finally(() => setIsLoading(false));
+        // Resetear a página 1 cuando cambian filtros y recargar
+        loadOrders(1, newFilters);
     };
 
     const clearFilters = () => {
         setFilters(initialFilters);
-        // Cargar página 1 sin filtros
-        setIsLoading(true);
-        fetchOrdersPage(1, initialFilters).finally(() => setIsLoading(false));
+        loadOrders(1, initialFilters);
     };
 
     const selectedStatusClass = useMemo(() => {
@@ -331,149 +373,130 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                 </div>
             </motion.div>
 
-            {/* Lista móvil (tarjetas) órdenes sin tomar y mis órdenes */}
-            <div className="md:hidden space-y-3">
-                {mobileOrders.map((order) => (
-                    <div key={order.id} className="relative">
-                        {permissions.canDeleteOrders && (
-                            <button
-                                className="absolute top-2 right-2 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-sm border border-gray-200 hover:bg-red-50 hover:border-red-300 transition-colors"
-                                title="Eliminar orden"
-                                aria-label="Eliminar orden"
-                                onClick={(e) => { e.stopPropagation(); setOrderToDelete(order); }}
-                            >
-                                <Trash2 className="text-red-600" size={18} />
-                            </button>
-                        )}
-                        <OrderCard order={order} onClick={() => onViewOrderClick(order.id)} />
-                    </div>
-                ))}
 
-                {mobileOrders.length === 0 && (
-                    <motion.div
-                        className="text-center py-12"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                    >
-                        <Archive className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">Sin órdenes para mostrar</h3>
-                        <p className="mt-1 text-sm text-gray-500">En móvil solo se muestran órdenes sin tomar y las que tú hayas tomado.</p>
-                    </motion.div>
-                )}
-            </div>
 
             {/* Tabla de órdenes (solo en pantallas medianas y grandes) */}
             <motion.div
-                className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto min-h-[400px]"
+                className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
+                style={{ maxHeight: 'calc(100vh - 280px)', display: 'flex', flexDirection: 'column' }}
             >
-                <table className="w-full min-w-[1000px]">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 w-24">Acciones</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th> */}
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dispositivo</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Repuesto</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        <AnimatePresence>
-                            {filteredAndSortedOrders.map((order, index) => {
-                                const status = statusConfig[order.status] || statusConfig['Default'];
-                                return (
-                                    <motion.tr
-                                        key={order.id}
-                                        variants={tableRowVariants}
-                                        initial="hidden"
-                                        animate="show"
-                                        exit="exit"
-                                        layout
-                                        custom={index}
-                                        className="hover:bg-gray-50 transition-colors duration-150"
-                                    >
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium sticky left-0 bg-white z-10">
-                                            <div className="flex items-center gap-2 relative">
-                                                <motion.button
-                                                    onClick={() => onViewOrderClick(order.id)}
-                                                    className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200"
-                                                    whileHover={{ scale: 1.1 }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                    title="Ver orden"
-                                                >
-                                                    <Eye size={18} />
-                                                </motion.button>
-
-                                                {/* Print Button with Dropdown */}
-                                                <div className="relative">
-                                                    <motion.button
-                                                        onClick={(e) => handlePrintClick(e, order.id)}
-                                                        className={`text-gray-600 hover:text-gray-900 transition-colors duration-200 ${printMenu.orderId === order.id && printMenu.isOpen ? 'text-gray-900' : ''}`}
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        title="Imprimir"
-                                                    >
-                                                        <Printer size={18} />
-                                                    </motion.button>
-                                                </div>
-
-                                                {permissions.canDeleteOrders && (
-                                                    <motion.button
-                                                        onClick={() => setOrderToDelete(order)}
-                                                        className="text-red-600 hover:text-red-900 transition-colors duration-200"
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        title="Eliminar orden"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </motion.button>
-                                                )}
-                                            </div>
+                {/* Contenedor con scroll para la tabla */}
+                <div className="overflow-auto flex-1">
+                    <table className="w-full min-w-[1000px]">
+                        <thead className="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 w-24">Acciones</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sucursal</th> */}
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dispositivo</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Repuesto</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            <AnimatePresence>
+                                {isLoadingOrders ? (
+                                    <tr>
+                                        <td colSpan="9" className="px-4 py-12 text-center">
+                                            <Loader className="mx-auto animate-spin text-indigo-600" size={32} />
+                                            <p className="mt-2 text-sm text-gray-500">Cargando órdenes...</p>
                                         </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{order.id}</td>
-                                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[150px]" title={order.branch?.branch_name || 'N/A'}>
+                                    </tr>
+                                ) : orders.map((order, index) => {
+                                    const status = statusConfig[order.status] || statusConfig['Default'];
+                                    return (
+                                        <motion.tr
+                                            key={order.id}
+                                            variants={tableRowVariants}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="exit"
+                                            layout
+                                            custom={index}
+                                            className="hover:bg-gray-50 transition-colors duration-150"
+                                        >
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium sticky left-0 bg-white z-10">
+                                                <div className="flex items-center gap-2 relative">
+                                                    <motion.button
+                                                        onClick={() => onViewOrderClick(order.id)}
+                                                        className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200"
+                                                        whileHover={{ scale: 1.1 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        title="Ver orden"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </motion.button>
+
+                                                    {/* Print Button with Dropdown */}
+                                                    <div className="relative">
+                                                        <motion.button
+                                                            onClick={(e) => handlePrintClick(e, order.id)}
+                                                            className={`text-gray-600 hover:text-gray-900 transition-colors duration-200 ${printMenu.orderId === order.id && printMenu.isOpen ? 'text-gray-900' : ''}`}
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            title="Imprimir"
+                                                        >
+                                                            <Printer size={18} />
+                                                        </motion.button>
+                                                    </div>
+
+                                                    {permissions.canDeleteOrders && (
+                                                        <motion.button
+                                                            onClick={() => setOrderToDelete(order)}
+                                                            className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            title="Eliminar orden"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </motion.button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{order.id}</td>
+                                            {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[150px]" title={order.branch?.branch_name || 'N/A'}>
                                             <div className="flex items-center gap-1">
                                                 <MapPin size={14} />
                                                 <span className="truncate">{order.branch?.branch_name || 'N/A'}</span>
                                             </div>
                                         </td> */}
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[150px]" title={order.customer?.name || 'Cliente no especificado'}>
-                                            {order.customer?.name || 'Cliente no especificado'}
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[120px]" title={order.device?.type || 'N/A'}>
-                                            {order.device?.type || 'N/A'}
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[120px]" title={order.device?.model || ''}>
-                                            {order.device?.model || ''}
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.badge}`}>
-                                                {status.icon}
-                                                {status.text}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{order.date}</td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${order.cost}</td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[150px]" title={order.parts_used || 'N/A'}>
-                                            {order.parts_used || 'N/A'}
-                                        </td>
-                                    </motion.tr>
-                                );
-                            })}
-                        </AnimatePresence>
-                    </tbody>
-                </table>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[150px]" title={order.customer?.name || 'Cliente no especificado'}>
+                                                {order.customer?.name || 'Cliente no especificado'}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[120px]" title={order.device?.type || 'N/A'}>
+                                                {order.device?.type || 'N/A'}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[120px]" title={order.device?.model || ''}>
+                                                {order.device?.model || ''}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.badge}`}>
+                                                    {status.icon}
+                                                    {status.text}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{order.date}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${order.cost}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[150px]" title={order.parts_used || 'N/A'}>
+                                                {order.parts_used || 'N/A'}
+                                            </td>
+                                        </motion.tr>
+                                    );
+                                })}
+                            </AnimatePresence>
+                        </tbody>
+                    </table>
+                </div>
 
                 {/* Estado vacío */}
-                {filteredAndSortedOrders.length === 0 && (
+                {!isLoadingOrders && orders.length === 0 && (
                     <motion.div
                         className="text-center py-12"
                         initial={{ opacity: 0, y: 20 }}
@@ -486,14 +509,16 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                     </motion.div>
                 )}
 
-                {/* Paginación */}
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalOrders}
-                    pageSize={pageSize}
-                    onPageChange={handlePageChange}
-                />
+                {/* Componente de paginación */}
+                {!isLoadingOrders && orders.length > 0 && (
+                    <Pagination
+                        currentPage={pagination.page}
+                        totalPages={pagination.total_pages}
+                        onPageChange={handlePageChange}
+                        totalItems={pagination.total}
+                        pageSize={pagination.page_size}
+                    />
+                )}
             </motion.div>
 
             {/* Modal de confirmación */}
@@ -541,6 +566,6 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
                     </>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </motion.div >
     );
 }

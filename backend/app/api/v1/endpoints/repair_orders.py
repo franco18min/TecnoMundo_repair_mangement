@@ -1,10 +1,9 @@
 # backend/app/api/v1/endpoints/repair_orders.py
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, status, Query
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, status
 from sqlalchemy.orm import Session
 import traceback
-import math
 
 from app.schemas import repair_order as schemas_repair_order
 from app.crud import crud_repair_order
@@ -13,58 +12,70 @@ from app.api.v1 import dependencies as deps
 
 router = APIRouter()
 
-@router.get("/", response_model=schemas_repair_order.RepairOrderPaginatedResponse)
+@router.get("/")
 def read_repair_orders(
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_user),
-    page: int = Query(1, ge=1, description="Número de página (comienza en 1)"),
-    page_size: int = Query(15, ge=1, le=100, description="Cantidad de items por página"),
-    # Filtros opcionales para búsqueda global
-    order_id: Optional[int] = Query(None, description="ID exacto de la orden"),
-    customer_name: Optional[str] = Query(None, description="Nombre o apellido del cliente (búsqueda parcial)"),
-    device_type: Optional[str] = Query(None, description="Tipo de dispositivo (búsqueda parcial)"),
-    status: Optional[str] = Query(None, description="Estado exacto de la orden"),
-    device_model: Optional[str] = Query(None, description="Modelo del dispositivo (búsqueda parcial)"),
-    parts_used: Optional[str] = Query(None, description="Repuestos utilizados (búsqueda parcial)")
+    # Parámetros de paginación
+    page: int = 1,
+    page_size: int = 20,
+    # Parámetros de filtro opcionales
+    order_id: int = None,
+    client_name: str = None,
+    device_type: str = None,
+    status_name: str = None,
+    device_model: str = None,
+    parts_used: str = None
 ):
     """
-    Obtiene órdenes de reparación con paginación y filtros opcionales.
+    Obtener órdenes de reparación con paginación y filtros.
     
-    - **page**: Número de página (mínimo 1)
-    - **page_size**: Items por página (entre 1 y 100, por defecto 15)
-    - **order_id**: Filtrar por ID exacto
-    - **customer_name**: Buscar en nombre/apellido del cliente
-    - **device_type**: Filtrar por tipo de dispositivo
-    - **status**: Filtrar por estado
-    - **device_model**: Buscar en modelo del dispositivo
-    - **parts_used**: Buscar en repuestos usados
-    
-    Retorna metadata de paginación junto con las órdenes filtradas.
+    - **page**: Número de página (comienza en 1)
+    - **page_size**: Cantidad de órdenes por página (default: 20, para desarrollo: 5)
+    - **order_id**: Filtrar por ID específico
+    - **client_name**: Búsqueda parcial por nombre de cliente
+    - **device_type**: Filtrar por tipo de dispositivo exacto
+    - **status_name**: Filtrar por nombre de estado
+    - **device_model**: Búsqueda parcial por modelo
+    - **parts_used**: Búsqueda parcial en repuestos
     """
     try:
-        orders, total = crud_repair_order.get_repair_orders(
-            db, 
-            user=current_user, 
-            page=page, 
-            page_size=page_size,
+        # Validar parámetros de paginación
+        if page < 1:
+            raise HTTPException(status_code=400, detail="El número de página debe ser >= 1")
+        if page_size < 1 or page_size > 100:
+            raise HTTPException(status_code=400, detail="El tamaño de página debe estar entre 1 y 100")
+        
+        # Calcular skip para paginación
+        skip = (page - 1) * page_size
+        
+        # Obtener órdenes con conteo total
+        orders, total_count = crud_repair_order.get_repair_orders(
+            db=db,
+            user=current_user,
+            skip=skip,
+            limit=page_size,
             order_id=order_id,
-            customer_name=customer_name,
+            client_name=client_name,
             device_type=device_type,
-            status=status,
+            status_name=status_name,
             device_model=device_model,
             parts_used=parts_used
         )
         
         # Calcular total de páginas
-        total_pages = math.ceil(total / page_size) if total > 0 else 0
+        total_pages = (total_count + page_size - 1) // page_size if total_count > 0 else 0
         
+        # Retornar respuesta paginada
         return {
             "items": orders,
-            "total": total,
+            "total": total_count,
             "page": page,
             "page_size": page_size,
             "total_pages": total_pages
         }
+    except HTTPException:
+        raise
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Ocurrió un error en el servidor al consultar las órdenes.")

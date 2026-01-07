@@ -126,14 +126,3 @@ class RepairOrderDiagnosisUpdate(BaseModel):
     
     class Config:
         from_attributes = True
-
-# Schema para respuesta paginada
-class RepairOrderPaginatedResponse(BaseModel):
-    items: List[RepairOrder]
-    total: int
-    page: int
-    page_size: int
-    total_pages: int
-    
-    class Config:
-        from_attributes = True

@@ -153,40 +153,21 @@ async def send_order_reopened_notification(order_id: int):
 def get_repair_orders(
     db: Session, 
     user: UserModel, 
-    page: int = 1, 
-    page_size: int = 20,
-    # Filtros opcionales para búsqueda global
+    skip: int = 0, 
+    limit: int = 100,
+    # Filtros opcionales
     order_id: int = None,
-    customer_name: str = None,
+    client_name: str = None,
     device_type: str = None,
-    status: str = None,
+    status_name: str = None,
     device_model: str = None,
     parts_used: str = None
 ):
     """
-    Obtiene órdenes de reparación con paginación y filtros opcionales.
-    
-    Args:
-        db: Sesión de base de datos
-        user: Usuario actual
-        page: Número de página (comienza en 1)
-        page_size: Cantidad de items por página
-        order_id: Filtrar por ID exacto de orden
-        customer_name: Buscar en nombre/apellido del cliente (parcial)
-        device_type: Filtrar por tipo de dispositivo (parcial)
-        status: Filtrar por estado exacto
-        device_model: Buscar en modelo del dispositivo (parcial)
-        parts_used: Buscar en repuestos usados (parcial)
-    
-    Returns:
-        Tuple de (orders, total_count)
+    Obtener órdenes de reparación con paginación y filtros.
+    Retorna tupla: (órdenes, total_count)
     """
-    from app.models.customer import Customer
-    from app.models.device_type import DeviceType
-    from app.models.status_order import StatusOrder
-    from sqlalchemy import or_
-    
-    # Construcción de la query base
+    # Query base con joins
     query = db.query(RepairOrderModel).options(
         joinedload(RepairOrderModel.customer),
         joinedload(RepairOrderModel.technician),
@@ -197,7 +178,7 @@ def get_repair_orders(
         joinedload(RepairOrderModel.branch)
     )
     
-    # Aplicar filtros de permisos si es necesario
+    # Filtro por permisos de usuario (actualmente todos ven todas las sucursales)
     if user.role.role_name != "Administrator" and user.branch_id:
         # query = query.filter(RepairOrderModel.branch_id == user.branch_id)
         pass # Permitir ver órdenes de todas las sucursales para todos los roles
@@ -206,45 +187,42 @@ def get_repair_orders(
     if order_id is not None:
         query = query.filter(RepairOrderModel.id == order_id)
     
-    if customer_name:
+    if client_name:
+        # Búsqueda parcial case-insensitive en nombre y apellido del cliente
+        search_pattern = f"%{client_name}%"
+        from app.models.customer import Customer
         query = query.join(RepairOrderModel.customer).filter(
-            or_(
-                Customer.first_name.ilike(f"%{customer_name}%"),
-                Customer.last_name.ilike(f"%{customer_name}%")
-            )
+            (Customer.first_name.ilike(search_pattern)) | 
+            (Customer.last_name.ilike(search_pattern))
         )
     
     if device_type:
+        from app.models.device_type import DeviceType
         query = query.join(RepairOrderModel.device_type).filter(
-            DeviceType.type_name.ilike(f"%{device_type}%")
+            DeviceType.type_name == device_type
         )
     
-    if status:
+    if status_name:
+        from app.models.status_order import StatusOrder
         query = query.join(RepairOrderModel.status).filter(
-            StatusOrder.status_name == status
+            StatusOrder.status_name == status_name
         )
     
     if device_model:
-        query = query.filter(
-            RepairOrderModel.device_model.ilike(f"%{device_model}%")
-        )
+        # Búsqueda parcial case-insensitive en modelo
+        query = query.filter(RepairOrderModel.device_model.ilike(f"%{device_model}%"))
     
     if parts_used:
-        query = query.filter(
-            RepairOrderModel.parts_used.ilike(f"%{parts_used}%")
-        )
+        # Búsqueda parcial case-insensitive en repuestos
+        query = query.filter(RepairOrderModel.parts_used.ilike(f"%{parts_used}%"))
     
-    # Contar el total de órdenes después de aplicar filtros
+    # Obtener conteo total ANTES de aplicar paginación
     total_count = query.count()
     
-    # Calcular offset basado en la página
-    offset = (page - 1) * page_size
-    
-    # Obtener las órdenes de la página actual
-    orders = query.order_by(RepairOrderModel.created_at.desc()).offset(offset).limit(page_size).all()
+    # Aplicar ordenamiento y paginación
+    orders = query.order_by(RepairOrderModel.created_at.desc()).offset(skip).limit(limit).all()
     
     return orders, total_count
-
 
 def get_repair_order(db: Session, order_id: int):
     return db.query(RepairOrderModel).options(
