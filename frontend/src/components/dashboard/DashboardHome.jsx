@@ -1,6 +1,6 @@
 // frontend/src/components/dashboard/DashboardHome.jsx
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Loader, Filter } from 'lucide-react';
 import { OrderCard } from '../orders/OrderCard';
@@ -30,13 +30,24 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
     // Detectar móvil
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Función para cargar órdenes recientes
-    const loadRecentOrders = async () => {
+    // Función para cargar órdenes recientes (con useCallback para dependencias correctas)
+    const loadRecentOrders = useCallback(async () => {
         setIsLoading(true);
         try {
-            // Cargar solo las 6 más recientes (página 1, tamaño 6)
-            // Incluir filtro de sucursal si está seleccionada
-            const filters = selectedBranchId ? { branch_id: selectedBranchId } : {};
+            // Construir filtros incluyendo sucursal y estado
+            const filters = {};
+            if (selectedBranchId) {
+                filters.branch_id = selectedBranchId;
+            }
+            // Aplicar filtro de estado en el servidor para obtener más resultados relevantes
+            if (statusFilter !== 'All') {
+                if (statusFilter === 'Pending') filters.status = 'Pending';
+                if (statusFilter === 'Waiting') filters.status = 'Waiting for parts';
+                if (statusFilter === 'In Process') filters.status = 'In Process';
+                if (statusFilter === 'Completed') filters.status = 'Completed';
+                if (statusFilter === 'Delivered') filters.status = 'Delivered';
+            }
+
             const response = await fetchRepairOrders(1, 6, filters);
             setRecentOrders(response.items || []);
         } catch (error) {
@@ -44,7 +55,7 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [selectedBranchId, statusFilter]);
 
     // Cargar órdenes inicial y escuchar eventos WebSocket
     useEffect(() => {
@@ -60,6 +71,11 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
         loadRecentOrders();
     }, [selectedBranchId]);
 
+    // Recargar cuando cambia el filtro de estado
+    useEffect(() => {
+        loadRecentOrders();
+    }, [statusFilter]);
+
     // En móvil, filtrar solo órdenes sin tomar y las del usuario actual
     const mobileFilteredOrders = useMemo(() => {
         if (!isMobile) return recentOrders;
@@ -69,23 +85,12 @@ export function DashboardHome({ onNewOrderClick, onViewOrderClick }) {
         });
     }, [recentOrders, isMobile, currentUser]);
 
-    // Aplicar filtro de estado
+    // Aplicar filtros de móvil (solo client-side para órdenes sin tomar)
     const displayOrders = useMemo(() => {
         let base = isMobile ? mobileFilteredOrders : recentOrders;
-
-        if (statusFilter !== 'All') {
-            base = base.filter(order => {
-                if (statusFilter === 'Pending') return order.status === 'Pending';
-                if (statusFilter === 'Waiting') return order.status === 'Waiting for parts';
-                if (statusFilter === 'In Process') return order.status === 'In Process';
-                if (statusFilter === 'Completed') return order.status === 'Completed';
-                if (statusFilter === 'Delivered') return order.status === 'Delivered';
-                return true;
-            });
-        }
-
+        // El filtro de estado ya se aplicó en el servidor
         return base.slice(0, 6);
-    }, [recentOrders, mobileFilteredOrders, isMobile, statusFilter]);
+    }, [recentOrders, mobileFilteredOrders, isMobile]);
 
     return (
         <>

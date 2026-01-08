@@ -1,6 +1,6 @@
 // frontend/src/components/orders/OrdersPage.jsx
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Trash2, Wrench, CheckCircle, AlertTriangle, Clock, RotateCcw, Truck, XCircle, Archive, Eye, Search, MapPin, Printer, ChevronDown, Loader } from 'lucide-react';
 import { deleteRepairOrder, fetchRepairOrderById, fetchRepairOrders } from '../../api/repairOrdersApi';
@@ -128,8 +128,8 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
     const [filters, setFilters] = useState(initialFilters);
     const permissions = usePermissions();
 
-    // Función para cargar órdenes
-    const loadOrders = async (page = 1, currentFilters = filters) => {
+    // Función para cargar órdenes (con useCallback para dependencias correctas)
+    const loadOrders = useCallback(async (page = 1, currentFilters = filters) => {
         setIsLoadingOrders(true);
         try {
             const filterParams = {
@@ -156,7 +156,7 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
         } finally {
             setIsLoadingOrders(false);
         }
-    };
+    }, [selectedBranchId, pagination.page_size, showToast, filters]);
 
     // Cargar órdenes inicial y escuchar eventos WebSocket
     useEffect(() => {
@@ -244,15 +244,17 @@ export function OrdersPage({ onNewOrderClick, onViewOrderClick }) {
 
     // Opciones de filtros - usar valores estáticos en lugar de derivarlos de la página actual
     // Esto asegura que todos los filtros estén disponibles independientemente de la página
+    // IMPORTANTE: Valores exactos de la base de datos
     const uniqueDeviceTypes = useMemo(() => [
         'Todos',
-        'Celular',
+        'Smartphone',
         'Tablet',
         'Laptop',
-        'PC',
-        'Consola',
+        'Desktop',
         'Smartwatch',
-        'Otro'
+        'Console',
+        'Headphones',
+        'Other'
     ], []);
 
     const uniqueStatusesOptions = useMemo(() => [
