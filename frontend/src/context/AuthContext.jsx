@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
         setSelectedBranchId(null);
 
         // Guardar mensaje en sessionStorage para mostrarlo en login
-        if (message) {
+        if (message && typeof message === 'string') {
             sessionStorage.setItem('sessionExpiredMessage', message);
         }
     }, []);

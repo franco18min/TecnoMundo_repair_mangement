@@ -20,12 +20,12 @@ export function Sidebar({ onLogout, children }) {
 
     return (
         <aside className="h-screen sticky top-0">
-            <motion.nav 
+            <motion.nav
                 className={`h-full flex flex-col bg-white border-r border-gray-200 shadow-sm ${expanded ? 'w-64' : 'w-20'}`}
                 initial={false}
                 animate={{ width: expanded ? 256 : 80 }}
-                transition={{ 
-                    duration: 0.3, 
+                transition={{
+                    duration: 0.3,
                     ease: [0.4, 0, 0.2, 1],
                     type: "tween"
                 }}
@@ -35,20 +35,20 @@ export function Sidebar({ onLogout, children }) {
                     <motion.div
                         className="overflow-hidden flex-1"
                         initial={false}
-                        animate={{ 
-                            opacity: expanded ? 1 : 0, 
+                        animate={{
+                            opacity: expanded ? 1 : 0,
                             x: expanded ? 0 : -20,
                             width: expanded ? "auto" : 0
                         }}
-                        transition={{ 
-                            duration: 0.3, 
-                            ease: [0.4, 0, 0.2, 1] 
+                        transition={{
+                            duration: 0.3,
+                            ease: [0.4, 0, 0.2, 1]
                         }}
                     >
                         <BrandLogo className="w-full h-auto sm:h-auto object-contain" alt="TecnoMundo" />
                     </motion.div>
-                    <motion.button 
-                        onClick={() => setExpanded(curr => !curr)} 
+                    <motion.button
+                        onClick={() => setExpanded(curr => !curr)}
                         className={`${expanded ? 'p-1 sm:p-1.5 ml-2' : 'p-1.5'} rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors duration-200`}
                         whileHover={{ scale: 1.1, backgroundColor: "#e5e7eb" }}
                         whileTap={{ scale: 0.95 }}
@@ -64,22 +64,22 @@ export function Sidebar({ onLogout, children }) {
                 </div>
 
                 <SidebarContext.Provider value={{ expanded }}>
-                    <motion.div 
+                    <motion.div
                         className="overflow-hidden"
                         initial={false}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.1 }}
                     >
                         <BranchSwitcher />
-                        <motion.hr 
-                            className="my-2 border-gray-100" 
+                        <motion.hr
+                            className="my-2 border-gray-100"
                             initial={false}
                             animate={{ scaleX: 1 }}
                             transition={{ duration: 0.3, delay: 0.2 }}
                         />
                     </motion.div>
 
-                    <motion.ul 
+                    <motion.ul
                         className="flex-1 px-3"
                         initial={false}
                         animate={{ opacity: 1 }}
@@ -89,7 +89,7 @@ export function Sidebar({ onLogout, children }) {
                     </motion.ul>
                 </SidebarContext.Provider>
 
-                <motion.div 
+                <motion.div
                     className={`border-t border-gray-200 flex p-3 items-center ${!expanded && 'justify-center'}`}
                     initial={false}
                     animate={{ opacity: 1 }}
@@ -102,24 +102,24 @@ export function Sidebar({ onLogout, children }) {
                         whileHover={{ scale: 1.05 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     />
-                    <motion.div 
+                    <motion.div
                         className="flex justify-between items-center overflow-hidden gap-2"
                         initial={false}
-                        animate={{ 
-                            width: expanded ? 208 : 0, 
+                        animate={{
+                            width: expanded ? 208 : 0,
                             marginLeft: expanded ? 12 : 0,
                             opacity: expanded ? 1 : 0
                         }}
-                        transition={{ 
-                            duration: 0.3, 
-                            ease: [0.4, 0, 0.2, 1] 
+                        transition={{
+                            duration: 0.3,
+                            ease: [0.4, 0, 0.2, 1]
                         }}
                     >
                         <div className="leading-4 min-w-0 flex-1 pr-1">
                             <h4 className="font-semibold text-gray-800 truncate max-w-[140px]">{currentUser.username}</h4>
                             <span className="text-xs text-gray-500 truncate max-w-[120px] inline-block" title={currentUser.email}>{currentUser.email}</span>
                             {currentUser.branch?.branch_name && (
-                                <motion.div 
+                                <motion.div
                                     className='flex items-center gap-1 mt-1 truncate'
                                     initial={{ opacity: 0, y: 5 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -136,7 +136,7 @@ export function Sidebar({ onLogout, children }) {
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         >
-                            <LogOut size={20} className="text-gray-500 hover:text-red-500 cursor-pointer" onClick={onLogout} />
+                            <LogOut size={20} className="text-gray-500 hover:text-red-500 cursor-pointer" onClick={() => onLogout()} />
                         </motion.div>
                     </motion.div>
                 </motion.div>
@@ -148,25 +148,24 @@ export function Sidebar({ onLogout, children }) {
 export function SidebarItem({ icon, text, active, alert, onClick }) {
     const { expanded } = useContext(SidebarContext);
     const [isHovered, setIsHovered] = useState(false);
-    
+
     return (
         <motion.li
             onClick={onClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer group transition-colors duration-200 ${!expanded && "justify-center"} ${
-            active
-                ? "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm"
-                : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"
-            }`}
-            whileHover={{ 
+            className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer group transition-colors duration-200 ${!expanded && "justify-center"} ${active
+                    ? "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm"
+                    : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"
+                }`}
+            whileHover={{
                 scale: active ? 1 : 1.01,
                 x: active ? 0 : 1
             }}
             whileTap={{ scale: 0.98 }}
-            transition={{ 
-                type: "spring", 
-                stiffness: 500, 
+            transition={{
+                type: "spring",
+                stiffness: 500,
                 damping: 30
             }}
             layout
@@ -177,25 +176,25 @@ export function SidebarItem({ icon, text, active, alert, onClick }) {
             >
                 {icon}
             </motion.div>
-            <motion.span 
+            <motion.span
                 className="overflow-hidden whitespace-nowrap"
                 initial={false}
-                animate={{ 
-                    width: expanded ? "auto" : 0, 
+                animate={{
+                    width: expanded ? "auto" : 0,
                     marginLeft: expanded ? 12 : 0,
                     opacity: expanded ? 1 : 0
                 }}
-                transition={{ 
-                    duration: 0.25, 
-                    ease: [0.4, 0, 0.2, 1] 
+                transition={{
+                    duration: 0.25,
+                    ease: [0.4, 0, 0.2, 1]
                 }}
             >
                 {text}
             </motion.span>
-            
+
             <AnimatePresence>
                 {alert && !expanded && (
-                    <motion.div 
+                    <motion.div
                         className="absolute left-full rounded-full w-2 h-2 ml-2 bg-red-400 shadow-sm"
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -207,14 +206,14 @@ export function SidebarItem({ icon, text, active, alert, onClick }) {
 
             <AnimatePresence>
                 {!expanded && isHovered && (
-                    <motion.div 
+                    <motion.div
                         className="absolute left-full rounded-lg px-3 py-2 ml-6 bg-gray-900 text-white text-xs z-50 whitespace-nowrap shadow-lg border border-gray-700"
                         initial={{ opacity: 0, x: -8, scale: 0.9 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: -8, scale: 0.9 }}
-                        transition={{ 
-                            type: "spring", 
-                            stiffness: 500, 
+                        transition={{
+                            type: "spring",
+                            stiffness: 500,
                             damping: 30,
                             delay: 0.15
                         }}

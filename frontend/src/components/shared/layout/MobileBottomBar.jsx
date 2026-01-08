@@ -39,7 +39,7 @@ export function MobileBottomBar({ onLogout }) {
         </div>
 
         <motion.button
-          onClick={onLogout}
+          onClick={() => onLogout()}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:border-red-300 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

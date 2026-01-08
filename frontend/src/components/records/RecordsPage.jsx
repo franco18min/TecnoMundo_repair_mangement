@@ -136,11 +136,11 @@ export function RecordsPage({ onViewOrderClick }) {
                         <tbody className="divide-y divide-gray-200">
                             <AnimatePresence>
                                 {records.map(r => (
-                                    <motion.tr 
-                                        key={r.id} 
-                                        layout 
-                                        initial={{ opacity: 0 }} 
-                                        animate={{ opacity: 1 }} 
+                                    <motion.tr
+                                        key={r.id}
+                                        layout
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
                                         onClick={() => r.order_id && onViewOrderClick && onViewOrderClick(r.order_id)}
                                         className={r.order_id ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}
@@ -156,6 +156,20 @@ export function RecordsPage({ onViewOrderClick }) {
                             </AnimatePresence>
                         </tbody>
                     </table>
+                )}
+
+                {/* Estado vacío - sin resultados */}
+                {!isLoading && !error && records.length === 0 && (
+                    <motion.div
+                        className="text-center py-12"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <ListOrdered className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No hay registros</h3>
+                        <p className="mt-1 text-sm text-gray-500">No se encontraron registros que coincidan con los filtros aplicados.</p>
+                    </motion.div>
                 )}
             </div>
         </div>

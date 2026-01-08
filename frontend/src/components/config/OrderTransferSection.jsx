@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightLeft, Search, Building2, Package, AlertTriangle, CheckCircle, Clock, Wrench, XCircle, Truck, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { transferRepairOrder } from '../../api/repairOrdersApi';
+import { transferRepairOrder, fetchRepairOrders } from '../../api/repairOrdersApi';
 import { TransferAnimation } from './TransferAnimation';
 import ChecklistQuestionsSection from './ChecklistQuestionsSection';
 
@@ -17,7 +17,7 @@ const statusConfig = {
 };
 
 export const OrderTransferSection = () => {
-    const { orders, branches, currentUser } = useAuth();
+    const { branches, currentUser } = useAuth();
     const { showToast } = useToast();
     const role = (currentUser?.role?.role_name || '').toLowerCase();
     const isReceptionist = ['receptionist', 'recepcionist', 'recepcionista'].includes(role);
@@ -29,6 +29,34 @@ export const OrderTransferSection = () => {
     const [isTransferring, setIsTransferring] = useState(false);
     const [showAnimation, setShowAnimation] = useState(false);
     const transferTimerRef = useRef(null);
+
+    // Estado para órdenes
+    const [orders, setOrders] = useState([]);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+
+    // Cargar órdenes
+    const loadOrders = async () => {
+        setIsLoadingOrders(true);
+        try {
+            // Cargar todas las órdenes disponibles (sin filtros de paginación estricta)
+            const response = await fetchRepairOrders(1, 100); // Cargar las primeras 100 órdenes
+            setOrders(response.items || []);
+        } catch (error) {
+            console.error('Error loading orders:', error);
+            showToast('Error al cargar órdenes', 'error');
+        } finally {
+            setIsLoadingOrders(false);
+        }
+    };
+
+    // Cargar órdenes al montar y escuchar eventos WebSocket
+    useEffect(() => {
+        loadOrders();
+
+        const handleOrderUpdate = () => loadOrders();
+        window.addEventListener('orderUpdate', handleOrderUpdate);
+        return () => window.removeEventListener('orderUpdate', handleOrderUpdate);
+    }, []);
 
     // Resetear sucursal seleccionada cuando cambie la orden
     useEffect(() => {
