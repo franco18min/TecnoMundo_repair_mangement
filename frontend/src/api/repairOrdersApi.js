@@ -24,6 +24,7 @@ export const mapOrderData = (order) => {
     },
     status: order.status?.status_name || 'Desconocido',
     assignedTechnician: { name: order.technician?.username || 'No asignado' },
+    creator: order.creator ? { username: order.creator.username } : null,
     dateReceived: order.created_at,
     // Campos adicionales para la tabla
     date: order.created_at ? new Date(order.created_at).toLocaleDateString('es-ES') : 'N/A',

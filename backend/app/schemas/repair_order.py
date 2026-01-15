@@ -19,6 +19,7 @@ class RepairOrder(BaseModel):
     created_at: datetime
     customer: Customer
     technician: Optional[User] = None
+    creator: Optional[User] = None  # Usuario que creó la orden
     status: Optional[StatusOrder] = None
     device_type: Optional[DeviceType] = None
     # --- INICIO DE LA MODIFICACIÓN ---

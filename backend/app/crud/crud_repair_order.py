@@ -13,10 +13,31 @@ from app.core.logger import structured_logger, ErrorCategory, ErrorSeverity
 from app.models.repair_order import RepairOrder as RepairOrderModel
 from app.models.device_condition import DeviceCondition as DeviceConditionModel
 from app.models.user import User as UserModel
+from app.models.record import Record as RecordModel
+from app.models.type_record import TypeRecord
 from app.schemas.repair_order import RepairOrderCreate, RepairOrderUpdate, RepairOrder as RepairOrderSchema, \
     RepairOrderDetailsUpdate, RepairOrderDiagnosisUpdate
 from app.schemas.notification import Notification as NotificationSchema
 from app.db.session import SessionLocal
+
+
+def get_order_creator(db: Session, order_id: int):
+    """Obtiene el usuario que creó la orden desde los registros"""
+    try:
+        # Buscar el registro de creación de la orden
+        creation_record = db.query(RecordModel).join(
+            TypeRecord, RecordModel.id_even_type == TypeRecord.id
+        ).filter(
+            RecordModel.order_id == order_id,
+            TypeRecord.type_name == "Order creation"
+        ).first()
+        
+        if creation_record and creation_record.actor_user_id:
+            creator = db.query(UserModel).filter(UserModel.id == creation_record.actor_user_id).first()
+            return creator
+        return None
+    except Exception:
+        return None
 
 
 async def send_technician_notifications(order_id: int):

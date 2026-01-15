@@ -65,6 +65,11 @@ def read_repair_orders(
             branch_id=branch_id
         )
         
+        # Agregar información del creador a cada orden
+        for order in orders:
+            creator = crud_repair_order.get_order_creator(db, order.id)
+            setattr(order, 'creator', creator)
+        
         # Calcular total de páginas
         total_pages = (total_count + page_size - 1) // page_size if total_count > 0 else 0
         
