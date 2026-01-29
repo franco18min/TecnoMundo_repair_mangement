@@ -83,12 +83,16 @@ class RepairOrderTransfer(BaseModel):
 class RepairOrderPublic(BaseModel):
     id: int
     device_model: Optional[str] = None
+    device_brand: Optional[str] = None
     created_at: datetime
     status: Optional[StatusOrder] = None
     device_type: Optional[DeviceType] = None
     branch: Optional[BranchPublic] = None
     customer: Optional[CustomerPublic] = None
     technician: Optional[User] = None
+    problem_description: Optional[str] = None  # AGREGADO: problema reportado
+    accesories: Optional[str] = None  # AGREGADO: accesorios
+    observations: Optional[str] = None  # AGREGADO: observaciones
     total_cost: Optional[float] = None
     deposit: Optional[float] = None
     balance: Optional[float] = None
@@ -96,6 +100,9 @@ class RepairOrderPublic(BaseModel):
     technician_diagnosis: Optional[str] = None
     repair_notes: Optional[str] = None
     photos: List[RepairOrderPhoto] = []
+    estimated_completion_date: Optional[datetime] = None
+    delivery_date: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
