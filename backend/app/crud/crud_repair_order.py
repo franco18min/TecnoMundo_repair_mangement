@@ -333,6 +333,12 @@ def complete_technician_work(db: Session, order_id: int, order_update: RepairOrd
     db_order = get_repair_order(db, order_id)
     if not db_order: return None
     prev_status_id = db_order.status_id
+    
+    # Si la orden no tiene técnico asignado, asignar el usuario actual
+    # Esto permite la funcionalidad de "Completar Directamente"
+    if db_order.technician_id is None:
+        db_order.technician_id = user_id
+    
     update_data = order_update.dict(exclude_unset=True, exclude={'checklist'})
     for key, value in update_data.items(): setattr(db_order, key, value)
     if order_update.checklist is not None:

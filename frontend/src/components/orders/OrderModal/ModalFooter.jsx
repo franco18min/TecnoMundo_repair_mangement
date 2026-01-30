@@ -8,10 +8,12 @@ export function ModalFooter({
     mode, permissions, onClose, isSubmitting, error,
     setIsTakeConfirmModalOpen, setIsReopenConfirmOpen,
     setIsDeliverConfirmModalOpen,
+    setIsCompleteDirectlyConfirmOpen,
     handlePrint,
     setMode
 }) {
     const [showPrintMenu, setShowPrintMenu] = useState(false);
+    const [showTakeOrderMenu, setShowTakeOrderMenu] = useState(false);
 
     const handleModifyClick = () => {
         setMode(mode === 'view' ? 'edit' : 'view');
@@ -31,31 +33,31 @@ export function ModalFooter({
 
                 {permissions.canPrintOrder && (mode === 'view' || mode === 'edit') && (
                     <div className="relative">
-                        <motion.button 
-                            type="button" 
-                            onClick={() => setShowPrintMenu(!showPrintMenu)} 
-                            className="flex items-center gap-2 bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-700" 
-                            whileHover={{ scale: 1.05 }} 
+                        <motion.button
+                            type="button"
+                            onClick={() => setShowPrintMenu(!showPrintMenu)}
+                            className="flex items-center gap-2 bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-700"
+                            whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <Printer size={18} /> Imprimir <ChevronDown size={14} />
                         </motion.button>
-                        
+
                         <AnimatePresence>
                             {showPrintMenu && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
                                 >
-                                    <button 
+                                    <button
                                         onClick={() => handlePrintOption('all')}
                                         className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 flex items-center gap-2"
                                     >
                                         Imprimir Todo (2 Copias)
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => handlePrintOption('single')}
                                         className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 flex items-center gap-2"
                                     >
@@ -70,28 +72,69 @@ export function ModalFooter({
 
             {/* Lado Derecho: Botones de Acción */}
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
-                {/* Botón "Tomar Orden" */}
+                {/* Botón "Tomar Orden" con Dropdown */}
                 {permissions.canTakeOrder && (
-                    <motion.button type="button" onClick={() => setIsTakeConfirmModalOpen(true)} disabled={isSubmitting} className="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><Wrench size={16} className="mr-2"/> Tomar Orden</>}
-                    </motion.button>
+                    <div className="relative">
+                        <motion.button
+                            type="button"
+                            onClick={() => setShowTakeOrderMenu(!showTakeOrderMenu)}
+                            disabled={isSubmitting}
+                            className="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-300 flex items-center justify-center"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><Wrench size={16} className="mr-2" /> Tomar Orden <ChevronDown size={14} className="ml-1" /></>}
+                        </motion.button>
+
+                        <AnimatePresence>
+                            {showTakeOrderMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute bottom-full left-0 mb-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                                >
+                                    <button
+                                        onClick={() => {
+                                            setShowTakeOrderMenu(false);
+                                            setIsTakeConfirmModalOpen(true);
+                                        }}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 flex items-center gap-2"
+                                    >
+                                        <Wrench size={16} />
+                                        Tomar Orden
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowTakeOrderMenu(false);
+                                            setIsCompleteDirectlyConfirmOpen(true);
+                                        }}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 flex items-center gap-2"
+                                    >
+                                        <CheckCircle size={16} />
+                                        Completar Directamente
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 )}
 
                 {/* Botón "Modificar Orden" / "Ver Orden" */}
                 {(permissions.canModifyOrder || permissions.canModifyForDiagnosis) && (
                     <motion.button type="button" onClick={handleModifyClick} className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         {mode === 'view' ? (
-                            <><Edit size={16} className="mr-2"/> {permissions.canModifyForDiagnosis && !permissions.canModifyOrder ? 'Editar Diagnóstico' : 'Modificar Orden'}</>
+                            <><Edit size={16} className="mr-2" /> {permissions.canModifyForDiagnosis && !permissions.canModifyOrder ? 'Editar Diagnóstico' : 'Modificar Orden'}</>
                         ) : (
-                            <><Eye size={16} className="mr-2"/> Atrás</>
+                            <><Eye size={16} className="mr-2" /> Atrás</>
                         )}
                     </motion.button>
                 )}
 
                 {/* Botón "Completar Orden" */}
                 {permissions.canCompleteOrder && mode === 'view' && (
-                     <motion.button type="submit" form="order-form" disabled={isSubmitting} className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><CheckCircle size={16} className="mr-2"/>Completar Orden</>}
+                    <motion.button type="submit" form="order-form" disabled={isSubmitting} className="bg-indigo-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><CheckCircle size={16} className="mr-2" />Completar Orden</>}
                     </motion.button>
                 )}
 
@@ -105,13 +148,13 @@ export function ModalFooter({
                 {/* Botón "Reabrir Orden" */}
                 {permissions.canReopenOrder && (
                     <motion.button type="button" onClick={() => setIsReopenConfirmOpen(true)} disabled={isSubmitting} className="bg-yellow-500 text-black font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-yellow-600 disabled:bg-yellow-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><RotateCcw size={16} className="mr-2"/> Reabrir Orden</>}
+                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><RotateCcw size={16} className="mr-2" /> Reabrir Orden</>}
                     </motion.button>
                 )}
 
                 {permissions.canDeliverOrder && (
                     <motion.button type="button" onClick={() => setIsDeliverConfirmModalOpen(true)} disabled={isSubmitting} className="bg-teal-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-teal-700 disabled:bg-teal-300 flex items-center justify-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><Truck size={16} className="mr-2"/>Confirmar Entrega</>}
+                        {isSubmitting ? <Loader size={20} className="animate-spin" /> : <><Truck size={16} className="mr-2" />Confirmar Entrega</>}
                     </motion.button>
                 )}
 

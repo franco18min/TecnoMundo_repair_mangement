@@ -44,9 +44,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
     const [isTakeConfirmModalOpen, setIsTakeConfirmModalOpen] = useState(false);
     const [isUpdateConfirmModalOpen, setIsUpdateConfirmModalOpen] = useState(false);
     const [isReopenConfirmOpen, setIsReopenConfirmOpen] = useState(false);
-    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
     const [isDeliverConfirmModalOpen, setIsDeliverConfirmModalOpen] = useState(false);
-    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
+    const [isCompleteDirectlyConfirmOpen, setIsCompleteDirectlyConfirmOpen] = useState(false);
     const [deviceTypes, setDeviceTypes] = useState([]);
     const [clientType, setClientType] = useState('nuevo');
     const [clientSearch, setClientSearch] = useState('');
@@ -208,7 +207,6 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
         }
     };
 
-    // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
     const handleDeliverOrder = async () => {
         if (!orderId) return;
         setIsDeliverConfirmModalOpen(false);
@@ -225,7 +223,39 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             setIsSubmitting(false);
         }
     };
-    // --- FIN DE LA NUEVA FUNCIONALIDAD ---
+
+    const handleCompleteDirectly = async () => {
+        if (!orderId) return;
+        setIsCompleteDirectlyConfirmOpen(false);
+        setIsSubmitting(true);
+        setError('');
+
+        const payload = {
+            technician_diagnosis: formData.technician_diagnosis,
+            repair_notes: formData.repair_notes,
+            parts_used: formData.parts_used,
+            total_cost: Number(formData.total_cost) || 0,
+            deposit: Number(formData.deposit) || 0,
+            is_spare_part_ordered: sparePartStatus === 'pedido',
+            checklist: checklistItems.map(item => ({
+                check_description: item.check_description,
+                client_answer: item.client_answer,
+                technician_finding: item.technician_finding,
+                technician_notes: item.technician_notes,
+            })),
+        };
+
+        try {
+            await completeRepairOrder(orderId, payload);
+            showToast('Orden completada directamente con éxito', 'success');
+            onClose(true);
+        } catch (err) {
+            setError(err.message || "No se pudo completar la orden.");
+            showToast(err.message || "No se pudo completar la orden", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleConfirmUpdate = async () => {
         if (!orderId) return;
@@ -479,9 +509,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
                                         error={error}
                                         setIsTakeConfirmModalOpen={setIsTakeConfirmModalOpen}
                                         setIsReopenConfirmOpen={setIsReopenConfirmOpen}
-                                        // --- INICIO DE LA NUEVA FUNCIONALIDAD ---
                                         setIsDeliverConfirmModalOpen={setIsDeliverConfirmModalOpen}
-                                        // --- FIN DE LA NUEVA FUNCIONALIDAD ---
+                                        setIsCompleteDirectlyConfirmOpen={setIsCompleteDirectlyConfirmOpen}
                                         handlePrint={handleDirectPrint}
                                         setMode={setMode}
                                         currentUser={currentUser}
@@ -500,9 +529,8 @@ export function OrderModal({ isOpen, onClose, orderId, currentUser }) {
             <ConfirmationModal isOpen={isTakeConfirmModalOpen} onClose={() => setIsTakeConfirmModalOpen(false)} onConfirm={handleTakeOrder} title="Confirmar Acción" message="¿Estás seguro de que quieres tomar esta orden? Se te asignará como técnico y el estado cambiará a 'En Proceso'." confirmText="Sí, tomar orden" />
             <ConfirmationModal isOpen={isUpdateConfirmModalOpen} onClose={() => setIsUpdateConfirmModalOpen(false)} onConfirm={handleConfirmUpdate} title="Completar Orden" message={`¿Confirmas que deseas completar la orden #${orderId}? Revisa el diagnóstico, repuestos y costos antes de confirmar.`} confirmText="Sí, completar" />
             <ConfirmationModal isOpen={isReopenConfirmOpen} onClose={() => setIsReopenConfirmOpen(false)} onConfirm={handleReopenOrder} title="Confirmar Reapertura" message={`¿Estás seguro de que quieres reabrir la orden #${orderId} y pasarla al estado 'En Proceso'?`} confirmText="Sí, Reabrir" />
-            {/* --- INICIO DE LA NUEVA FUNCIONALIDAD --- */}
             <ConfirmationModal isOpen={isDeliverConfirmModalOpen} onClose={() => setIsDeliverConfirmModalOpen(false)} onConfirm={handleDeliverOrder} title="Confirmar Entrega" message={`¿Confirmas que has entregado el equipo asociado a la orden #${orderId} al cliente?`} confirmText="Sí, Entregar" />
-            {/* --- FIN DE LA NUEVA FUNCIONALIDAD --- */}
+            <ConfirmationModal isOpen={isCompleteDirectlyConfirmOpen} onClose={() => setIsCompleteDirectlyConfirmOpen(false)} onConfirm={handleCompleteDirectly} title="Completar Directamente" message={`¿Confirmas que deseas tomar y completar esta orden en un solo paso? Se te asignará como técnico y la orden pasará a estado 'Completado'.`} confirmText="Sí, completar" />
             <ChecklistModal
                 isOpen={isChecklistOpen}
                 onClose={() => setIsChecklistOpen(false)}
