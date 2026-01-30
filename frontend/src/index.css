@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Asegurar scroll en móviles */
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  height: auto;
+  min-height: 100%;
+}
+
+#root {
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
 /* Ocultar barras de desplazamiento pero mantener funcionalidad de scroll */
 .scrollbar-hide {
   /* WebKit browsers (Chrome, Safari, Edge) */

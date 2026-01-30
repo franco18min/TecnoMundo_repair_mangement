@@ -243,7 +243,7 @@ const ClientOrderStatusPage = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] md:min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-x-hidden pb-[env(safe-area-inset-bottom)]" style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
+    <div className="min-h-[100dvh] md:min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
