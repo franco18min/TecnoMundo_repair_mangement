@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
     const [selectedBranchId, setSelectedBranchId] = useState(null);
 
     // --- INICIO DE LA MODIFICACIÓN ---
+    // Estas funciones deben ser estables (no cambiar en cada render)
     const getAccessToken = useCallback(() => localStorage.getItem('accessToken'), []);
 
     const logout = useCallback((message = null) => {
@@ -34,14 +35,15 @@ export const AuthProvider = ({ children }) => {
         if (message && typeof message === 'string') {
             sessionStorage.setItem('sessionExpiredMessage', message);
         }
-    }, []);
+    }, []); // ✅ Sin dependencias - función estable
 
+    // Inicializar APIs solo UNA VEZ al montar el componente
     useEffect(() => {
         initializeUserApi(getAccessToken, logout);
         initializeRolesApi(getAccessToken, logout);
         initializeBranchApi(getAccessToken, logout);
         initializeRecordsApi(getAccessToken, logout);
-    }, [getAccessToken, logout]);
+    }, []);
     // --- FIN DE LA MODIFICACIÓN ---
 
     const loadInitialData = useCallback(async () => {
@@ -76,17 +78,20 @@ export const AuthProvider = ({ children }) => {
             }
         }
         setIsLoading(false);
-    }, [loadInitialData, getAccessToken, logout]);
+    }, [loadInitialData]);
 
+    // Validar token solo UNA VEZ al montar
     useEffect(() => {
         validateToken();
-    }, [validateToken]);
+    }, []);
 
     useEffect(() => {
+
         let isMounted = true;
         let reconnectTimeout = null;
         let reconnectAttempts = 0;
         const MAX_RECONNECT_ATTEMPTS = 10;
+        let intentionalDisconnect = false; // Flag para distinguir cleanup real de Strict Mode
 
         // Función para calcular delay de reconexión con backoff exponencial
         const getReconnectDelay = (attempt) => {
@@ -94,13 +99,19 @@ export const AuthProvider = ({ children }) => {
         };
 
         const connect = () => {
-            if (!currentUser) return;
-            const token = getAccessToken();
-            if (!token) return;
+            if (!currentUser) {
+                return;
+            }
+
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                return;
+            }
 
             // Evitar múltiples conexiones simultáneas
             if (websocketRef.current) {
                 const state = websocketRef.current.readyState;
+
                 if (state === WebSocket.OPEN ||
                     state === WebSocket.CONNECTING ||
                     state === WebSocket.CLOSING) {
@@ -109,20 +120,25 @@ export const AuthProvider = ({ children }) => {
             }
 
             const wsUrlWithToken = `${API_CONFIG.WS_URL}?token=${token}`;
-
             const ws = new WebSocket(wsUrlWithToken);
             websocketRef.current = ws;
 
             ws.onopen = () => {
-                reconnectAttempts = 0; // Reset intentos en conexión exitosa
+                reconnectAttempts = 0;
             };
 
             ws.onclose = (event) => {
+                // Si fue cierre intencional (logout real), no reconectar
+                if (intentionalDisconnect) {
+                    return;
+                }
 
                 // Si el código es 1008 (Policy Violation), probablemente el token expiró
                 if (event.code === 1008) {
-                    console.warn('Session expired - redirecting to login');
-                    logout('Sesión caducada. Por favor, inicie sesión nuevamente.');
+                    const logout = localStorage.getItem('logout');
+                    if (logout) {
+                        sessionStorage.setItem('sessionExpiredMessage', 'Sesión caducada. Por favor, inicie sesión nuevamente.');
+                    }
                     window.location.href = '/login';
                     return;
                 }
@@ -130,17 +146,16 @@ export const AuthProvider = ({ children }) => {
                 // Reconexión con backoff exponencial
                 if (isMounted && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                     const delay = getReconnectDelay(reconnectAttempts);
-                    console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
                     reconnectAttempts++;
                     reconnectTimeout = setTimeout(connect, delay);
                 } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                    console.error('Max reconnection attempts reached');
+                    console.error('WebSocket: Max reconnection attempts reached');
                 }
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket Error:', error);
-                ws.close(); // Forzar cierre para activar lógica de onclose
+                console.error('WebSocket error:', error);
+                ws.close();
             };
 
             ws.onmessage = (event) => {
@@ -169,7 +184,7 @@ export const AuthProvider = ({ children }) => {
                             break;
                     }
                 } catch (e) {
-                    console.error('Error processing WS message:', e);
+                    console.error('Error processing WebSocket message:', e);
                 }
             };
         };
@@ -182,7 +197,6 @@ export const AuthProvider = ({ children }) => {
         const handleVisibilityChange = () => {
             if (!document.hidden && websocketRef.current) {
                 if (websocketRef.current.readyState !== WebSocket.OPEN) {
-                    console.log('Page visible, checking connection...');
                     connect();
                 }
             }
@@ -192,14 +206,22 @@ export const AuthProvider = ({ children }) => {
 
         return () => {
             isMounted = false;
-            if (reconnectTimeout) clearTimeout(reconnectTimeout);
-            if (websocketRef.current) {
-                websocketRef.current.onclose = null;
-                websocketRef.current.close(1000, 'Component unmounting');
+            intentionalDisconnect = true;
+
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
             }
+
+            if (websocketRef.current) {
+                const state = websocketRef.current.readyState;
+                if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) {
+                    websocketRef.current.close(1000, 'Component unmounting');
+                }
+            }
+
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [currentUser, getAccessToken, logout]);
+    }, [currentUser]);
 
     // Sistema de timeout: Solo Expiración Absoluta (4 horas)
     useEffect(() => {

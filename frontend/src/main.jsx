@@ -29,7 +29,7 @@ const reportClientError = async (payload) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-  } catch {}
+  } catch { }
 }
 
 window.addEventListener('error', (event) => {
@@ -62,7 +62,7 @@ window.addEventListener('unhandledrejection', (event) => {
 })
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <>
     {/* --- INICIO DE LA CORRECCIÓN --- */}
     {/* ToastProvider debe envolver a AuthProvider */}
     <ToastProvider>
@@ -71,6 +71,5 @@ createRoot(document.getElementById('root')).render(
       </AuthProvider>
     </ToastProvider>
     {/* --- FIN DE LA CORRECCIÓN --- */}
-  </StrictMode>,
+  </>
 )
-
